@@ -100,7 +100,3 @@ The application will be available at [http://localhost:3000](http://localhost:30
 - `yarn start`: Start the production server
 - `yarn lint`: Run ESLint
 - `yarn format`: Format code with Prettier
-
-## License
-
-This project is proprietary software. All rights reserved.
