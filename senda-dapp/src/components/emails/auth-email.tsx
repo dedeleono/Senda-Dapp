@@ -86,10 +86,10 @@ export default function AuthEmail({ host, url, email }: AuthEmailProps) {
             <Section className="mt-2">
               <Link href={host}>
                 <Img
-                  src="https://dk29k70tan5xj.cloudfront.net/assets/image/Maverick-Green.png"
+                  src="https://dk29k70tan5xj.cloudfront.net/assets/image/Senda.png"
                   width="150"
                   height="30"
-                  alt="Maverick Exchange Logo"
+                  alt="Senda Logo"
                   style={{
                     maxHeight: "30px",
                     width: "auto",

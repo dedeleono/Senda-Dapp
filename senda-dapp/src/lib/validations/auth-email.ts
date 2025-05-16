@@ -62,7 +62,7 @@ export async function sendAuthEmail(email: string, url: string) {
         const html = await render(AuthEmail(props));
         const mailOptions = {
             to: email,
-            from: `Maverick Capital Investment <${process.env.EMAIL_FROM}>`,
+            from: `Senda <${process.env.EMAIL_FROM}>`,
             subject: `Sign in to ${host}`,
             text: `Sign in to ${host}\n${url}\n\n`,
             html,

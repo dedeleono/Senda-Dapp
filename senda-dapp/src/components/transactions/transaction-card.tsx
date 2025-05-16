@@ -61,16 +61,16 @@ export default function TransactionCard({
   const getStatusColor = (status: TransactionStatus) => {
     switch (status) {
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200';
       case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200';
       case 'CANCELLED':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-800/50 text-gray-800 dark:text-gray-200';
       case 'REJECTED':
       case 'FAILED':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-800/50 text-gray-800 dark:text-gray-200';
     }
   };
 
@@ -153,20 +153,20 @@ export default function TransactionCard({
 
   return (
     <Card 
-      className="w-full cursor-pointer hover:shadow-md transition-shadow"
+      className="w-full cursor-pointer hover:shadow-md transition-shadow bg-card text-card-foreground"
       onClick={onClick}
     >
       <CardContent className="p-4">
         <div className="flex justify-between items-start">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-              <DollarSign className="h-5 w-5 text-gray-600" />
+            <div className="w-10 h-10 bg-muted dark:bg-muted/30 rounded-full flex items-center justify-center">
+              <DollarSign className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">
+              <h3 className="font-medium text-card-foreground">
                 {isDepositor ? `To: ${recipientEmail}` : `From: Sender`}
               </h3>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 {formatDistanceToNow(createdAt, { addSuffix: true })}
               </p>
             </div>
@@ -174,7 +174,7 @@ export default function TransactionCard({
 
           <div className="flex items-center space-x-2">
             <div className="text-right">
-              <div className="font-medium text-gray-900 flex items-center justify-end">
+              <div className="font-medium text-card-foreground flex items-center justify-end">
                 <Image 
                   src={getTokenIcon(token)}
                   alt={token}
@@ -189,22 +189,22 @@ export default function TransactionCard({
                 <span>{getStatusText(status)}</span>
               </Badge>
             </div>
-            <ChevronRight className="h-5 w-5 text-gray-400" />
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </div>
         </div>
         
-        <div className="mt-4 text-xs text-gray-500 flex justify-between">
+        <div className="mt-4 text-xs text-muted-foreground flex justify-between">
           <span>ID: {id.substring(0, 8)}...</span>
           <span>Authorization: {getAuthorizationText(authorization)}</span>
         </div>
       </CardContent>
       
-      <CardFooter className="px-4 py-3 border-t">
+      <CardFooter className="px-4 py-3 border-t border-border">
         <Button 
           onClick={handleActionClick} 
           variant={status === 'PENDING' ? 'default' : 'outline'}
           size="sm"
-          className="w-full bg-[#d7dfbe] text-black hover:bg-[#d7dfbe] hover:text-black"
+          className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:hover:bg-secondary/80"
           disabled={isLoading}
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

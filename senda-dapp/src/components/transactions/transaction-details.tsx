@@ -74,7 +74,7 @@ export default function TransactionDetails({
       const { status, authorization, isDepositor, depositIndex } = transaction;
       
       if (typeof depositIndex !== 'number') {
-        throw new Error('Invalid deposit index');
+        throw new Error('Invalid ');
       }
       
       if (status === 'PENDING') {
@@ -272,15 +272,15 @@ export default function TransactionDetails({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] bg-card">
         <DialogHeader>
-          <DialogTitle>Transaction Details</DialogTitle>
+          <DialogTitle className="text-card-foreground">Transaction Details</DialogTitle>
         </DialogHeader>
         
         {/* Transaction Summary */}
-        <Card className="p-4 border rounded-lg">
+        <Card className="p-4 border border-border rounded-lg bg-card">
           <div className="flex justify-between items-center mb-4">
-            <div className="text-xl font-semibold flex items-center">
+            <div className="text-xl font-semibold flex items-center text-card-foreground">
               <Image 
                 src={getTokenIcon(transaction.token)} 
                 alt={transaction.token} 
@@ -293,9 +293,9 @@ export default function TransactionDetails({
             
             <div className="flex items-center">
               <span className={`text-xs px-2 py-1 rounded-full ${
-                transaction.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                transaction.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-gray-100 text-gray-800'
+                transaction.status === 'COMPLETED' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' :
+                transaction.status === 'PENDING' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200' :
+                'bg-gray-100 dark:bg-gray-800/50 text-gray-800 dark:text-gray-200'
               }`}>
                 {transaction.status}
               </span>
@@ -304,12 +304,12 @@ export default function TransactionDetails({
           
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-gray-500">ID</p>
+              <p className="text-muted-foreground">ID</p>
               <div className="flex items-center mt-1">
-                <p className="font-mono">{transaction.id.substring(0, 16)}...</p>
+                <p className="font-mono text-card-foreground">{transaction.id.substring(0, 16)}...</p>
                 <button 
                   onClick={() => copyToClipboard(transaction.id, 'Transaction ID copied')}
-                  className="ml-2 text-gray-500 hover:text-gray-700"
+                  className="ml-2 text-muted-foreground hover:text-card-foreground"
                 >
                   <Copy className="h-4 w-4" />
                 </button>
@@ -317,52 +317,52 @@ export default function TransactionDetails({
             </div>
             
             <div>
-              <p className="text-gray-500">Date</p>
+              <p className="text-muted-foreground">Date</p>
               <div className="flex items-center mt-1">
-                <Calendar className="h-4 w-4 text-gray-500 mr-1" />
-                <p>{format(transaction.createdAt, 'MMM d, yyyy h:mm a')}</p>
+                <Calendar className="h-4 w-4 text-muted-foreground mr-1" />
+                <p className="text-card-foreground">{format(transaction.createdAt, 'MMM d, yyyy h:mm a')}</p>
               </div>
             </div>
             
             <div>
-              <p className="text-gray-500">From</p>
+              <p className="text-muted-foreground">From</p>
               <div className="flex items-center mt-1">
-                <Mail className="h-4 w-4 text-gray-500 mr-1" />
-                <p>{transaction.senderEmail || 'You'}</p>
+                <Mail className="h-4 w-4 text-muted-foreground mr-1" />
+                <p className="text-card-foreground">{transaction.senderEmail || 'You'}</p>
               </div>
             </div>
             
             <div>
-              <p className="text-gray-500">To</p>
+              <p className="text-muted-foreground">To</p>
               <div className="flex items-center mt-1">
-                <Mail className="h-4 w-4 text-gray-500 mr-1" />
-                <p>{transaction.recipientEmail}</p>
+                <Mail className="h-4 w-4 text-muted-foreground mr-1" />
+                <p className="text-card-foreground">{transaction.recipientEmail}</p>
               </div>
             </div>
             
             <div>
-              <p className="text-gray-500">Authorization</p>
-              <p className="mt-1">{getAuthorizationText(transaction.authorization)}</p>
+              <p className="text-muted-foreground">Authorization</p>
+              <p className="mt-1 text-card-foreground">{getAuthorizationText(transaction.authorization)}</p>
             </div>
             
             <div>
-              <p className="text-gray-500">Deposit Index</p>
-              <p className="mt-1">#{transaction.depositIndex || 0}</p>
+              <p className="text-muted-foreground">Deposit Index</p>
+              <p className="mt-1 text-card-foreground">#{transaction.depositIndex || 0}</p>
             </div>
           </div>
           
           {transaction.transactionSignature && (
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-gray-500 text-sm">Transaction Signature</p>
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-muted-foreground text-sm">Transaction Signature</p>
               <div className="flex items-center mt-1">
-                <p className="text-xs font-mono truncate">{transaction.transactionSignature}</p>
+                <p className="text-xs font-mono truncate text-card-foreground">{transaction.transactionSignature}</p>
                 <div className="flex ml-2">
                   <button 
                     onClick={() => copyToClipboard(
                       transaction.transactionSignature!, 
                       'Transaction signature copied'
                     )}
-                    className="text-gray-500 hover:text-gray-700 mr-1"
+                    className="text-muted-foreground hover:text-card-foreground mr-1"
                   >
                     <Copy className="h-4 w-4" />
                   </button>
@@ -370,7 +370,7 @@ export default function TransactionDetails({
                     href={`https://explorer.solana.com/tx/${transaction.transactionSignature}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-500 hover:text-gray-700"
+                    className="text-muted-foreground hover:text-card-foreground"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </a>
@@ -381,7 +381,7 @@ export default function TransactionDetails({
         </Card>
         
         <div className="my-4">
-          <h3 className="text-sm font-medium mb-3">Transaction Timeline</h3>
+          <h3 className="text-sm font-medium mb-3 text-card-foreground">Transaction Timeline</h3>
           <StatusTimeline 
             statusHistory={transaction.statusHistory}
             signatures={transaction.signatures}
@@ -393,6 +393,7 @@ export default function TransactionDetails({
             variant="outline" 
             onClick={onClose}
             disabled={isProcessing}
+            className="border-border text-card-foreground hover:bg-muted"
           >
             Cancel
           </Button>
@@ -401,7 +402,11 @@ export default function TransactionDetails({
             variant={getActionButtonVariant()} 
             onClick={handleActionClick}
             disabled={isProcessing || !canPerformAction()}
-            className="min-w-[120px]"
+            className={`min-w-[120px] ${
+              getActionButtonVariant() === 'default' 
+                ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:hover:bg-secondary/80'
+                : 'border-border text-card-foreground hover:bg-muted'
+            }`}
           >
             {isProcessing ? (
               <>

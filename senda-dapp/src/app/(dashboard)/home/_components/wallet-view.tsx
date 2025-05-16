@@ -18,7 +18,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import usdcIcon from '@/public/usdc.svg'
 import usdtIcon from '@/public/usdt-round.svg'
 import DepositModal, { DepositModalRef } from '@/components/deposit/deposit-modal'
-import TransactionCard from '@/components/transactions/transaction-card'
 import TransactionDetails from '@/components/transactions/transaction-details'
 import { Badge } from '@/components/ui/badge'
 import { useWalletStore } from '@/stores/use-wallet-store'
@@ -27,6 +26,7 @@ import AddFundsModal, { AddFundsModalRef } from '@/components/deposit/add-funds-
 import { AnimatePresence, motion } from 'framer-motion'
 import { Sparklines } from 'react-sparklines'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { toast } from 'sonner'
 
 interface TransactionDetailsData {
   id: string
@@ -97,10 +97,12 @@ interface Path {
   sender: {
     email: string
     name: string | null
+    image: string | null
   }
   receiver: {
     email: string
     name: string | null
+    image: string | null
   }
 }
 
@@ -184,6 +186,7 @@ export default function SendaWallet() {
   }
 
   const handleOpenTransactionDetails = (transaction: Transaction) => {
+    console.log('Opening transaction details for:', transaction)
     const depositIndex = transaction.depositRecord?.depositIndex;
     if (typeof depositIndex !== 'number') {
       console.error('Invalid deposit index:', depositIndex);
@@ -198,14 +201,10 @@ export default function SendaWallet() {
       return;
     }
 
-    const escrowId = transaction.depositRecord?.escrowId;
-    if (!escrowId) {
-      console.error('Missing escrow ID');
-      return;
-    }
+    console.log('Transaction deposit record:', transaction.depositRecord)
 
     const transactionDetails: TransactionDetailsData = {
-      id: escrowId,
+      id: transaction.depositRecord?.id || '',
       amount: transaction.amount,
       token: transaction.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
       recipientEmail: transaction.destinationUserId ? transaction.destinationUser?.email as string : '',
@@ -238,12 +237,50 @@ export default function SendaWallet() {
       receiverPublicKey
     };
 
+    console.log('Setting transaction details:', transactionDetails)
     setSelectedTransaction(transactionDetails);
     setIsTransactionDetailsOpen(true);
   };
 
-  const handleSignatureComplete = () => {
-    utils.transactionRouter.getUserTransactions.invalidate()
+  const { mutate: updateSignature } = trpc.sendaRouter.updateDepositSignature.useMutation({
+    onSuccess: (data) => {
+      console.log('Signature update mutation succeeded:', data)
+      toast.success('Transaction signed successfully')
+      utils.transactionRouter.getUserTransactions.invalidate()
+    },
+    onError: (error) => {
+      console.error('Signature update mutation failed:', error)
+      toast.error(error.message || 'Failed to sign transaction')
+    }
+  })
+
+  const handleSignatureComplete = async () => {
+    console.log('handleSignatureComplete called with:', {
+      selectedTransaction,
+      sessionUser: session?.user
+    })
+
+    if (!selectedTransaction?.id || !session?.user?.id) {
+      console.error('Missing required data:', {
+        transactionId: selectedTransaction?.id,
+        userId: session?.user?.id
+      })
+      toast.error('Missing required data for signature')
+      return
+    }
+
+    console.log('Calling updateSignature with:', {
+      depositId: selectedTransaction.id,
+      role: 'sender',
+      signerId: session.user.id
+    })
+
+    toast.loading('Signing transaction...')
+    updateSignature({
+      depositId: selectedTransaction.id,
+      role: 'sender',
+      signerId: session.user.id
+    })
   }
 
   if (error) {
@@ -268,28 +305,28 @@ export default function SendaWallet() {
           icon: UserIcon,
           label: 'Single Signature',
           description: 'Requires sender signature',
-          className: 'text-blue-700 bg-blue-50',
+          className: 'text-[#596f62] dark:text-[#d7dfbe] bg-[#596f62]/20 dark:bg-[#1c3144]/20',
         }
       case 'RECEIVER':
         return {
           icon: UserIcon,
           label: 'Single Signature',
           description: 'Requires receiver signature',
-          className: 'text-blue-700 bg-blue-50',
+          className: 'text-[#596f62] dark:text-[#d7dfbe] bg-[#596f62]/20 dark:bg-[#1c3144]/20',
         }
       case 'DUAL':
         return {
           icon: UsersIcon,
           label: 'Multi-Signature',
           description: 'Requires multiple signatures',
-          className: 'text-purple-700 bg-purple-50',
+          className: 'text-[#7ea16b] dark:text-[#7ea16b] bg-[#7ea16b]/20 dark:bg-[#7ea16b]/10',
         }
       default:
         return {
           icon: ShieldCheckIcon,
           label: policy,
           description: 'Custom policy',
-          className: 'text-gray-700 bg-gray-50',
+          className: 'text-[#1c3144] dark:text-[#f6ead7] bg-[#f6ead7]/30 dark:bg-[#f6ead7]/10',
         }
     }
   }
@@ -297,13 +334,13 @@ export default function SendaWallet() {
   return (
     <div className="flex flex-col h-full min-h-full mx-auto md:flex-row md:max-w-4xl">
       <main className="flex-1 p-6 space-y-6 md:min-w-4xl">
-        <Card className="bg-white p-8 rounded-2xl shadow-md">
+        <Card className="bg-card p-8 rounded-2xl shadow-md">
           <div className="flex items-center justify-between">
             <div className="flex flex-col space-y-3">
               {/* Total Balance */}
-              <h2 className="md:text-4xl text-3xl font-bold text-black text-nowrap">
+              <h2 className="md:text-4xl text-3xl font-bold text-card-foreground text-nowrap">
                 ${totalBalance.toFixed(0)}
-                <small className="text-gray-500 text-xs ml-1">USD</small>
+                <small className="text-muted-foreground text-xs ml-1">USD</small>
               </h2>
 
               <div className="flex gap-1 md:gap-2 items-center -ml-2 md:-ml-3">
@@ -318,10 +355,14 @@ export default function SendaWallet() {
                         className={`${token.symbol === 'USDC' ? 'w-8 h-8 md:w-[56px] md:h-[56px]' : 'w-6 h-6 md:w-7 md:h-7'}`}
                       />
                     </div>
-                    <span className={`text-gray-700 ${token.symbol === 'USDC' ? '-ml-2 md:-ml-3.5' : 'text-gray-500'}`}>
+                    <span
+                      className={`text-card-foreground ${token.symbol === 'USDC' ? '-ml-2 md:-ml-3.5' : 'text-muted-foreground'}`}
+                    >
                       <span className="font-medium text-base md:text-lg">
                         {token.uiBalance.toFixed(0)}
-                        <small className="text-gray-500 text-[8px] md:text-[10px] ml-0.5 md:ml-1">{token.symbol}</small>
+                        <small className="text-muted-foreground text-[8px] md:text-[10px] ml-0.5 md:ml-1">
+                          {token.symbol}
+                        </small>
                       </span>
                     </span>
                   </div>
@@ -338,7 +379,7 @@ export default function SendaWallet() {
             <Button
               onClick={handleOpenDepositModal}
               variant="default"
-              className="bg-[#d7dfbe] text-black font-semibold md:h-auto h-12 hover:!scale-103 hover:!bg-[#d7dfbe] hover:!font-bold transition-all duration-300 cursor-pointer"
+              className="bg-secondary text-secondary-foreground font-semibold md:h-auto h-12 hover:!scale-103 hover:!bg-secondary/90 dark:hover:!bg-secondary/80 hover:!font-bold transition-all duration-300 cursor-pointer"
             >
               Send <ArrowUp className="h-4 w-4" />
             </Button>
@@ -346,14 +387,14 @@ export default function SendaWallet() {
             <Button
               onClick={handleOpenAddFundsModal}
               variant="default"
-              className="bg-[#f6ead7] text-black hover:!bg-[#f6ead7] hover:!font-bold hover:!scale-103 font-semibold w-full transition-all duration-300 cursor-pointer md:h-auto h-12"
+              className="bg-accent text-accent-foreground hover:!bg-accent/90 dark:hover:!bg-accent/80 hover:!font-bold hover:!scale-103 font-semibold w-full transition-all duration-300 cursor-pointer md:h-auto h-12"
             >
               Add Funds <PlusIcon className="h-4 w-4" />
             </Button>
 
             <Button
               variant="ghost"
-              className="border border-[#d7dfbe] text-black font-semibold hover:!bg-transparent hover:!scale-103 hover:!text-black hover:!border-[#d7dfbe] transition-all duration-300 cursor-pointer md:h-auto h-12"
+              className="border border-secondary text-card-foreground font-semibold hover:!bg-secondary/10 hover:!scale-103 hover:!text-card-foreground hover:!border-secondary transition-all duration-300 cursor-pointer md:h-auto h-12"
               onClick={handleOpenWithdrawModal}
             >
               Withdraw <ArrowDown className="h-4 w-4" />
@@ -361,7 +402,7 @@ export default function SendaWallet() {
 
             {/* <Button
               variant="ghost"
-              className="border border-[#d7dfbe] text-black font-semibold hover:!bg-transparent hover:!scale-103 hover:!text-black hover:!border-[#d7dfbe] transition-all duration-300 cursor-pointer md:h-auto h-12"
+              className="border border-secondary text-card-foreground font-semibold hover:!bg-secondary/10 hover:!scale-103 hover:!text-card-foreground hover:!border-secondary transition-all duration-300 cursor-pointer md:h-auto h-12"
               onClick={handleOpenWalletQR}
             >
               Your Senda Wallet <Wallet className="h-4 w-4" />
@@ -374,26 +415,26 @@ export default function SendaWallet() {
           </div>
         </Card>
 
-        <Card className="bg-white rounded-2xl shadow-md">
+        <Card className="bg-card rounded-2xl shadow-md">
           <Tabs defaultValue="deposits" className="p-0">
             <div className="overflow-x-auto">
-              <TabsList className="w-full grid grid-cols-3 bg-transparent border-b-2 border-gray-400/5 p-0 rounded-none h-auto">
+              <TabsList className="w-full grid grid-cols-3 bg-transparent border-b border-border p-0 rounded-none h-auto">
                 <TabsTrigger
                   value="paths"
-                  className="py-4 px-6 data-[state=active]:border-b-3 data-[state=active]:border-[#d7dfbe] data-[state=active]:shadow-none rounded-none rounded-tl-lg data-[state=active]:text-foreground data-[state=active]:font-bold"
+                  className="py-4 px-6 data-[state=active]:border-b-3 data-[state=active]:border-secondary data-[state=active]:shadow-none rounded-none rounded-tl-lg data-[state=active]:text-card-foreground data-[state=active]:font-bold"
                 >
                   My Paths
                 </TabsTrigger>
 
                 <TabsTrigger
                   value="deposits"
-                  className="py-4 px-6 data-[state=active]:border-b-3 data-[state=active]:border-[#d7dfbe] data-[state=active]:shadow-none rounded-none data-[state=active]:text-foreground data-[state=active]:font-bold"
+                  className="py-4 px-6 data-[state=active]:border-b-3 data-[state=active]:border-secondary data-[state=active]:shadow-none rounded-none data-[state=active]:text-card-foreground data-[state=active]:font-bold"
                 >
                   Active deposits
                 </TabsTrigger>
                 <TabsTrigger
                   value="history"
-                  className="py-4 px-6 data-[state=active]:border-b-3 data-[state=active]:border-[#d7dfbe] data-[state=active]:shadow-none rounded-none rounded-tr-lg data-[state=active]:text-foreground data-[state=active]:font-bold"
+                  className="py-4 px-6 data-[state=active]:border-b-3 data-[state=active]:border-secondary data-[state=active]:shadow-none rounded-none rounded-tr-lg data-[state=active]:text-card-foreground data-[state=active]:font-bold"
                 >
                   Activity History
                 </TabsTrigger>
@@ -402,13 +443,13 @@ export default function SendaWallet() {
 
             <div className="h-[350px]">
               <ScrollArea className="h-full">
-                <TabsContent value="paths" className="p-0 mt-0 h-full">
+                <TabsContent value="paths" className="p-4 mt-0 h-full bg-foreground border-none rounded-b-xl">
                   {isLoadingPaths ? (
                     <div className="py-8 flex justify-center">
-                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-secondary border-t-transparent" />
                     </div>
                   ) : paths && paths.paths.length > 0 ? (
-                    <div className="p-6 space-y-6">
+                    <div className="space-y-6 p-1">
                       {paths.paths.map((path, i) => {
                         const isSender = path.senderPublicKey === publicKey?.toString()
                         const other = isSender ? path.receiver : path.sender
@@ -419,45 +460,48 @@ export default function SendaWallet() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.1 }}
-                            className="group relative bg-white/90 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-shadow border border-gray-100"
+                            className="group relative bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-shadow"
                           >
                             <div className="flex items-center justify-between gap-4">
-                              {/* YOU */}
                               <div className="flex-1">
                                 <div className="flex items-center justify-end gap-3">
                                   <div className="text-sm">
-                                    <p className="font-semibold text-gray-900">You</p>
-                                    <p className="truncate max-w-[140px] text-gray-500">{publicKey?.toString()}</p>
+                                    <p className="font-semibold text-card-foreground">You</p>
+                                    <p className="truncate max-w-[140px] text-muted-foreground">
+                                      {publicKey?.toString()}
+                                    </p>
                                   </div>
-                                  <div className="h-12 w-12 bg-gradient-to-br from-green-200 to-green-100 rounded-full flex items-center justify-center">
-                                    {/* avatar icon */}
-                                    <svg /* … */ />
+                                  <div className="h-12 w-12 bg-gradient-to-br from-secondary/50 to-secondary/20 rounded-full flex items-center justify-center">
+                                    <Avatar className="h-9 w-9 cursor-pointer">
+                                      <AvatarImage src={session?.user?.image || ''} alt="User Avatar" />
+                                      <AvatarFallback>{session?.user.email?.slice(0, 1).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
                                   </div>
                                 </div>
                               </div>
 
-                              {/* FLOW LINE + COUNT + SPARKLINE */}
                               <div className="flex-shrink-0 flex flex-col items-center justify-center gap-2">
                                 <div className="flex items-center gap-2">
-                                  <div className="h-[2px] w-12 bg-gradient-to-r from-green-300 to-yellow-200 animate-[flow_1.5s_linear_infinite]" />
-                                  <div className="relative bg-yellow-50 rounded-full px-3 py-1 text-xs font-medium">
-                                    {path.depositCount} deposits
+                                  <div className="h-[2px] w-12 bg-gradient-to-r from-secondary to-accent animate-[flow_1.5s_linear_infinite]" />
+                                  <div className="relative bg-accent/20 rounded-full px-3 py-1 text-xs font-medium text-accent-foreground">
+                                    {path.depositCount} deposit{path.depositCount === 1 ? '' : 's'}
                                   </div>
-                                  <div className="h-[2px] w-12 bg-gradient-to-r from-yellow-200 to-green-300 animate-[flow_1.5s_linear_infinite]" />
+                                  <div className="h-[2px] w-12 bg-gradient-to-r from-accent to-secondary animate-[flow_1.5s_linear_infinite]" />
                                 </div>
                                 <Sparklines limit={5} width={80} height={20} margin={0} />
                               </div>
 
-                              {/* OTHER PARTY */}
                               <div className="flex-1">
                                 <div className="flex items-center gap-3">
-                                  <div className="h-12 w-12 bg-gradient-to-br from-yellow-100 to-yellow-50 rounded-full flex items-center justify-center">
-                                    {/* avatar icon */}
-                                    <svg /* … */ />
+                                  <div className="h-12 w-12 bg-gradient-to-br from-accent/50 to-accent/20 rounded-full flex items-center justify-center">
+                                    <Avatar className="h-9 w-9 cursor-pointer">
+                                      <AvatarImage src={other.image || ''} alt="User Avatar" />
+                                      <AvatarFallback>{other.email?.slice(0, 1).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
                                   </div>
                                   <div className="text-sm">
-                                    <p className="font-semibold text-gray-900">{other.email}</p>
-                                    <p className="truncate max-w-[140px] text-gray-500">
+                                    <p className="font-semibold text-card-foreground">{other.email}</p>
+                                    <p className="truncate max-w-[140px] text-muted-foreground">
                                       {isSender ? path.receiverPublicKey : path.senderPublicKey}
                                     </p>
                                   </div>
@@ -465,18 +509,17 @@ export default function SendaWallet() {
                               </div>
                             </div>
 
-                            {/* BALANCES */}
                             <div className="mt-4 flex justify-center gap-4 text-sm">
                               {path.depositedUsdc > 0 && (
-                                <div className="bg-gray-50 rounded-lg px-4 py-2 inline-flex items-center gap-2">
+                                <div className="bg-muted dark:bg-muted/30 rounded-lg px-4 py-2 inline-flex items-center gap-2">
                                   <Image src={usdcIcon} alt="USDC" width={20} height={20} />
-                                  <span className="font-medium">{path.depositedUsdc} USDC</span>
+                                  <span className="font-medium text-card-foreground">{path.depositedUsdc} USDC</span>
                                 </div>
                               )}
                               {path.depositedUsdt > 0 && (
-                                <div className="bg-gray-50 rounded-lg px-4 py-2 inline-flex items-center gap-2">
+                                <div className="bg-muted dark:bg-muted/30 rounded-lg px-4 py-2 inline-flex items-center gap-2">
                                   <Image src={usdtIcon} alt="USDT" width={20} height={20} />
-                                  <span className="font-medium">{path.depositedUsdt} USDT</span>
+                                  <span className="font-medium text-card-foreground">{path.depositedUsdt} USDT</span>
                                 </div>
                               )}
                             </div>
@@ -485,24 +528,24 @@ export default function SendaWallet() {
                       })}
                     </div>
                   ) : (
-                    <div className="py-12 text-center">
+                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-xl">
                       <img src={path.src} className="mx-auto mb-6 h-12 rounded-lg" />
-                      <h3 className="text-gray-900 text-lg font-medium">You have no trust paths yet!</h3>
-                      <p className="text-gray-500">Start connecting with your people here.</p>
-                      <Button className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] cursor-pointer mt-6">
+                      <h3 className="text-card-foreground text-lg font-medium">You have no trust paths yet!</h3>
+                      <p className="text-muted-foreground">Start connecting with your people here.</p>
+                      <Button className="bg-accent text-accent-foreground font-semibold hover:font-bold hover:bg-accent/90 dark:hover:bg-accent/80 cursor-pointer mt-6">
                         Add New Persona <PlusIcon />
                       </Button>
                     </div>
                   )}
                 </TabsContent>
 
-                <TabsContent value="deposits" className="p-4 mt-0 h-full">
+                <TabsContent value="deposits" className="p-4 mt-0 h-full bg-foreground border-none rounded-b-xl">
                   {isLoadingTransactions ? (
-                    <div className="py-8 flex justify-center">
+                    <div className="py-8 flex justify-center h-full">
                       <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
                     </div>
                   ) : transactions?.transactions?.length ? (
-                    <div className="space-y-3">
+                    <div className="space-y-3 p-1">
                       {transactions.transactions
                         .filter((tx) => tx.status === TransactionStatus.PENDING)
                         .map((tx, idx) => {
@@ -515,7 +558,7 @@ export default function SendaWallet() {
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: idx * 0.05 }}
-                              className="relative flex items-start gap-4 p-4 bg-foreground rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer focus-within:ring-2 ring-offset-2 ring-[#d7dfbe]"
+                              className="relative flex items-start gap-4 p-4 bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer focus-within:ring-2 ring-offset-2 ring-[#d7dfbe]"
                               onClick={() => handleOpenTransactionDetails(tx)}
                             >
                               <div className="absolute left-6 top-0 bottom-0 w-px " />
@@ -526,7 +569,9 @@ export default function SendaWallet() {
 
                               <div className="flex-1">
                                 <div className="flex justify-between items-center">
-                                  <h4 className="font-semibold text-gray-900">To: {tx.destinationUser?.email || '—'}</h4>
+                                  <h4 className="font-semibold text-gray-900">
+                                    To: {tx.destinationUser?.email || '—'}
+                                  </h4>
                                   <span
                                     className={`
                       inline-flex items-center text-sm font-medium px-2 py-0.5 rounded-full
@@ -543,15 +588,23 @@ export default function SendaWallet() {
                                 </div>
                                 <p className="text-gray-500 text-xs mt-1">{ageHours}h ago</p>
                                 <div className="flex items-center gap-2 mt-2">
-                                  {tx.depositRecord?.policy && (() => {
-                                    const { icon: PolicyIcon, label, className, description } = getPolicyDetails(tx.depositRecord.policy)
-                                    return (
-                                      <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${className}`}>
-                                        <PolicyIcon className="w-3.5 h-3.5 mr-1.5" />
-                                        {description}
-                                      </div>
-                                    )
-                                  })()}
+                                  {tx.depositRecord?.policy &&
+                                    (() => {
+                                      const {
+                                        icon: PolicyIcon,
+                                        label,
+                                        className,
+                                        description,
+                                      } = getPolicyDetails(tx.depositRecord.policy)
+                                      return (
+                                        <div
+                                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${className}`}
+                                        >
+                                          <PolicyIcon className="w-3.5 h-3.5 mr-1.5" />
+                                          {description}
+                                        </div>
+                                      )
+                                    })()}
                                 </div>
 
                                 <div className="mt-4 flex justify-between items-center">
@@ -565,6 +618,40 @@ export default function SendaWallet() {
                                       className="hover:scale-105 transition-transform"
                                       onClick={(e) => {
                                         e.stopPropagation()
+                                        const transactionDetails: TransactionDetailsData = {
+                                          id: tx.depositRecord?.id || '',
+                                          amount: tx.amount,
+                                          token: tx.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
+                                          recipientEmail: tx.destinationUserId ? tx.destinationUser?.email as string : '',
+                                          createdAt: new Date(tx.createdAt),
+                                          status: tx.status,
+                                          authorization: tx.depositRecord?.policy as SignatureType,
+                                          isDepositor: tx.userId === session?.user.id,
+                                          signatures: tx.depositRecord?.signatures?.map((sig: any) => {
+                                            try {
+                                              const parsedSig = typeof sig === 'string' ? JSON.parse(sig) : sig;
+                                              return {
+                                                ...parsedSig,
+                                                role: parsedSig.role.toUpperCase() as SignatureType
+                                              };
+                                            } catch (e) {
+                                              console.error('Error parsing signature:', e);
+                                              return null;
+                                            }
+                                          }).filter(Boolean) || [],
+                                          statusHistory: [
+                                            {
+                                              status: tx.status,
+                                              timestamp: new Date(tx.createdAt),
+                                              actor: tx.userId
+                                            }
+                                          ],
+                                          depositIndex: tx.depositRecord?.depositIndex || 0,
+                                          transactionSignature: tx.signature,
+                                          senderPublicKey: tx.walletPublicKey,
+                                          receiverPublicKey: tx.destinationAddress || ''
+                                        }
+                                        setSelectedTransaction(transactionDetails)
                                         handleSignatureComplete()
                                       }}
                                     >
@@ -592,25 +679,27 @@ export default function SendaWallet() {
                   )}
                 </TabsContent>
 
-                <TabsContent value="history" className="p-4 mt-0 h-full">
+                <TabsContent value="history" className="p-4 mt-0 min-h-[350px] h-full bg-foreground border-none rounded-b-xl">
                   {isLoadingTransactions ? (
                     <div className="py-8 flex justify-center">
-                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-secondary border-t-transparent" />
                     </div>
                   ) : transactions?.transactions && transactions.transactions.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-3 p-1 h-full">
                       {(() => {
-                        const filteredTransactions = transactions.transactions
-                          .filter((tx) => tx.status !== TransactionStatus.PENDING)
-                        
-                        console.log('All transactions:', transactions.transactions)
-                        console.log('Filtered transactions:', filteredTransactions)
+                        const filteredTransactions = transactions.transactions.filter(
+                          (tx) => tx.status !== TransactionStatus.PENDING,
+                        )
                         
                         if (filteredTransactions.length === 0) {
                           return (
-                            <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                              <h3 className="text-xl font-medium text-slate-700 mb-2">No completed transactions yet!</h3>
-                              <p className="text-slate-500 mb-6">Your completed transactions will appear here once they're done.</p>
+                            <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-xl">
+                              <h3 className="text-card-foreground text-lg font-medium">
+                                No completed transactions yet!
+                              </h3>
+                              <p className="text-muted-foreground">
+                                Your completed transactions will appear here once they're done.
+                              </p>
                             </div>
                           )
                         }
@@ -621,7 +710,7 @@ export default function SendaWallet() {
                           const formattedDate = completedDate.toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
-                            year: 'numeric'
+                            year: 'numeric',
                           })
 
                           return (
@@ -630,7 +719,7 @@ export default function SendaWallet() {
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: idx * 0.05 }}
-                              className="relative flex items-start gap-4 p-4 bg-foreground rounded-lg shadow hover:shadow-md transition-all duration-200 cursor-pointer"
+                              className="relative flex items-start gap-4 p-4 bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-lg shadow hover:shadow-md transition-all duration-200 cursor-pointer"
                               onClick={() => handleOpenTransactionDetails(tx)}
                             >
                               <Avatar className="relative z-10 flex-shrink-0 rounded-full flex items-center justify-center">
@@ -640,25 +729,28 @@ export default function SendaWallet() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-center">
                                   <div className="flex flex-col">
-                                    <h4 className="font-semibold text-gray-900">
+                                    <h4 className="font-semibold text-card-foreground">
                                       {isSender ? 'Sent to:' : 'Received from:'} {tx.destinationUser?.email || '—'}
                                     </h4>
-                                    <span className="text-sm text-gray-500">{formattedDate}</span>
+                                    <span className="text-sm text-muted-foreground">{formattedDate}</span>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-gray-800">
-                                      {isSender ? '-' : '+'}{tx.amount} 
-                                      <span className="text-gray-500 ml-1">{tx.depositRecord?.stable?.toUpperCase()}</span>
+                                    <span className="font-semibold text-card-foreground">
+                                      {isSender ? '-' : '+'}
+                                      {tx.amount}
+                                      <span className="text-muted-foreground ml-1">
+                                        {tx.depositRecord?.stable?.toUpperCase()}
+                                      </span>
                                     </span>
                                     <span
                                       className={`
                                         inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
                                         ${
                                           tx.status === TransactionStatus.COMPLETED
-                                            ? 'text-green-700 bg-green-50'
+                                            ? 'text-green-800 dark:text-green-200 bg-green-100 dark:bg-green-900/30'
                                             : tx.status === TransactionStatus.CANCELLED
-                                            ? 'text-red-700 bg-red-50'
-                                            : 'text-gray-700 bg-gray-50'
+                                            ? 'text-red-800 dark:text-red-200 bg-red-100 dark:bg-red-900/30'
+                                            : 'text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800/50'
                                         }
                                       `}
                                     >
@@ -670,9 +762,15 @@ export default function SendaWallet() {
                                 {tx.depositRecord?.policy && (
                                   <div className="mt-2">
                                     {(() => {
-                                      const { icon: PolicyIcon, description, className } = getPolicyDetails(tx.depositRecord.policy)
+                                      const {
+                                        icon: PolicyIcon,
+                                        description,
+                                        className,
+                                      } = getPolicyDetails(tx.depositRecord.policy)
                                       return (
-                                        <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${className}`}>
+                                        <div
+                                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${className}`}
+                                        >
                                           <PolicyIcon className="w-3.5 h-3.5 mr-1.5" />
                                           {description}
                                         </div>
@@ -687,11 +785,11 @@ export default function SendaWallet() {
                       })()}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                      <h3 className="text-xl font-medium text-slate-700 mb-2">No transaction history yet!</h3>
-                      <p className="text-slate-500 mb-6">Start your first transaction to see it here.</p>
+                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-xl">
+                      <h3 className="text-card-foreground text-lg font-medium">No transaction history yet!</h3>
+                      <p className="text-muted-foreground">Start your first transaction to see it here.</p>
                       <Button
-                        className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] hover:scale-105 transition-all duration-200 cursor-pointer"
+                        className="bg-accent text-accent-foreground font-semibold hover:font-bold hover:bg-accent/90 dark:hover:bg-accent/80 hover:scale-105 transition-all duration-200 cursor-pointer mt-6"
                         onClick={handleOpenDepositModal}
                       >
                         <PlusIcon className="h-4 w-4 mr-2" />

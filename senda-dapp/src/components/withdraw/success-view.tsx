@@ -61,8 +61,8 @@ const SuccessView = ({ onClose, transactionId }: SuccessViewProps) => {
             <div className="flex items-center justify-center gap-2">
               <span className="text-sm text-gray-500">Powered by</span>
               <Image 
-                src="https://cdn.prod.website-files.com/66c35e8262b10fa677d4282c/66c36d87c4b68f50f55a13b9_Copy%20of%20Maverick-Logo-09-p-500.png"
-                alt="Maverick Capital Investment"
+                src="https://dk29k70tan5xj.cloudfront.net/assets/image/Senda.png"
+                alt="Senda"
                 width={90}
                 height={25}
                 className="object-contain"

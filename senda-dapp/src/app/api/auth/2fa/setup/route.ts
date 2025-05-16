@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
     // Generate otpauth URL for QR code
     const otpauthUrl = totp.keyuri(
       accountName,
-      "MaverickExchange",
+      "Senda",
       secret
     );
 

@@ -29,7 +29,7 @@ export async function sendTwoFactorEmail(email: string, url: string, token: stri
         const html = await render(TwoFactorEmail(props));
         const mailOptions = {
             to: email,
-            from: `Maverick Capital Investment <${process.env.EMAIL_FROM}>`,
+            from: `Senda <${process.env.EMAIL_FROM}>`,
             subject: `2FA Verification Code`,
             text: `Enable 2FA for your account`,
             html,

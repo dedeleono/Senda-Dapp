@@ -24,7 +24,7 @@ export const KoalaWelcomeEmail = ({
   <Html>
     <Head />
     <Preview>
-      Bienvenido a la plataforma de Maverick Capital Investment
+      Welcome to Senda
     </Preview>
     <Body style={main}>
       <Container style={container}>
@@ -32,26 +32,26 @@ export const KoalaWelcomeEmail = ({
           src={`${baseUrl}/logo.png`}
           width="170"
           height="50"
-          alt="Maverick Capital Investment"
+          alt="Senda"
           style={logo}
         />
         <Text style={paragraph}>Hola {userFirstname},</Text>
         <Text style={paragraph}>
-          Bienvenido a Maverick Capital Investment, tu plataforma OTC
+          Welcome to Senda, your remittance platform
         </Text>
         <Section style={btnContainer}>
-          <Button style={button} href="https://www.maverickcapitalinvestment.com/plataforma">
+          <Button style={button} href="https://www.senda.com">
             Comenzar
           </Button>
         </Section>
         <Text style={paragraph}>
           Saludos cordiales,
           <br />
-          El equipo de Maverick Capital Investment
+          The Senda Team
         </Text>
         <Hr style={hr} />
         <Text style={footer}>
-          Maverick Capital Investment — Tu camino hacia la libertad financiera
+          Senda — Your path to financial freedom
         </Text>
       </Container>
     </Body>
