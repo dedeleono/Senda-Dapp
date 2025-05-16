@@ -727,7 +727,6 @@ describe("senda_dapp", () => {
     console.log(`Transferred 1 USDT to sender for dual signature test`);
     console.log(`Sender USDT balance after funding: ${await getTokenBalance(senderUsdtAta)}`);
 
-    // Create escrow with random seed
     const escrowSeed = new BN(randomBytes(8));
 
     const [escrowPda, escrowBump] = PublicKey.findProgramAddressSync(
@@ -776,7 +775,7 @@ describe("senda_dapp", () => {
     const [depositRecordPda] = getDepositRecordPDA(escrowPda, depositSender.publicKey, blockhashArray);
 
     // Use a smaller deposit amount for USDT
-    const depositAmount = new BN(100_000_000); // 0.1 USDT with 9 decimals (reduced from 1 USDT)
+    const depositAmount = new BN(100_000_000);
 
     // Make the deposit with dual signature policy
     const depositIx = await program.methods
@@ -1031,7 +1030,7 @@ describe("senda_dapp", () => {
       .deposit(
         { usdc: {} },
         { receiver: {} },
-        blockhashArray,  // Pass the array directly
+        blockhashArray,
         depositAmount
       )
       .accounts({
