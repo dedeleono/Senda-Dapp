@@ -46,6 +46,9 @@ interface TransactionDetailsProps {
     transactionSignature?: string;
     senderPublicKey: string;
     receiverPublicKey: string;
+    depositRecord?: {
+      state: string;
+    };
   };
 }
 
@@ -187,19 +190,50 @@ export default function TransactionDetails({
     }
   };
 
+  const canPerformAction = () => {
+    const { status, authorization, isDepositor, signatures } = transaction;
+    
+    // Don't allow actions for completed or cancelled transactions
+    if (status !== 'PENDING' || transaction.depositRecord?.state !== 'PENDING') {
+      return false;
+    }
+    
+    if (isDepositor && authorization === 'SENDER') {
+      return true;
+    }
+    
+    if (!isDepositor && authorization === 'RECEIVER') {
+      return true;
+    }
+    
+    if (authorization === 'DUAL') {
+      const userRole = isDepositor ? 'SENDER' : 'RECEIVER';
+      const hasUserSigned = signatures.some(
+        sig => sig.role === userRole && sig.status === 'signed'
+      );
+      
+      return !hasUserSigned;
+    }
+    
+    return false;
+  };
+
   const getActionButtonText = () => {
     const { status, authorization, isDepositor } = transaction;
     
-    if (status === 'PENDING') {
-      if (isDepositor && (authorization === 'SENDER' || authorization === 'DUAL')) {
-        return 'Release Funds';
-      } else if (!isDepositor && (authorization === 'RECEIVER' || authorization === 'DUAL')) {
-        return 'Withdraw Funds';
-      }
-      
-      if (isDepositor) {
-        return 'Cancel Deposit';
-      }
+    // For completed or cancelled transactions, just show Close
+    if (status !== 'PENDING' || transaction.depositRecord?.state !== 'PENDING') {
+      return 'Close';
+    }
+    
+    if (isDepositor && (authorization === 'SENDER' || authorization === 'DUAL')) {
+      return 'Release Funds';
+    } else if (!isDepositor && (authorization === 'RECEIVER' || authorization === 'DUAL')) {
+      return 'Withdraw Funds';
+    }
+    
+    if (isDepositor) {
+      return 'Cancel Deposit';
     }
     
     return 'Close';
@@ -208,7 +242,7 @@ export default function TransactionDetails({
   const getActionButtonVariant = () => {
     const { status } = transaction;
     
-    if (status === 'PENDING') {
+    if (status === 'PENDING' && transaction.depositRecord?.state === 'PENDING') {
       return 'default';
     }
     
@@ -243,31 +277,6 @@ export default function TransactionDetails({
       default:
         return authorization;
     }
-  };
-
-  const canPerformAction = () => {
-    const { status, authorization, isDepositor, signatures } = transaction;
-    
-    if (status !== 'PENDING') return false;
-    
-    if (isDepositor && authorization === 'SENDER') {
-      return true;
-    }
-    
-    if (!isDepositor && authorization === 'RECEIVER') {
-      return true;
-    }
-    
-    if (authorization === 'DUAL') {
-      const userRole = isDepositor ? 'SENDER' : 'RECEIVER';
-      const hasUserSigned = signatures.some(
-        sig => sig.role === userRole && sig.status === 'signed'
-      );
-      
-      return !hasUserSigned;
-    }
-    
-    return false;
   };
 
   return (

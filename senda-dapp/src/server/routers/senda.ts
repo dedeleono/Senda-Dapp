@@ -154,7 +154,7 @@ export const sendaRouter = router({
         .mutation(async ({ ctx, input }): Promise<CreateDepositResponse> => {
             console.log('Starting createDeposit with input:', {
                 ...input,
-                userId: '[REDACTED]' // Don't log sensitive data
+                userId: '[REDACTED]' 
             });
 
             const usdcMint = new PublicKey(USDC_MINT);
@@ -469,13 +469,34 @@ export const sendaRouter = router({
         )
         .mutation(async ({ ctx, input }) => {
             try {
-                // Get the current deposit record
+                console.log("Update Signature Input:", input);
+                console.log("Session User:", ctx.session?.user);
+
+                // Get the current deposit record from db
                 const deposit = await prisma.depositRecord.findUnique({
                     where: { id: input.depositId },
-                    include: { transaction: true, escrow: true }
+                    include: { 
+                        transaction: true, 
+                        escrow: true,
+                        user: {
+                            select: {
+                                id: true,
+                                sendaWalletPublicKey: true
+                            }
+                        }
+                    }
                 });
 
-                console.log("Deposit", deposit);
+                console.log("Found Deposit:", {
+                    id: deposit?.id,
+                    userId: deposit?.userId,
+                    policy: deposit?.policy,
+                    user: deposit?.user,
+                    transaction: {
+                        id: deposit?.transaction?.id,
+                        userId: deposit?.transaction?.userId
+                    }
+                });
 
                 if (!deposit) {
                     throw new TRPCError({
@@ -484,19 +505,84 @@ export const sendaRouter = router({
                     });
                 }
 
-                const signer = await prisma.user.findUnique({
-                    where: { id: input.signerId },
-                    select: {
-                        sendaWalletPublicKey: true
+                const { program, feePayer } = getProvider();
+                const escrowPk = new PublicKey(deposit.escrow?.id as string);
+                console.log("Escrow", escrowPk);
+                const receivingPartyPk = new PublicKey(deposit.escrow?.receiverPublicKey as string);
+                console.log("Receiving party", receivingPartyPk);
+                // Fetch the escrow account to get sender and receiver info
+                const escrowAccount = await program.account.escrow.fetch(escrowPk);
+                console.log("Escrow account", escrowAccount);
+                const depositorPk = new PublicKey(escrowAccount.sender);
+                console.log("Depositor", depositorPk);
+                const counterpartyPk = new PublicKey(escrowAccount.receiver);
+                console.log("Counterparty", counterpartyPk);
+
+                const [escrowPda] = PublicKey.findProgramAddressSync(
+                    [Buffer.from("escrow"), depositorPk.toBuffer(), counterpartyPk.toBuffer()],
+                    program.programId
+                );
+
+                const [depositRecordPda] = PublicKey.findProgramAddressSync(
+                    [Buffer.from("deposit"), escrowPda.toBuffer(), new BN(deposit.depositIndex).toArrayLike(Buffer, "le", 8)],
+                    program.programId
+                );
+                console.log("Deposit record PDA", depositRecordPda);
+
+                // Fetch and log deposit record account data
+                try {
+                    const depositRecordAccount = await program.account.depositRecord.fetch(depositRecordPda);
+                    console.log("Deposit Record Account Data:", {
+                        amount: depositRecordAccount.amount.toString(),
+                        stable: depositRecordAccount.stable,
+                        state: depositRecordAccount.state,
+                        policy: depositRecordAccount.policy,
+                        bump: depositRecordAccount.bump,
+                        escrow: depositRecordAccount.escrow.toBase58(),
+                        index: depositRecordAccount.depositIdx.toString()
+                    });
+
+                    // Check if the deposit is already completed on-chain
+                    if ('complete' in depositRecordAccount.state) {
+                        // Update database state to match blockchain
+                        await prisma.depositRecord.update({
+                            where: { id: input.depositId },
+                            data: {
+                                state: 'COMPLETED',
+                                senderApproved: true,
+                                receiverApproved: true
+                            }
+                        });
+
+                        return {
+                            success: true,
+                            data: {
+                                message: 'Deposit is already completed on-chain. Database updated.',
+                                state: 'COMPLETED'
+                            }
+                        };
                     }
+
+                } catch (error) {
+                    console.error("Error fetching deposit record:", error);
+                }
+
+                const isOriginalSender = deposit.user?.sendaWalletPublicKey === input.signerId;
+                console.log("Authorization Check (Detailed):", {
+                    depositUserId: deposit.userId,
+                    inputSignerId: input.signerId,
+                    isOriginalSender,
+                    policy: deposit.policy,
+                    role: input.role,
+                    transactionUserId: deposit.transaction?.userId,
+                    sessionUserId: ctx.session?.user?.id,
+                    userWalletPublicKey: deposit.user?.sendaWalletPublicKey
                 });
 
-                console.log("Signer", signer);
-
-                if (!signer) {
+                if (deposit.policy === "SENDER" && input.role === "sender" && !isOriginalSender) {
                     throw new TRPCError({
-                        code: 'NOT_FOUND',
-                        message: 'Signer not found'
+                        code: 'UNAUTHORIZED',
+                        message: 'Only the original sender can sign this deposit'
                     });
                 }
 
@@ -556,41 +642,18 @@ export const sendaRouter = router({
                     };
                 }
 
-                const { program, feePayer } = getProvider();
-                const escrowPk = new PublicKey(deposit.escrow?.id as string);
-                console.log("Escrow", escrowPk);
-                const receivingPartyPk = new PublicKey(deposit.escrow?.receiverPublicKey as string);
-                console.log("Receiving party", receivingPartyPk);
-                // Fetch the escrow account to get sender and receiver info
-                const escrowAccount = await program.account.escrow.fetch(escrowPk);
-                console.log("Escrow account", escrowAccount);
-                const depositorPk = new PublicKey(escrowAccount.sender);
-                console.log("Depositor", depositorPk);
-                const counterpartyPk = new PublicKey(escrowAccount.receiver);
-                console.log("Counterparty", counterpartyPk);
-
-                const [escrowPda] = PublicKey.findProgramAddressSync(
-                    [Buffer.from("escrow"), depositorPk.toBuffer(), counterpartyPk.toBuffer()],
-                    program.programId
-                  );
-
                 // Determine who is the authorized signer based on the deposit record
-                const [depositRecordPda] = PublicKey.findProgramAddressSync(
-                    [Buffer.from("deposit"), escrowPda.toBuffer(), new BN(deposit.depositIndex).toArrayLike(Buffer, "le", 8)],
-                    program.programId
-                  );
-                console.log("Deposit record PDA", depositRecordPda);
 
                 const signers: Keypair[] = [];
                 if (deposit.policy === "SENDER" || deposit.policy === "DUAL") {
                     console.log("Loading depositor keypair");
                     const { keypair: depositor } = await loadUserSignerKeypair(
-                        deposit.transaction?.userId as string
+                        deposit.user.id
                     );                    
                     signers.push(depositor);
                 } if (deposit.policy === "RECEIVER" || deposit.policy === "DUAL") {
                     const { keypair: receiver } = await loadUserSignerKeypair(
-                        deposit.transaction?.userId as string
+                        deposit.transaction?.destinationUserId as string
                     );
                     signers.push(receiver);
                 }

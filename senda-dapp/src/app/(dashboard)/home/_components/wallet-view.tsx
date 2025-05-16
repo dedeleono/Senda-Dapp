@@ -73,6 +73,7 @@ interface Transaction {
     depositIndex: number
     escrowId: string
     signatures?: string[]
+    state: string
   }
   destinationUserId?: string
   destinationUser?: {
@@ -209,7 +210,9 @@ export default function SendaWallet() {
       token: transaction.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
       recipientEmail: transaction.destinationUserId ? transaction.destinationUser?.email as string : '',
       createdAt: new Date(transaction.createdAt),
-      status: transaction.status,
+      status: transaction.depositRecord?.state === 'COMPLETED' ? 'COMPLETED' as TransactionStatus :
+             transaction.depositRecord?.state === 'CANCELLED' ? 'CANCELLED' as TransactionStatus :
+             transaction.status,
       authorization: transaction.depositRecord?.policy as SignatureType,
       isDepositor: transaction.userId === session?.user.id,
       signatures: transaction.depositRecord?.signatures?.map((sig: any) => {
@@ -226,7 +229,7 @@ export default function SendaWallet() {
       }).filter(Boolean) || [],
       statusHistory: [
         {
-          status: transaction.status,
+          status: transaction.depositRecord?.state as string,
           timestamp: new Date(transaction.createdAt),
           actor: transaction.userId
         }
@@ -257,7 +260,8 @@ export default function SendaWallet() {
   const handleSignatureComplete = async () => {
     console.log('handleSignatureComplete called with:', {
       selectedTransaction,
-      sessionUser: session?.user
+      sessionUser: session?.user,
+      fullSession: session
     })
 
     if (!selectedTransaction?.id || !session?.user?.id) {
@@ -269,17 +273,33 @@ export default function SendaWallet() {
       return
     }
 
+    // Find the transaction in the transactions list
+    const transaction = transactions?.transactions.find(tx => 
+      tx.depositRecord?.id === selectedTransaction.id
+    );
+
+    if (!transaction) {
+      console.error('Could not find transaction:', selectedTransaction.id);
+      toast.error('Could not find transaction');
+      return;
+    }
+
     console.log('Calling updateSignature with:', {
       depositId: selectedTransaction.id,
       role: 'sender',
-      signerId: session.user.id
+      signerId: transaction.userId, // Use the transaction's userId
+      userDetails: {
+        id: session.user.id,
+        email: session.user.email,
+        walletPublicKey: session.user.sendaWalletPublicKey
+      }
     })
 
     toast.loading('Signing transaction...')
     updateSignature({
       depositId: selectedTransaction.id,
       role: 'sender',
-      signerId: session.user.id
+      signerId: transaction.userId // Use the transaction's userId
     })
   }
 
@@ -298,27 +318,27 @@ export default function SendaWallet() {
 
   const totalBalance = balances.reduce((sum, token) => sum + token.uiBalance, 0)
 
-  const getPolicyDetails = (policy: string) => {
+  const getPolicyDetails = (policy: string, history: boolean = false) => {
     switch (policy.toUpperCase()) {
       case 'SENDER':
         return {
           icon: UserIcon,
           label: 'Single Signature',
-          description: 'Requires sender signature',
+          description: !history ? 'Requires sender signature' : 'Signed by sender',
           className: 'text-[#596f62] dark:text-[#d7dfbe] bg-[#596f62]/20 dark:bg-[#1c3144]/20',
         }
       case 'RECEIVER':
         return {
           icon: UserIcon,
           label: 'Single Signature',
-          description: 'Requires receiver signature',
+          description: !history ? 'Requires receiver signature' : 'Signed by receiver',
           className: 'text-[#596f62] dark:text-[#d7dfbe] bg-[#596f62]/20 dark:bg-[#1c3144]/20',
         }
       case 'DUAL':
         return {
           icon: UsersIcon,
           label: 'Multi-Signature',
-          description: 'Requires multiple signatures',
+          description: !history ? 'Requires multiple signatures' : 'Signed by both',
           className: 'text-[#7ea16b] dark:text-[#7ea16b] bg-[#7ea16b]/20 dark:bg-[#7ea16b]/10',
         }
       default:
@@ -566,7 +586,11 @@ export default function SendaWallet() {
                   ) : transactions?.transactions?.length ? (
                     <div className="space-y-4 p-1">
                       {transactions.transactions
-                        .filter((tx) => tx.status === TransactionStatus.PENDING)
+                        .filter((tx) => {
+                          // Only show deposits that are in pendingWithdrawal state
+                          const depositState = tx.depositRecord?.state;
+                          return depositState === 'PENDING' //@todo properly sync database states and statuses
+                        })
                         .map((tx, idx) => {
                           const isSender = tx.userId === session?.user.id
                           const ageHours = Math.floor((Date.now() - new Date(tx.createdAt).getTime()) / 3600000)
@@ -593,16 +617,16 @@ export default function SendaWallet() {
                                   </h4>
                                   <span
                                     className={`
-                      inline-flex items-center text-sm font-medium px-2 py-0.5 rounded-full
+                      inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full
                       ${
-                        tx.status === TransactionStatus.PENDING
+                        tx.depositRecord?.state === TransactionStatus.PENDING
                           ? 'text-yellow-800 bg-yellow-100'
                           : 'text-green-800 bg-green-100'
                       }
                     `}
                                   >
                                     <ClockIcon className="h-4 w-4 mr-1" />
-                                    {tx.status.toLowerCase()}
+                                    {tx.depositRecord?.state.toUpperCase()}
                                   </span>
                                 </div>
                                 <p className="text-gray-500 text-xs mt-1">{ageHours}h ago</p>
@@ -630,20 +654,27 @@ export default function SendaWallet() {
                                   <span className="font-semibold text-gray-800">
                                     {tx.amount} {tx.depositRecord?.stable?.toUpperCase()}
                                   </span>
-                                  {isSender && (
+                                  {isSender && tx.depositRecord?.policy !== 'RECEIVER' && (
                                     <Button
                                       size="sm"
                                       variant="default"
                                       className="hover:scale-105 transition-transform"
                                       onClick={(e) => {
                                         e.stopPropagation()
+                                        console.log('Sign as Sender clicked with:', {
+                                          transaction: tx,
+                                          sessionUser: session?.user,
+                                          fullSession: session
+                                        })
                                         const transactionDetails: TransactionDetailsData = {
                                           id: tx.depositRecord?.id || '',
                                           amount: tx.amount,
                                           token: tx.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
                                           recipientEmail: tx.destinationUserId ? tx.destinationUser?.email as string : '',
                                           createdAt: new Date(tx.createdAt),
-                                          status: tx.status,
+                                          status: tx.depositRecord?.state === 'COMPLETED' ? 'COMPLETED' as TransactionStatus :
+                                                 tx.depositRecord?.state === 'CANCELLED' ? 'CANCELLED' as TransactionStatus :
+                                                 tx.status,
                                           authorization: tx.depositRecord?.policy as SignatureType,
                                           isDepositor: tx.userId === session?.user.id,
                                           signatures: tx.depositRecord?.signatures?.map((sig: any) => {
@@ -660,7 +691,7 @@ export default function SendaWallet() {
                                           }).filter(Boolean) || [],
                                           statusHistory: [
                                             {
-                                              status: tx.status,
+                                              status: tx.depositRecord?.state as string,
                                               timestamp: new Date(tx.createdAt),
                                               actor: tx.userId
                                             }
@@ -670,8 +701,22 @@ export default function SendaWallet() {
                                           senderPublicKey: tx.walletPublicKey,
                                           receiverPublicKey: tx.destinationAddress || ''
                                         }
+                                        console.log('Setting transaction details and calling updateSignature:', {
+                                          transactionDetails,
+                                          depositId: tx.depositRecord?.id,
+                                          signerId: tx.userId,
+                                          userDetails: {
+                                            id: session.user.id,
+                                            email: session.user.email,
+                                            walletPublicKey: session.user.sendaWalletPublicKey
+                                          }
+                                        })
                                         setSelectedTransaction(transactionDetails)
-                                        handleSignatureComplete()
+                                        updateSignature({
+                                          depositId: tx.depositRecord?.id || '',
+                                          role: 'sender',
+                                          signerId: tx.userId
+                                        })
                                       }}
                                     >
                                       Sign as Sender
@@ -707,7 +752,12 @@ export default function SendaWallet() {
                     <div className="space-y-3 p-1 h-full">
                       {(() => {
                         const filteredTransactions = transactions.transactions.filter(
-                          (tx) => tx.status !== TransactionStatus.PENDING,
+                          (tx) => {
+                            // Show only complete or cancelled deposits
+                            const depositState = tx.depositRecord?.state;
+                            console.log("Transaction state:", tx.id, depositState);
+                            return depositState === 'COMPLETED' || depositState === 'CANCELLED';
+                          }
                         )
                         
                         if (filteredTransactions.length === 0) {
@@ -765,15 +815,12 @@ export default function SendaWallet() {
                                       className={`
                                         inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
                                         ${
-                                          tx.status === TransactionStatus.COMPLETED
-                                            ? 'text-green-800 dark:text-green-200 bg-green-100 dark:bg-green-900/30'
-                                            : tx.status === TransactionStatus.CANCELLED
-                                            ? 'text-red-800 dark:text-red-200 bg-red-100 dark:bg-red-900/30'
+                                          tx.depositRecord?.state === TransactionStatus.COMPLETED ? 'text-green-800 dark:text-green-200 bg-green-100 dark:bg-green-900/30' : tx.depositRecord?.state === TransactionStatus.CANCELLED ? 'text-red-800 dark:text-red-200 bg-red-100 dark:bg-red-900/30'
                                             : 'text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800/50'
                                         }
                                       `}
                                     >
-                                      {tx.status.toLowerCase()}
+                                      {tx.depositRecord?.state.toUpperCase()}
                                     </span>
                                   </div>
                                 </div>
@@ -785,7 +832,7 @@ export default function SendaWallet() {
                                         icon: PolicyIcon,
                                         description,
                                         className,
-                                      } = getPolicyDetails(tx.depositRecord.policy)
+                                      } = getPolicyDetails(tx.depositRecord.policy, true)
                                       return (
                                         <div
                                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${className}`}

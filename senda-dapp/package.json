@@ -10,7 +10,8 @@
     "format:check": "prettier --check .",
     "lint": "next lint",
     "start": "next start",
-    "init:factory": "SOLANA_URL=https://api.devnet.solana.com ts-node -P tsconfig.node.json src/scripts/init-factory.ts"
+    "init:factory": "SOLANA_URL=https://api.devnet.solana.com ts-node -P tsconfig.node.json src/scripts/init-factory.ts",
+    "fetch-deposit": "ts-node src/scripts/fetch-deposit.ts"
   },
   "dependencies": {
     "@auth/core": "^0.39.0",
