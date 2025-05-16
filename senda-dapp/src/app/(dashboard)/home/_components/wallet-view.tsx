@@ -445,11 +445,11 @@ export default function SendaWallet() {
               <ScrollArea className="h-full">
                 <TabsContent value="paths" className="p-4 mt-0 h-full bg-foreground border-none rounded-b-xl">
                   {isLoadingPaths ? (
-                    <div className="py-8 flex justify-center">
-                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-secondary border-t-transparent" />
+                    <div className="py-12 flex justify-center">
+                      <div className="h-10 w-10 animate-spin rounded-full border-2 border-secondary border-t-transparent drop-shadow-lg" />
                     </div>
                   ) : paths && paths.paths.length > 0 ? (
-                    <div className="space-y-6 p-1">
+                    <div className="space-y-5">
                       {paths.paths.map((path, i) => {
                         const isSender = path.senderPublicKey === publicKey?.toString()
                         const other = isSender ? path.receiver : path.sender
@@ -459,20 +459,29 @@ export default function SendaWallet() {
                             key={path.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                            className="group relative bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-shadow"
+                            transition={{ 
+                              delay: i * 0.1,
+                              type: "spring",
+                              damping: 20
+                            }}
+                            className="group relative bg-white dark:bg-background rounded-xl p-6 
+                              border border-border/5 hover:border-secondary/20
+                              shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]
+                              hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)]
+                              transition-all duration-300"
                           >
-                            <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center justify-between gap-6">
                               <div className="flex-1">
-                                <div className="flex items-center justify-end gap-3">
+                                <div className="flex items-center justify-end gap-4">
                                   <div className="text-sm">
-                                    <p className="font-semibold text-card-foreground">You</p>
-                                    <p className="truncate max-w-[140px] text-muted-foreground">
+                                    <p className="font-medium text-card-foreground">You</p>
+                                    <p className="truncate max-w-[140px] text-xs text-muted-foreground/70">
                                       {publicKey?.toString()}
                                     </p>
                                   </div>
-                                  <div className="h-12 w-12 bg-gradient-to-br from-secondary/50 to-secondary/20 rounded-full flex items-center justify-center">
-                                    <Avatar className="h-9 w-9 cursor-pointer">
+                                  <div className="relative">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-transparent rounded-full blur-[2px]" />
+                                    <Avatar className="h-11 w-11 border-2 border-background/80">
                                       <AvatarImage src={session?.user?.image || ''} alt="User Avatar" />
                                       <AvatarFallback>{session?.user.email?.slice(0, 1).toUpperCase()}</AvatarFallback>
                                     </Avatar>
@@ -480,28 +489,29 @@ export default function SendaWallet() {
                                 </div>
                               </div>
 
-                              <div className="flex-shrink-0 flex flex-col items-center justify-center gap-2">
+                              <div className="flex-shrink-0 flex flex-col items-center justify-center gap-2 px-2">
                                 <div className="flex items-center gap-2">
-                                  <div className="h-[2px] w-12 bg-gradient-to-r from-secondary to-accent animate-[flow_1.5s_linear_infinite]" />
-                                  <div className="relative bg-accent/20 rounded-full px-3 py-1 text-xs font-medium text-accent-foreground">
+                                  <div className="h-[2px] w-14 bg-gradient-to-r from-secondary/30 to-accent/30" />
+                                  <Badge variant="outline" className="bg-white dark:bg-background text-accent-foreground border-accent/20 px-3">
                                     {path.depositCount} deposit{path.depositCount === 1 ? '' : 's'}
-                                  </div>
-                                  <div className="h-[2px] w-12 bg-gradient-to-r from-accent to-secondary animate-[flow_1.5s_linear_infinite]" />
+                                  </Badge>
+                                  <div className="h-[2px] w-14 bg-gradient-to-r from-accent/30 to-secondary/30" />
                                 </div>
-                                <Sparklines limit={5} width={80} height={20} margin={0} />
+                                <Sparklines limit={5} width={100} height={20} margin={5} />
                               </div>
 
                               <div className="flex-1">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-12 w-12 bg-gradient-to-br from-accent/50 to-accent/20 rounded-full flex items-center justify-center">
-                                    <Avatar className="h-9 w-9 cursor-pointer">
+                                <div className="flex items-center gap-4">
+                                  <div className="relative">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent rounded-full blur-[2px]" />
+                                    <Avatar className="h-11 w-11 border-2 border-background/80">
                                       <AvatarImage src={other.image || ''} alt="User Avatar" />
                                       <AvatarFallback>{other.email?.slice(0, 1).toUpperCase()}</AvatarFallback>
                                     </Avatar>
                                   </div>
                                   <div className="text-sm">
-                                    <p className="font-semibold text-card-foreground">{other.email}</p>
-                                    <p className="truncate max-w-[140px] text-muted-foreground">
+                                    <p className="font-medium text-card-foreground">{other.email}</p>
+                                    <p className="truncate max-w-[140px] text-xs text-muted-foreground/70">
                                       {isSender ? path.receiverPublicKey : path.senderPublicKey}
                                     </p>
                                   </div>
@@ -509,33 +519,42 @@ export default function SendaWallet() {
                               </div>
                             </div>
 
-                            <div className="mt-4 flex justify-center gap-4 text-sm">
-                              {path.depositedUsdc > 0 && (
-                                <div className="bg-muted dark:bg-muted/30 rounded-lg px-4 py-2 inline-flex items-center gap-2">
-                                  <Image src={usdcIcon} alt="USDC" width={20} height={20} />
-                                  <span className="font-medium text-card-foreground">{path.depositedUsdc} USDC</span>
-                                </div>
-                              )}
-                              {path.depositedUsdt > 0 && (
-                                <div className="bg-muted dark:bg-muted/30 rounded-lg px-4 py-2 inline-flex items-center gap-2">
-                                  <Image src={usdtIcon} alt="USDT" width={20} height={20} />
-                                  <span className="font-medium text-card-foreground">{path.depositedUsdt} USDT</span>
-                                </div>
-                              )}
-                            </div>
+                            {(path.depositedUsdc > 0 || path.depositedUsdt > 0) && (
+                              <div className="mt-5 flex justify-center gap-3">
+                                {path.depositedUsdc > 0 && (
+                                  <div className="bg-white dark:bg-background rounded-lg px-4 py-2 inline-flex items-center gap-2.5 border border-border/5">
+                                    <Image src={usdcIcon} alt="USDC" width={22} height={22} className="opacity-90" />
+                                    <span className="font-medium text-card-foreground">{path.depositedUsdc} USDC</span>
+                                  </div>
+                                )}
+                                {path.depositedUsdt > 0 && (
+                                  <div className="bg-white dark:bg-background rounded-lg px-4 py-2 inline-flex items-center gap-2.5 border border-border/5">
+                                    <Image src={usdtIcon} alt="USDT" width={22} height={22} className="opacity-90" />
+                                    <span className="font-medium text-card-foreground">{path.depositedUsdt} USDT</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </motion.div>
                         )
                       })}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-xl">
-                      <img src={path.src} className="mx-auto mb-6 h-12 rounded-lg" />
-                      <h3 className="text-card-foreground text-lg font-medium">You have no trust paths yet!</h3>
-                      <p className="text-muted-foreground">Start connecting with your people here.</p>
-                      <Button className="bg-accent text-accent-foreground font-semibold hover:font-bold hover:bg-accent/90 dark:hover:bg-accent/80 cursor-pointer mt-6">
-                        Add New Persona <PlusIcon />
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white dark:bg-background rounded-xl border border-border/5"
+                    >
+                      <img src={path.src} className="mx-auto mb-6 h-14 rounded-xl" />
+                      <h3 className="text-xl font-medium text-card-foreground mb-2">No Trust Paths Yet</h3>
+                      <p className="text-muted-foreground mb-8">Start connecting with your network here.</p>
+                      <Button 
+                        className="bg-accent text-accent-foreground font-medium
+                          hover:bg-accent/90 transition-all duration-200"
+                      >
+                        Create New Path <PlusIcon className="ml-2 h-4 w-4" />
                       </Button>
-                    </div>
+                    </motion.div>
                   )}
                 </TabsContent>
 
@@ -545,7 +564,7 @@ export default function SendaWallet() {
                       <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
                     </div>
                   ) : transactions?.transactions?.length ? (
-                    <div className="space-y-3 p-1">
+                    <div className="space-y-4 p-1">
                       {transactions.transactions
                         .filter((tx) => tx.status === TransactionStatus.PENDING)
                         .map((tx, idx) => {
