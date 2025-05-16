@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowUp, PlusIcon, Wallet, ArrowDown, ClockIcon } from 'lucide-react'
+import { ArrowUp, PlusIcon, Wallet, ArrowDown, ClockIcon, ShieldCheckIcon, UsersIcon, UserIcon } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { trpc } from '@/app/_trpc/client'
 import path from '@/public/2.svg'
@@ -253,6 +253,39 @@ export default function SendaWallet() {
 
   const totalBalance = balances.reduce((sum, token) => sum + token.uiBalance, 0)
 
+  const getPolicyDetails = (policy: string) => {
+    switch (policy.toUpperCase()) {
+      case 'SENDER':
+        return {
+          icon: UserIcon,
+          label: 'Single Signature',
+          description: 'Requires sender signature',
+          className: 'text-blue-700 bg-blue-50',
+        }
+      case 'RECEIVER':
+        return {
+          icon: UserIcon,
+          label: 'Single Signature',
+          description: 'Requires receiver signature',
+          className: 'text-blue-700 bg-blue-50',
+        }
+      case 'DUAL':
+        return {
+          icon: UsersIcon,
+          label: 'Multi-Signature',
+          description: 'Requires multiple signatures',
+          className: 'text-purple-700 bg-purple-50',
+        }
+      default:
+        return {
+          icon: ShieldCheckIcon,
+          label: policy,
+          description: 'Custom policy',
+          className: 'text-gray-700 bg-gray-50',
+        }
+    }
+  }
+
   return (
     <div className="flex flex-col h-full min-h-full mx-auto md:flex-row md:max-w-4xl">
       <main className="flex-1 p-6 space-y-6 md:min-w-4xl">
@@ -477,11 +510,9 @@ export default function SendaWallet() {
                         >
                           <div className="absolute left-6 top-0 bottom-0 w-px " />
 
-                          
-                            <Avatar className="relative z-10 flex-shrink-0  rounded-full flex items-center justify-center">
-                              <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
-                            </Avatar>
-                          
+                          <Avatar className="relative z-10 flex-shrink-0  rounded-full flex items-center justify-center">
+                            <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
+                          </Avatar>
 
                           <div className="flex-1">
                             <div className="flex justify-between items-center">
@@ -501,23 +532,17 @@ export default function SendaWallet() {
                               </span>
                             </div>
                             <p className="text-gray-500 text-xs mt-1">{ageHours}h ago</p>
-                            <p className="text-gray-400 text-xs mt-1">ID: {tx.id.slice(0, 10)}…</p>
-
-                            {/* expandable details */}
-                            <AnimatePresence initial={false}>
-                              {selectedTransaction?.id === tx.id && isTransactionDetailsOpen && (
-                                <motion.div
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: 'auto' }}
-                                  exit={{ opacity: 0, height: 0 }}
-                                  className="mt-4 border-t pt-4 text-sm text-gray-500 space-y-1"
-                                >
-                                  <p>Authorization: {tx.depositRecord?.policy}</p>
-                                  <p>Sender PubKey: {tx.walletPublicKey}</p>
-                                  <p>Receiver PubKey: {tx.destinationAddress}</p>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                            <div className="flex items-center gap-2 mt-2">
+                              {tx.depositRecord?.policy && (() => {
+                                const { icon: PolicyIcon, label, className, description } = getPolicyDetails(tx.depositRecord.policy)
+                                return (
+                                  <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${className}`}>
+                                    <PolicyIcon className="w-3.5 h-3.5 mr-1.5" />
+                                    {description}
+                                  </div>
+                                )
+                              })()}
+                            </div>
 
                             <div className="mt-4 flex justify-between items-center">
                               <span className="font-semibold text-gray-800">
@@ -544,7 +569,7 @@ export default function SendaWallet() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                  <h3 className="text-xl font-medium text-slate-700 mb-2">You don’t have any active deposits!</h3>
+                  <h3 className="text-xl font-medium text-slate-700 mb-2">You don't have any active deposits!</h3>
                   <p className="text-slate-500 mb-6">Start by buying or depositing funds:</p>
                   <Button
                     className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] cursor-pointer"
