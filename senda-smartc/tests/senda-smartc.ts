@@ -231,9 +231,6 @@ describe("senda_dapp", () => {
     console.log(`Authority USDC balance: ${await getTokenBalance(authorityUsdcAta)}`);
     console.log(`Authority USDT balance: ${await getTokenBalance(authorityUsdtAta)}`);
 
-    // Instead of attempting to pre-fund all wallets at once,
-    // we'll fund them individually using the ensureTokenBalance helper function
-    // when needed in each test.
     console.log("Token pre-funding skipped - wallets will be funded as needed in each test");
   });
 
