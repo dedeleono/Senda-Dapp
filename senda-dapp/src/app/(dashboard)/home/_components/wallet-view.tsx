@@ -145,6 +145,13 @@ export default function SendaWallet() {
   console.log('Public key:', publicKey?.toString())
   console.log('Paths query response:', paths)
 
+  console.log('Current transactions state:', {
+    isLoading: isLoadingTransactions,
+    hasData: !!transactions,
+    transactionCount: transactions?.transactions?.length || 0,
+    transactions: transactions?.transactions
+  })
+
   const handleOpenWalletQR = () => {
     walletQRDialogRef.current?.open()
   }
@@ -588,36 +595,104 @@ export default function SendaWallet() {
                   <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
                 </div>
               ) : transactions?.transactions && transactions.transactions.length > 0 ? (
-                <div className="space-y-4">
-                  {transactions.transactions
-                    .filter((tx) => tx.status !== 'PENDING')
-                    .map((transaction) => (
-                      <TransactionCard
-                        key={transaction.id}
-                        id={transaction.id}
-                        amount={transaction.amount}
-                        token={transaction.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT'}
-                        recipientEmail={
-                          transaction.destinationUserId ? (transaction.destinationUser?.email as string) : ''
-                        }
-                        createdAt={new Date(transaction.createdAt)}
-                        status={transaction.status}
-                        authorization={transaction.depositRecord?.policy as SignatureType}
-                        isDepositor={true}
-                        onClick={() => handleOpenTransactionDetails(transaction)}
-                      />
-                    ))}
+                <div className="space-y-3">
+                  {(() => {
+                    const filteredTransactions = transactions.transactions
+                      .filter((tx) => tx.status !== TransactionStatus.PENDING)
+                    
+                    console.log('All transactions:', transactions.transactions)
+                    console.log('Filtered transactions:', filteredTransactions)
+                    
+                    if (filteredTransactions.length === 0) {
+                      return (
+                        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                          <h3 className="text-xl font-medium text-slate-700 mb-2">No completed transactions yet!</h3>
+                          <p className="text-slate-500 mb-6">Your completed transactions will appear here once they're done.</p>
+                        </div>
+                      )
+                    }
+
+                    return filteredTransactions.map((tx, idx) => {
+                      const isSender = tx.userId === session?.user.id
+                      const completedDate = tx.completedAt ? new Date(tx.completedAt) : new Date(tx.updatedAt)
+                      const formattedDate = completedDate.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })
+
+                      return (
+                        <motion.div
+                          key={tx.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: idx * 0.05 }}
+                          className="relative flex items-start gap-4 p-4 bg-foreground rounded-lg shadow hover:shadow-md transition-all duration-200 cursor-pointer"
+                          onClick={() => handleOpenTransactionDetails(tx)}
+                        >
+                          <Avatar className="relative z-10 flex-shrink-0 rounded-full flex items-center justify-center">
+                            <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
+                          </Avatar>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center">
+                              <div className="flex flex-col">
+                                <h4 className="font-semibold text-gray-900">
+                                  {isSender ? 'Sent to:' : 'Received from:'} {tx.destinationUser?.email || '—'}
+                                </h4>
+                                <span className="text-sm text-gray-500">{formattedDate}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-gray-800">
+                                  {isSender ? '-' : '+'}{tx.amount} 
+                                  <span className="text-gray-500 ml-1">{tx.depositRecord?.stable?.toUpperCase()}</span>
+                                </span>
+                                <span
+                                  className={`
+                                    inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    ${
+                                      tx.status === TransactionStatus.COMPLETED
+                                        ? 'text-green-700 bg-green-50'
+                                        : tx.status === TransactionStatus.CANCELLED
+                                        ? 'text-red-700 bg-red-50'
+                                        : 'text-gray-700 bg-gray-50'
+                                    }
+                                  `}
+                                >
+                                  {tx.status.toLowerCase()}
+                                </span>
+                              </div>
+                            </div>
+
+                            {tx.depositRecord?.policy && (
+                              <div className="mt-2">
+                                {(() => {
+                                  const { icon: PolicyIcon, description, className } = getPolicyDetails(tx.depositRecord.policy)
+                                  return (
+                                    <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${className}`}>
+                                      <PolicyIcon className="w-3.5 h-3.5 mr-1.5" />
+                                      {description}
+                                    </div>
+                                  )
+                                })()}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )
+                    })
+                  })()}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                  <h3 className="text-xl font-medium text-slate-700 mb-2">Nothing to be found here!</h3>
-                  <p className="text-slate-500 mb-6">Start by sending or depositing funds.</p>
+                  <h3 className="text-xl font-medium text-slate-700 mb-2">No transaction history yet!</h3>
+                  <p className="text-slate-500 mb-6">Start your first transaction to see it here.</p>
                   <Button
-                    className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] cursor-pointer"
+                    className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] hover:scale-105 transition-all duration-200 cursor-pointer"
                     onClick={handleOpenDepositModal}
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
-                    Add Funds
+                    Start Transaction
                   </Button>
                 </div>
               )}
