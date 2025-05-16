@@ -306,22 +306,22 @@ export default function SendaWallet() {
                 <small className="text-gray-500 text-xs ml-1">USD</small>
               </h2>
 
-              <div className="flex gap-2 items-center -ml-3">
+              <div className="flex gap-1 md:gap-2 items-center -ml-2 md:-ml-3">
                 {balances.map((token) => (
-                  <div key={token.mint} className="items-center md:flex hidden">
-                    <div className="w-auto rounded-full mr-1 flex items-center justify-center">
+                  <div key={token.mint} className="items-center flex">
+                    <div className="w-auto rounded-full mr-0.5 md:mr-1 flex items-center justify-center">
                       <Image
                         src={token.symbol === 'USDC' ? usdcIcon : usdtIcon}
                         alt={token.symbol}
                         width={100}
                         height={100}
-                        className={` ${token.symbol === 'USDC' ? 'md:w-[56px] md:h-[56px] w-9 h-9' : 'md:w-7 md:h-7 '}`}
+                        className={`${token.symbol === 'USDC' ? 'w-8 h-8 md:w-[56px] md:h-[56px]' : 'w-6 h-6 md:w-7 md:h-7'}`}
                       />
                     </div>
-                    <span className={`text-gray-700 ${token.symbol === 'USDC' ? '-ml-3.5' : 'text-gray-500'}`}>
-                      <span className="font-medium text-lg">
+                    <span className={`text-gray-700 ${token.symbol === 'USDC' ? '-ml-2 md:-ml-3.5' : 'text-gray-500'}`}>
+                      <span className="font-medium text-base md:text-lg">
                         {token.uiBalance.toFixed(0)}
-                        <small className="text-gray-500 text-[10px] ml-1">{token.symbol}</small>
+                        <small className="text-gray-500 text-[8px] md:text-[10px] ml-0.5 md:ml-1">{token.symbol}</small>
                       </span>
                     </span>
                   </div>
