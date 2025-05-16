@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowUp, PlusIcon, Wallet, ArrowDown } from 'lucide-react'
+import { ArrowUp, PlusIcon, Wallet, ArrowDown, ClockIcon } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { trpc } from '@/app/_trpc/client'
 import path from '@/public/2.svg'
@@ -23,6 +23,9 @@ import { Badge } from '@/components/ui/badge'
 import { useWalletStore } from '@/stores/use-wallet-store'
 import WithdrawModal, { WithdrawModalRef } from '@/components/withdraw/withdraw-modal'
 import AddFundsModal, { AddFundsModalRef } from '@/components/deposit/add-funds-modal'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Sparklines } from 'react-sparklines'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface TransactionDetailsData {
   id: string
@@ -363,98 +366,78 @@ export default function SendaWallet() {
                 </div>
               ) : paths && paths.paths.length > 0 ? (
                 <div className="p-6 space-y-6">
-                  {paths.paths.map((path) => {
-                    const isReceiver = path.senderPublicKey === publicKey?.toString()
-                    const otherPartyEmail = isReceiver ? path.receiver.email : path.sender.email
+                  {paths.paths.map((path, i) => {
+                    const isSender = path.senderPublicKey === publicKey?.toString()
+                    const other = isSender ? path.receiver : path.sender
 
                     return (
-                      <div
+                      <motion.div
                         key={path.id}
-                        className="relative bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className="group relative bg-white/90 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-shadow border border-gray-100"
                       >
                         <div className="flex items-center justify-between gap-4">
-                          {/* Current User Side */}
-                          <div className="flex-1 text-right">
-                            <div className="inline-flex items-center justify-end gap-3">
-                              <div>
-                                <p className="font-medium text-gray-900">You</p>
-                                <p className="text-sm text-gray-500 truncate max-w-[150px]">{publicKey?.toString()}</p>
-                              </div>
-                              <div className="h-12 w-12 bg-[#d7dfbe] rounded-full flex items-center justify-center">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-6 w-6 text-gray-700"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                  />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Connection Line */}
-                          <div className="flex-shrink-0 flex items-center gap-3">
-                            <div className="h-[2px] w-12 bg-[#d7dfbe]"></div>
-                            <div className="bg-[#f6ead7] rounded-lg px-3 py-1 text-xs font-medium">
-                              {path.depositCount} deposits
-                            </div>
-                            <div className="h-[2px] w-12 bg-[#d7dfbe]"></div>
-                          </div>
-
-                          {/* Other Party Side */}
+                          {/* YOU */}
                           <div className="flex-1">
-                            <div className="inline-flex items-center gap-3">
-                              <div className="h-12 w-12 bg-[#f6ead7] rounded-full flex items-center justify-center">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-6 w-6 text-gray-700"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                  />
-                                </svg>
+                            <div className="flex items-center justify-end gap-3">
+                              <div className="text-sm">
+                                <p className="font-semibold text-gray-900">You</p>
+                                <p className="truncate max-w-[140px] text-gray-500">{publicKey?.toString()}</p>
                               </div>
-                              <div>
-                                <p className="font-medium text-gray-900">{otherPartyEmail}</p>
-                                <p className="text-sm text-gray-500 truncate max-w-[150px]">
-                                  {path.senderPublicKey === publicKey?.toString()
-                                    ? path.receiverPublicKey
-                                    : path.senderPublicKey}
+                              <div className="h-12 w-12 bg-gradient-to-br from-green-200 to-green-100 rounded-full flex items-center justify-center">
+                                {/* avatar icon */}
+                                <svg /* … */ />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* FLOW LINE + COUNT + SPARKLINE */}
+                          <div className="flex-shrink-0 flex flex-col items-center justify-center gap-2">
+                            <div className="flex items-center gap-2">
+                              <div className="h-[2px] w-12 bg-gradient-to-r from-green-300 to-yellow-200 animate-[flow_1.5s_linear_infinite]" />
+                              <div className="relative bg-yellow-50 rounded-full px-3 py-1 text-xs font-medium">
+                                {path.depositCount} deposits
+                              </div>
+                              <div className="h-[2px] w-12 bg-gradient-to-r from-yellow-200 to-green-300 animate-[flow_1.5s_linear_infinite]" />
+                            </div>
+                            <Sparklines limit={5} width={80} height={20} margin={0} />
+                          </div>
+
+                          {/* OTHER PARTY */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <div className="h-12 w-12 bg-gradient-to-br from-yellow-100 to-yellow-50 rounded-full flex items-center justify-center">
+                                {/* avatar icon */}
+                                <svg /* … */ />
+                              </div>
+                              <div className="text-sm">
+                                <p className="font-semibold text-gray-900">{other.email}</p>
+                                <p className="truncate max-w-[140px] text-gray-500">
+                                  {isSender ? path.receiverPublicKey : path.senderPublicKey}
                                 </p>
                               </div>
                             </div>
                           </div>
                         </div>
 
-                        {/* Balance Information */}
-                        <div className="mt-4 flex justify-center gap-4">
+                        {/* BALANCES */}
+                        <div className="mt-4 flex justify-center gap-4 text-sm">
                           {path.depositedUsdc > 0 && (
                             <div className="bg-gray-50 rounded-lg px-4 py-2 inline-flex items-center gap-2">
-                              <Image src={usdcIcon} alt="USDC" width={20} height={20} className="w-5 h-5" />
-                              <span className="text-sm font-medium">{path.depositedUsdc} USDC</span>
+                              <Image src={usdcIcon} alt="USDC" width={20} height={20} />
+                              <span className="font-medium">{path.depositedUsdc} USDC</span>
                             </div>
                           )}
                           {path.depositedUsdt > 0 && (
                             <div className="bg-gray-50 rounded-lg px-4 py-2 inline-flex items-center gap-2">
-                              <Image src={usdtIcon} alt="USDT" width={20} height={20} className="w-5 h-5" />
-                              <span className="text-sm font-medium">{path.depositedUsdt} USDT</span>
+                              <Image src={usdtIcon} alt="USDT" width={20} height={20} />
+                              <span className="font-medium">{path.depositedUsdt} USDT</span>
                             </div>
                           )}
                         </div>
-                      </div>
+                      </motion.div>
                     )
                   })}
                 </div>
@@ -475,33 +458,97 @@ export default function SendaWallet() {
                 <div className="py-8 flex justify-center">
                   <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
                 </div>
-              ) : transactions?.transactions && transactions.transactions.length > 0 ? (
-                <div className="space-y-4">
+              ) : transactions?.transactions?.length ? (
+                <div className="space-y-3">
                   {transactions.transactions
-                    .filter((tx) => tx.status === 'PENDING')
-                    .map((transaction) => (
-                      <TransactionCard
-                        key={transaction.id}
-                        id={transaction.id}
-                        amount={transaction.amount}
-                        token={transaction.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT'}
-                        recipientEmail={
-                          transaction.destinationUserId ? (transaction.destinationUser?.email as string) : ''
-                        }
-                        createdAt={new Date(transaction.createdAt)}
-                        status={transaction.status}
-                        authorization={transaction.depositRecord?.policy as SignatureType}
-                        isDepositor={transaction.userId === session?.user.id}
-                        depositId={transaction.depositRecord?.id}
-                        signerId={session?.user.id}
-                        onClick={() => handleOpenTransactionDetails(transaction)}
-                        onSignatureComplete={handleSignatureComplete}
-                      />
-                    ))}
+                    .filter((tx) => tx.status === TransactionStatus.PENDING)
+                    .map((tx, idx) => {
+                      const isSender = tx.userId === session?.user.id
+                      const ageHours = Math.floor((Date.now() - new Date(tx.createdAt).getTime()) / 3600000)
+
+                      return (
+                        <motion.div
+                          key={tx.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.05 }}
+                          className="relative flex items-start gap-4 p-4 bg-foreground rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer focus-within:ring-2 ring-offset-2 ring-[#d7dfbe]"
+                          onClick={() => handleOpenTransactionDetails(tx)}
+                        >
+                          {/* vertical timeline line */}
+                          <div className="absolute left-6 top-0 bottom-0 w-px " />
+
+                          {/* dot icon */}
+                          
+                            <Avatar className="relative z-10 flex-shrink-0  rounded-full flex items-center justify-center">
+                              <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
+                            </Avatar>
+                          
+
+                          {/* content */}
+                          <div className="flex-1">
+                            <div className="flex justify-between items-center">
+                              <h4 className="font-semibold text-gray-900">To: {tx.destinationUser?.email || '—'}</h4>
+                              <span
+                                className={`
+                      inline-flex items-center text-sm font-medium px-2 py-0.5 rounded-full
+                      ${
+                        tx.status === TransactionStatus.PENDING
+                          ? 'text-yellow-800 bg-yellow-100'
+                          : 'text-green-800 bg-green-100'
+                      }
+                    `}
+                              >
+                                <ClockIcon className="h-4 w-4 mr-1" />
+                                {tx.status.toLowerCase()}
+                              </span>
+                            </div>
+                            <p className="text-gray-500 text-xs mt-1">{ageHours}h ago</p>
+                            <p className="text-gray-400 text-xs mt-1">ID: {tx.id.slice(0, 10)}…</p>
+
+                            {/* expandable details */}
+                            <AnimatePresence initial={false}>
+                              {selectedTransaction?.id === tx.id && isTransactionDetailsOpen && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: 'auto' }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  className="mt-4 border-t pt-4 text-sm text-gray-500 space-y-1"
+                                >
+                                  <p>Authorization: {tx.depositRecord?.policy}</p>
+                                  <p>Sender PubKey: {tx.walletPublicKey}</p>
+                                  <p>Receiver PubKey: {tx.destinationAddress}</p>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+
+                            {/* footer */}
+                            <div className="mt-4 flex justify-between items-center">
+                              <span className="font-semibold text-gray-800">
+                                {tx.amount} {tx.depositRecord?.stable?.toUpperCase()}
+                              </span>
+                              {isSender && (
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="hover:scale-105 transition-transform"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleSignatureComplete()
+                                  }}
+                                >
+                                  Sign as Sender
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )
+                    })}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                  <h3 className="text-xl font-medium text-slate-700 mb-2">You don't have any active transactions!</h3>
+                  <h3 className="text-xl font-medium text-slate-700 mb-2">You don’t have any active deposits!</h3>
                   <p className="text-slate-500 mb-6">Start by buying or depositing funds:</p>
                   <Button
                     className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] cursor-pointer"
