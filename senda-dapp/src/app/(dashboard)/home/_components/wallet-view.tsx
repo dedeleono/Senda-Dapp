@@ -13,6 +13,7 @@ import Image from 'next/image'
 import WalletQRDialog, { WalletQRDialogRef } from './wallet-qr-dialog'
 import { useWalletBalances } from '@/hooks/use-wallet-balances'
 import { TransactionStatus, TransactionType, SignatureType } from '@prisma/client'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 import usdcIcon from '@/public/usdc.svg'
 import usdtIcon from '@/public/usdt-round.svg'
@@ -399,133 +400,135 @@ export default function SendaWallet() {
               </TabsList>
             </div>
 
-            <TabsContent value="paths" className="p-0 mt-0">
-              {isLoadingPaths ? (
-                <div className="py-8 flex justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
-                </div>
-              ) : paths && paths.paths.length > 0 ? (
-                <div className="p-6 space-y-6">
-                  {paths.paths.map((path, i) => {
-                    const isSender = path.senderPublicKey === publicKey?.toString()
-                    const other = isSender ? path.receiver : path.sender
+            <div className="h-[350px]">
+              <ScrollArea className="h-full">
+                <TabsContent value="paths" className="p-0 mt-0 h-full">
+                  {isLoadingPaths ? (
+                    <div className="py-8 flex justify-center">
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
+                    </div>
+                  ) : paths && paths.paths.length > 0 ? (
+                    <div className="p-6 space-y-6">
+                      {paths.paths.map((path, i) => {
+                        const isSender = path.senderPublicKey === publicKey?.toString()
+                        const other = isSender ? path.receiver : path.sender
 
-                    return (
-                      <motion.div
-                        key={path.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="group relative bg-white/90 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-shadow border border-gray-100"
-                      >
-                        <div className="flex items-center justify-between gap-4">
-                          {/* YOU */}
-                          <div className="flex-1">
-                            <div className="flex items-center justify-end gap-3">
-                              <div className="text-sm">
-                                <p className="font-semibold text-gray-900">You</p>
-                                <p className="truncate max-w-[140px] text-gray-500">{publicKey?.toString()}</p>
+                        return (
+                          <motion.div
+                            key={path.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            className="group relative bg-white/90 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-shadow border border-gray-100"
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              {/* YOU */}
+                              <div className="flex-1">
+                                <div className="flex items-center justify-end gap-3">
+                                  <div className="text-sm">
+                                    <p className="font-semibold text-gray-900">You</p>
+                                    <p className="truncate max-w-[140px] text-gray-500">{publicKey?.toString()}</p>
+                                  </div>
+                                  <div className="h-12 w-12 bg-gradient-to-br from-green-200 to-green-100 rounded-full flex items-center justify-center">
+                                    {/* avatar icon */}
+                                    <svg /* … */ />
+                                  </div>
+                                </div>
                               </div>
-                              <div className="h-12 w-12 bg-gradient-to-br from-green-200 to-green-100 rounded-full flex items-center justify-center">
-                                {/* avatar icon */}
-                                <svg /* … */ />
+
+                              {/* FLOW LINE + COUNT + SPARKLINE */}
+                              <div className="flex-shrink-0 flex flex-col items-center justify-center gap-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="h-[2px] w-12 bg-gradient-to-r from-green-300 to-yellow-200 animate-[flow_1.5s_linear_infinite]" />
+                                  <div className="relative bg-yellow-50 rounded-full px-3 py-1 text-xs font-medium">
+                                    {path.depositCount} deposits
+                                  </div>
+                                  <div className="h-[2px] w-12 bg-gradient-to-r from-yellow-200 to-green-300 animate-[flow_1.5s_linear_infinite]" />
+                                </div>
+                                <Sparklines limit={5} width={80} height={20} margin={0} />
+                              </div>
+
+                              {/* OTHER PARTY */}
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3">
+                                  <div className="h-12 w-12 bg-gradient-to-br from-yellow-100 to-yellow-50 rounded-full flex items-center justify-center">
+                                    {/* avatar icon */}
+                                    <svg /* … */ />
+                                  </div>
+                                  <div className="text-sm">
+                                    <p className="font-semibold text-gray-900">{other.email}</p>
+                                    <p className="truncate max-w-[140px] text-gray-500">
+                                      {isSender ? path.receiverPublicKey : path.senderPublicKey}
+                                    </p>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
 
-                          {/* FLOW LINE + COUNT + SPARKLINE */}
-                          <div className="flex-shrink-0 flex flex-col items-center justify-center gap-2">
-                            <div className="flex items-center gap-2">
-                              <div className="h-[2px] w-12 bg-gradient-to-r from-green-300 to-yellow-200 animate-[flow_1.5s_linear_infinite]" />
-                              <div className="relative bg-yellow-50 rounded-full px-3 py-1 text-xs font-medium">
-                                {path.depositCount} deposits
-                              </div>
-                              <div className="h-[2px] w-12 bg-gradient-to-r from-yellow-200 to-green-300 animate-[flow_1.5s_linear_infinite]" />
+                            {/* BALANCES */}
+                            <div className="mt-4 flex justify-center gap-4 text-sm">
+                              {path.depositedUsdc > 0 && (
+                                <div className="bg-gray-50 rounded-lg px-4 py-2 inline-flex items-center gap-2">
+                                  <Image src={usdcIcon} alt="USDC" width={20} height={20} />
+                                  <span className="font-medium">{path.depositedUsdc} USDC</span>
+                                </div>
+                              )}
+                              {path.depositedUsdt > 0 && (
+                                <div className="bg-gray-50 rounded-lg px-4 py-2 inline-flex items-center gap-2">
+                                  <Image src={usdtIcon} alt="USDT" width={20} height={20} />
+                                  <span className="font-medium">{path.depositedUsdt} USDT</span>
+                                </div>
+                              )}
                             </div>
-                            <Sparklines limit={5} width={80} height={20} margin={0} />
-                          </div>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="py-12 text-center">
+                      <img src={path.src} className="mx-auto mb-6 h-12 rounded-lg" />
+                      <h3 className="text-gray-900 text-lg font-medium">You have no trust paths yet!</h3>
+                      <p className="text-gray-500">Start connecting with your people here.</p>
+                      <Button className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] cursor-pointer mt-6">
+                        Add New Persona <PlusIcon />
+                      </Button>
+                    </div>
+                  )}
+                </TabsContent>
 
-                          {/* OTHER PARTY */}
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3">
-                              <div className="h-12 w-12 bg-gradient-to-br from-yellow-100 to-yellow-50 rounded-full flex items-center justify-center">
-                                {/* avatar icon */}
-                                <svg /* … */ />
-                              </div>
-                              <div className="text-sm">
-                                <p className="font-semibold text-gray-900">{other.email}</p>
-                                <p className="truncate max-w-[140px] text-gray-500">
-                                  {isSender ? path.receiverPublicKey : path.senderPublicKey}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                <TabsContent value="deposits" className="p-4 mt-0 h-full">
+                  {isLoadingTransactions ? (
+                    <div className="py-8 flex justify-center">
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
+                    </div>
+                  ) : transactions?.transactions?.length ? (
+                    <div className="space-y-3">
+                      {transactions.transactions
+                        .filter((tx) => tx.status === TransactionStatus.PENDING)
+                        .map((tx, idx) => {
+                          const isSender = tx.userId === session?.user.id
+                          const ageHours = Math.floor((Date.now() - new Date(tx.createdAt).getTime()) / 3600000)
 
-                        {/* BALANCES */}
-                        <div className="mt-4 flex justify-center gap-4 text-sm">
-                          {path.depositedUsdc > 0 && (
-                            <div className="bg-gray-50 rounded-lg px-4 py-2 inline-flex items-center gap-2">
-                              <Image src={usdcIcon} alt="USDC" width={20} height={20} />
-                              <span className="font-medium">{path.depositedUsdc} USDC</span>
-                            </div>
-                          )}
-                          {path.depositedUsdt > 0 && (
-                            <div className="bg-gray-50 rounded-lg px-4 py-2 inline-flex items-center gap-2">
-                              <Image src={usdtIcon} alt="USDT" width={20} height={20} />
-                              <span className="font-medium">{path.depositedUsdt} USDT</span>
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="py-12 text-center">
-                  <img src={path.src} className="mx-auto mb-6 h-12 rounded-lg" />
-                  <h3 className="text-gray-900 text-lg font-medium">You have no trust paths yet!</h3>
-                  <p className="text-gray-500">Start connecting with your people here.</p>
-                  <Button className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] cursor-pointer mt-6">
-                    Add New Persona <PlusIcon />
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
+                          return (
+                            <motion.div
+                              key={tx.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: idx * 0.05 }}
+                              className="relative flex items-start gap-4 p-4 bg-foreground rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer focus-within:ring-2 ring-offset-2 ring-[#d7dfbe]"
+                              onClick={() => handleOpenTransactionDetails(tx)}
+                            >
+                              <div className="absolute left-6 top-0 bottom-0 w-px " />
 
-            <TabsContent value="deposits" className="p-4 mt-0">
-              {isLoadingTransactions ? (
-                <div className="py-8 flex justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
-                </div>
-              ) : transactions?.transactions?.length ? (
-                <div className="space-y-3">
-                  {transactions.transactions
-                    .filter((tx) => tx.status === TransactionStatus.PENDING)
-                    .map((tx, idx) => {
-                      const isSender = tx.userId === session?.user.id
-                      const ageHours = Math.floor((Date.now() - new Date(tx.createdAt).getTime()) / 3600000)
+                              <Avatar className="relative z-10 flex-shrink-0  rounded-full flex items-center justify-center">
+                                <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
+                              </Avatar>
 
-                      return (
-                        <motion.div
-                          key={tx.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.05 }}
-                          className="relative flex items-start gap-4 p-4 bg-foreground rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer focus-within:ring-2 ring-offset-2 ring-[#d7dfbe]"
-                          onClick={() => handleOpenTransactionDetails(tx)}
-                        >
-                          <div className="absolute left-6 top-0 bottom-0 w-px " />
-
-                          <Avatar className="relative z-10 flex-shrink-0  rounded-full flex items-center justify-center">
-                            <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
-                          </Avatar>
-
-                          <div className="flex-1">
-                            <div className="flex justify-between items-center">
-                              <h4 className="font-semibold text-gray-900">To: {tx.destinationUser?.email || '—'}</h4>
-                              <span
-                                className={`
+                              <div className="flex-1">
+                                <div className="flex justify-between items-center">
+                                  <h4 className="font-semibold text-gray-900">To: {tx.destinationUser?.email || '—'}</h4>
+                                  <span
+                                    className={`
                       inline-flex items-center text-sm font-medium px-2 py-0.5 rounded-full
                       ${
                         tx.status === TransactionStatus.PENDING
@@ -533,170 +536,172 @@ export default function SendaWallet() {
                           : 'text-green-800 bg-green-100'
                       }
                     `}
-                              >
-                                <ClockIcon className="h-4 w-4 mr-1" />
-                                {tx.status.toLowerCase()}
-                              </span>
+                                  >
+                                    <ClockIcon className="h-4 w-4 mr-1" />
+                                    {tx.status.toLowerCase()}
+                                  </span>
+                                </div>
+                                <p className="text-gray-500 text-xs mt-1">{ageHours}h ago</p>
+                                <div className="flex items-center gap-2 mt-2">
+                                  {tx.depositRecord?.policy && (() => {
+                                    const { icon: PolicyIcon, label, className, description } = getPolicyDetails(tx.depositRecord.policy)
+                                    return (
+                                      <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${className}`}>
+                                        <PolicyIcon className="w-3.5 h-3.5 mr-1.5" />
+                                        {description}
+                                      </div>
+                                    )
+                                  })()}
+                                </div>
+
+                                <div className="mt-4 flex justify-between items-center">
+                                  <span className="font-semibold text-gray-800">
+                                    {tx.amount} {tx.depositRecord?.stable?.toUpperCase()}
+                                  </span>
+                                  {isSender && (
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      className="hover:scale-105 transition-transform"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleSignatureComplete()
+                                      }}
+                                    >
+                                      Sign as Sender
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            </motion.div>
+                          )
+                        })}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                      <h3 className="text-xl font-medium text-slate-700 mb-2">You don't have any active deposits!</h3>
+                      <p className="text-slate-500 mb-6">Start by buying or depositing funds:</p>
+                      <Button
+                        className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] cursor-pointer"
+                        onClick={handleOpenDepositModal}
+                      >
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Add Funds
+                      </Button>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="history" className="p-4 mt-0 h-full">
+                  {isLoadingTransactions ? (
+                    <div className="py-8 flex justify-center">
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
+                    </div>
+                  ) : transactions?.transactions && transactions.transactions.length > 0 ? (
+                    <div className="space-y-3">
+                      {(() => {
+                        const filteredTransactions = transactions.transactions
+                          .filter((tx) => tx.status !== TransactionStatus.PENDING)
+                        
+                        console.log('All transactions:', transactions.transactions)
+                        console.log('Filtered transactions:', filteredTransactions)
+                        
+                        if (filteredTransactions.length === 0) {
+                          return (
+                            <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                              <h3 className="text-xl font-medium text-slate-700 mb-2">No completed transactions yet!</h3>
+                              <p className="text-slate-500 mb-6">Your completed transactions will appear here once they're done.</p>
                             </div>
-                            <p className="text-gray-500 text-xs mt-1">{ageHours}h ago</p>
-                            <div className="flex items-center gap-2 mt-2">
-                              {tx.depositRecord?.policy && (() => {
-                                const { icon: PolicyIcon, label, className, description } = getPolicyDetails(tx.depositRecord.policy)
-                                return (
-                                  <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${className}`}>
-                                    <PolicyIcon className="w-3.5 h-3.5 mr-1.5" />
-                                    {description}
+                          )
+                        }
+
+                        return filteredTransactions.map((tx, idx) => {
+                          const isSender = tx.userId === session?.user.id
+                          const completedDate = tx.completedAt ? new Date(tx.completedAt) : new Date(tx.updatedAt)
+                          const formattedDate = completedDate.toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })
+
+                          return (
+                            <motion.div
+                              key={tx.id}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: idx * 0.05 }}
+                              className="relative flex items-start gap-4 p-4 bg-foreground rounded-lg shadow hover:shadow-md transition-all duration-200 cursor-pointer"
+                              onClick={() => handleOpenTransactionDetails(tx)}
+                            >
+                              <Avatar className="relative z-10 flex-shrink-0 rounded-full flex items-center justify-center">
+                                <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
+                              </Avatar>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-center">
+                                  <div className="flex flex-col">
+                                    <h4 className="font-semibold text-gray-900">
+                                      {isSender ? 'Sent to:' : 'Received from:'} {tx.destinationUser?.email || '—'}
+                                    </h4>
+                                    <span className="text-sm text-gray-500">{formattedDate}</span>
                                   </div>
-                                )
-                              })()}
-                            </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-gray-800">
+                                      {isSender ? '-' : '+'}{tx.amount} 
+                                      <span className="text-gray-500 ml-1">{tx.depositRecord?.stable?.toUpperCase()}</span>
+                                    </span>
+                                    <span
+                                      className={`
+                                        inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                        ${
+                                          tx.status === TransactionStatus.COMPLETED
+                                            ? 'text-green-700 bg-green-50'
+                                            : tx.status === TransactionStatus.CANCELLED
+                                            ? 'text-red-700 bg-red-50'
+                                            : 'text-gray-700 bg-gray-50'
+                                        }
+                                      `}
+                                    >
+                                      {tx.status.toLowerCase()}
+                                    </span>
+                                  </div>
+                                </div>
 
-                            <div className="mt-4 flex justify-between items-center">
-                              <span className="font-semibold text-gray-800">
-                                {tx.amount} {tx.depositRecord?.stable?.toUpperCase()}
-                              </span>
-                              {isSender && (
-                                <Button
-                                  size="sm"
-                                  variant="default"
-                                  className="hover:scale-105 transition-transform"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleSignatureComplete()
-                                  }}
-                                >
-                                  Sign as Sender
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )
-                    })}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                  <h3 className="text-xl font-medium text-slate-700 mb-2">You don't have any active deposits!</h3>
-                  <p className="text-slate-500 mb-6">Start by buying or depositing funds:</p>
-                  <Button
-                    className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] cursor-pointer"
-                    onClick={handleOpenDepositModal}
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Add Funds
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="history" className="p-4 mt-0">
-              {isLoadingTransactions ? (
-                <div className="py-8 flex justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
-                </div>
-              ) : transactions?.transactions && transactions.transactions.length > 0 ? (
-                <div className="space-y-3">
-                  {(() => {
-                    const filteredTransactions = transactions.transactions
-                      .filter((tx) => tx.status !== TransactionStatus.PENDING)
-                    
-                    console.log('All transactions:', transactions.transactions)
-                    console.log('Filtered transactions:', filteredTransactions)
-                    
-                    if (filteredTransactions.length === 0) {
-                      return (
-                        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                          <h3 className="text-xl font-medium text-slate-700 mb-2">No completed transactions yet!</h3>
-                          <p className="text-slate-500 mb-6">Your completed transactions will appear here once they're done.</p>
-                        </div>
-                      )
-                    }
-
-                    return filteredTransactions.map((tx, idx) => {
-                      const isSender = tx.userId === session?.user.id
-                      const completedDate = tx.completedAt ? new Date(tx.completedAt) : new Date(tx.updatedAt)
-                      const formattedDate = completedDate.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                      })
-
-                      return (
-                        <motion.div
-                          key={tx.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.05 }}
-                          className="relative flex items-start gap-4 p-4 bg-foreground rounded-lg shadow hover:shadow-md transition-all duration-200 cursor-pointer"
-                          onClick={() => handleOpenTransactionDetails(tx)}
-                        >
-                          <Avatar className="relative z-10 flex-shrink-0 rounded-full flex items-center justify-center">
-                            <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
-                          </Avatar>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center">
-                              <div className="flex flex-col">
-                                <h4 className="font-semibold text-gray-900">
-                                  {isSender ? 'Sent to:' : 'Received from:'} {tx.destinationUser?.email || '—'}
-                                </h4>
-                                <span className="text-sm text-gray-500">{formattedDate}</span>
+                                {tx.depositRecord?.policy && (
+                                  <div className="mt-2">
+                                    {(() => {
+                                      const { icon: PolicyIcon, description, className } = getPolicyDetails(tx.depositRecord.policy)
+                                      return (
+                                        <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${className}`}>
+                                          <PolicyIcon className="w-3.5 h-3.5 mr-1.5" />
+                                          {description}
+                                        </div>
+                                      )
+                                    })()}
+                                  </div>
+                                )}
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-gray-800">
-                                  {isSender ? '-' : '+'}{tx.amount} 
-                                  <span className="text-gray-500 ml-1">{tx.depositRecord?.stable?.toUpperCase()}</span>
-                                </span>
-                                <span
-                                  className={`
-                                    inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                    ${
-                                      tx.status === TransactionStatus.COMPLETED
-                                        ? 'text-green-700 bg-green-50'
-                                        : tx.status === TransactionStatus.CANCELLED
-                                        ? 'text-red-700 bg-red-50'
-                                        : 'text-gray-700 bg-gray-50'
-                                    }
-                                  `}
-                                >
-                                  {tx.status.toLowerCase()}
-                                </span>
-                              </div>
-                            </div>
-
-                            {tx.depositRecord?.policy && (
-                              <div className="mt-2">
-                                {(() => {
-                                  const { icon: PolicyIcon, description, className } = getPolicyDetails(tx.depositRecord.policy)
-                                  return (
-                                    <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${className}`}>
-                                      <PolicyIcon className="w-3.5 h-3.5 mr-1.5" />
-                                      {description}
-                                    </div>
-                                  )
-                                })()}
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      )
-                    })
-                  })()}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                  <h3 className="text-xl font-medium text-slate-700 mb-2">No transaction history yet!</h3>
-                  <p className="text-slate-500 mb-6">Start your first transaction to see it here.</p>
-                  <Button
-                    className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] hover:scale-105 transition-all duration-200 cursor-pointer"
-                    onClick={handleOpenDepositModal}
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Start Transaction
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
+                            </motion.div>
+                          )
+                        })
+                      })()}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                      <h3 className="text-xl font-medium text-slate-700 mb-2">No transaction history yet!</h3>
+                      <p className="text-slate-500 mb-6">Start your first transaction to see it here.</p>
+                      <Button
+                        className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] hover:scale-105 transition-all duration-200 cursor-pointer"
+                        onClick={handleOpenDepositModal}
+                      >
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Start Transaction
+                      </Button>
+                    </div>
+                  )}
+                </TabsContent>
+              </ScrollArea>
+            </div>
           </Tabs>
         </Card>
       </main>
