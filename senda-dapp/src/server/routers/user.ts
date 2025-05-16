@@ -16,10 +16,14 @@ const userRouter = router({
     getUserPaths: protectedProcedure.input(z.object({
         userId: z.string()
     })).query(async ({ input }) => {
+        console.log('Getting paths for user:', input.userId);
+        
         const user = await prisma.user.findUnique({
             where: { id: input.userId },
             select: { sendaWalletPublicKey: true }
         });
+        
+        console.log('Found user with wallet:', user?.sendaWalletPublicKey);
 
         if (!user) {
             throw new Error("User not found");
@@ -31,14 +35,12 @@ const userRouter = router({
                     { senderPublicKey: user.sendaWalletPublicKey },
                     { receiverPublicKey: user.sendaWalletPublicKey }
                 ],
-                state: "Active" // Only get active escrows
+                state: "Active"
             },
             select: {
                 id: true,
                 senderPublicKey: true,
                 receiverPublicKey: true,
-                depositedUsdc: true,
-                depositedUsdt: true,
                 depositCount: true,
                 state: true,
                 createdAt: true,
@@ -60,7 +62,31 @@ const userRouter = router({
             }
         });
 
-        return paths;
+        const groupedPaths = paths.reduce((acc, escrow) => {
+            const key = [escrow.senderPublicKey, escrow.receiverPublicKey].sort().join('-');
+            
+            if (!acc[key]) {
+                acc[key] = {
+                    ...escrow,
+                    depositCount: Number(escrow.depositCount),
+                };
+            } else {
+                acc[key].depositCount += Number(escrow.depositCount);
+                if (escrow.createdAt > acc[key].createdAt) {
+                    acc[key].id = escrow.id;
+                    acc[key].createdAt = escrow.createdAt;
+                }
+            }
+            return acc;
+        }, {} as Record<string, any>);
+
+        const uniquePaths = Object.values(groupedPaths);
+
+        console.log('Unique paths:', uniquePaths);
+
+        return {
+            paths: uniquePaths
+        };
     }),
     createMinimalUser: protectedProcedure.input(z.object({ recipientEmail: z.string().email() })).mutation(async ({ input }) => {
         const { recipientEmail } = input;
