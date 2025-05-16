@@ -3,7 +3,6 @@ import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { Keypair } from "@solana/web3.js";
 import { encryptPrivateKey } from "@/lib/utils/crypto";
-import { GuestService } from "../services/guest";
 import { TRPCError } from "@trpc/server";
 
 const userRouter = router({
