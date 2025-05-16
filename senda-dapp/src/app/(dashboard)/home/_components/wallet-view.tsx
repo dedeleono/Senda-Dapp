@@ -475,17 +475,14 @@ export default function SendaWallet() {
                           className="relative flex items-start gap-4 p-4 bg-foreground rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer focus-within:ring-2 ring-offset-2 ring-[#d7dfbe]"
                           onClick={() => handleOpenTransactionDetails(tx)}
                         >
-                          {/* vertical timeline line */}
                           <div className="absolute left-6 top-0 bottom-0 w-px " />
 
-                          {/* dot icon */}
                           
                             <Avatar className="relative z-10 flex-shrink-0  rounded-full flex items-center justify-center">
                               <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
                             </Avatar>
                           
 
-                          {/* content */}
                           <div className="flex-1">
                             <div className="flex justify-between items-center">
                               <h4 className="font-semibold text-gray-900">To: {tx.destinationUser?.email || '—'}</h4>
@@ -522,7 +519,6 @@ export default function SendaWallet() {
                               )}
                             </AnimatePresence>
 
-                            {/* footer */}
                             <div className="mt-4 flex justify-between items-center">
                               <span className="font-semibold text-gray-800">
                                 {tx.amount} {tx.depositRecord?.stable?.toUpperCase()}
