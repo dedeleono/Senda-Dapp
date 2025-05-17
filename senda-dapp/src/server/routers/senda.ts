@@ -671,7 +671,9 @@ export const sendaRouter = router({
                     signers.push(receiver);
                 }
 
-                console.log("Signers", signers);
+                console.log("Signers", signers.forEach(signer =>
+                    console.log("Signer:", signer.publicKey.toBase58())
+                ));
 
                 // Create and send the release transaction
                 const usdcMint = new PublicKey(USDC_MINT);
