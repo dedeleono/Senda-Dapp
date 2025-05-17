@@ -476,7 +476,14 @@ export const sendaRouter = router({
                 const deposit = await prisma.depositRecord.findUnique({
                     where: { id: input.depositId },
                     include: { 
-                        transaction: true, 
+                        transaction: {
+                            select: {
+                                id: true,
+                                userId: true,
+                                destinationUserId: true,
+                                destinationAddress: true
+                            }
+                        }, 
                         escrow: true,
                         user: {
                             select: {
@@ -652,8 +659,14 @@ export const sendaRouter = router({
                     );                    
                     signers.push(depositor);
                 } if (deposit.policy === "RECEIVER" || deposit.policy === "DUAL") {
+                    if (!deposit.transaction?.destinationUserId) {
+                        throw new TRPCError({
+                            code: 'NOT_FOUND',
+                            message: 'Destination user not found'
+                        });
+                    }
                     const { keypair: receiver } = await loadUserSignerKeypair(
-                        deposit.transaction?.destinationUserId as string
+                        deposit.transaction.destinationUserId
                     );
                     signers.push(receiver);
                 }
@@ -670,7 +683,7 @@ export const sendaRouter = router({
                         escrow: escrowPk,
                         originalDepositor: depositorPk,
                         counterparty: counterpartyPk,
-                        authorizedSigner: depositorPk,
+                        authorizedSigner: input.role === 'receiver' ? counterpartyPk : depositorPk,
                         receivingParty: receivingPartyPk,
                         usdcMint,
                         usdtMint,

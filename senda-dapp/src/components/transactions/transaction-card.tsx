@@ -20,6 +20,7 @@ export interface TransactionCardProps {
   amount: number;
   token: 'USDC' | 'USDT';
   recipientEmail: string;
+  senderEmail?: string;
   createdAt: Date;
   status: TransactionStatus;
   authorization: SignatureType;
@@ -35,6 +36,7 @@ export default function TransactionCard({
   amount,
   token,
   recipientEmail,
+  senderEmail,
   createdAt,
   status,
   authorization,
@@ -151,6 +153,21 @@ export default function TransactionCard({
     return tokenSymbol === 'USDC' ? usdcIcon : usdtIcon;
   };
 
+  const shouldShowActionButton = () => {
+    if (status !== 'PENDING') return false;
+
+    // For sender-only deposits, only show if user is sender
+    if (authorization === 'SENDER' && !isDepositor) return false;
+
+    // For receiver-only deposits, only show if user is receiver
+    if (authorization === 'RECEIVER' && isDepositor) return false;
+
+    // For dual signature deposits, show for both parties
+    if (authorization === 'DUAL') return true;
+
+    return true;
+  };
+
   return (
     <Card 
       className="w-full cursor-pointer hover:shadow-md transition-shadow bg-card text-card-foreground"
@@ -164,7 +181,7 @@ export default function TransactionCard({
             </div>
             <div>
               <h3 className="font-medium text-card-foreground">
-                {isDepositor ? `To: ${recipientEmail}` : `From: Sender`}
+                {isDepositor ? `To: ${recipientEmail}` : `From: ${senderEmail || 'Unknown'}`}
               </h3>
               <p className="text-xs text-muted-foreground">
                 {formatDistanceToNow(createdAt, { addSuffix: true })}
@@ -199,18 +216,20 @@ export default function TransactionCard({
         </div>
       </CardContent>
       
-      <CardFooter className="px-4 py-3 border-t border-border">
-        <Button 
-          onClick={handleActionClick} 
-          variant={status === 'PENDING' ? 'default' : 'outline'}
-          size="sm"
-          className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:hover:bg-secondary/80"
-          disabled={isLoading}
-        >
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {getActionButtonText()}
-        </Button>
-      </CardFooter>
+      {shouldShowActionButton() && (
+        <CardFooter className="px-4 py-3 border-t border-border">
+          <Button 
+            onClick={handleActionClick} 
+            variant={status === 'PENDING' ? 'default' : 'outline'}
+            size="sm"
+            className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:hover:bg-secondary/80"
+            disabled={isLoading}
+          >
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {getActionButtonText()}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 } 

@@ -33,6 +33,7 @@ interface TransactionDetailsData {
   amount: number
   token: 'USDC' | 'USDT'
   recipientEmail: string
+  senderEmail: string
   createdAt: Date
   status: TransactionStatus
   authorization: SignatureType
@@ -77,6 +78,9 @@ interface Transaction {
   }
   destinationUserId?: string
   destinationUser?: {
+    email: string
+  }
+  user?: {
     email: string
   }
 }
@@ -136,6 +140,19 @@ export default function SendaWallet() {
     }
   ) as { data: TransactionResponse | undefined, isLoading: boolean }
 
+  const { data: receivedTransactions, isLoading: isLoadingReceivedTransactions } = trpc.transactionRouter.getReceivedTransactions.useQuery(
+    { limit: 10 },
+    {
+      enabled: isAuthenticated,
+      retry: false,
+    }
+  ) as { data: TransactionResponse | undefined, isLoading: boolean }
+
+  const allTransactions = [
+    ...(transactions?.transactions || []),
+    ...(receivedTransactions?.transactions || [])
+  ];
+
   const { data: paths, isLoading: isLoadingPaths } = trpc.userRouter.getUserPaths.useQuery(
     { userId: session?.user.id as string },
     {
@@ -150,10 +167,11 @@ export default function SendaWallet() {
   console.log('Paths query response:', paths)
 
   console.log('Current transactions state:', {
-    isLoading: isLoadingTransactions,
-    hasData: !!transactions,
-    transactionCount: transactions?.transactions?.length || 0,
-    transactions: transactions?.transactions
+    isLoading: isLoadingTransactions || isLoadingReceivedTransactions,
+    hasData: !!transactions || !!receivedTransactions,
+    sentTransactionCount: transactions?.transactions?.length || 0,
+    receivedTransactionCount: receivedTransactions?.transactions?.length || 0,
+    allTransactions
   })
 
   const handleOpenWalletQR = () => {
@@ -209,6 +227,7 @@ export default function SendaWallet() {
       amount: transaction.amount,
       token: transaction.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
       recipientEmail: transaction.destinationUserId ? transaction.destinationUser?.email as string : '',
+      senderEmail: transaction.user?.email || '',
       createdAt: new Date(transaction.createdAt),
       status: transaction.depositRecord?.state === 'COMPLETED' ? 'COMPLETED' as TransactionStatus :
              transaction.depositRecord?.state === 'CANCELLED' ? 'CANCELLED' as TransactionStatus :
@@ -463,27 +482,30 @@ export default function SendaWallet() {
 
             <div className="h-[350px]">
               <ScrollArea className="h-full">
-                <TabsContent value="paths" className="p-4 mt-0 h-full bg-foreground border-none rounded-b-xl">
+                <TabsContent value="paths" className="p-4 mt-0 min-h-[350px] bg-foreground border-none rounded-b-xl flex-1">
                   {isLoadingPaths ? (
                     <div className="py-12 flex justify-center">
                       <div className="h-10 w-10 animate-spin rounded-full border-2 border-secondary border-t-transparent drop-shadow-lg" />
                     </div>
                   ) : paths && paths.paths.length > 0 ? (
-                    <div className="space-y-5">
+                    <motion.div
+                      className="space-y-4"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        delay: 0.05,
+                        type: 'spring',
+                        stiffness: 100,
+                        damping: 15,
+                      }}
+                    >
                       {paths.paths.map((path, i) => {
                         const isSender = path.senderPublicKey === publicKey?.toString()
                         const other = isSender ? path.receiver : path.sender
 
                         return (
-                          <motion.div
+                          <div
                             key={path.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ 
-                              delay: i * 0.1,
-                              type: "spring",
-                              damping: 20
-                            }}
                             className="group relative bg-white dark:bg-background rounded-xl p-6 
                               border border-border/5 hover:border-secondary/20
                               shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]
@@ -512,7 +534,10 @@ export default function SendaWallet() {
                               <div className="flex-shrink-0 flex flex-col items-center justify-center gap-2 px-2">
                                 <div className="flex items-center gap-2">
                                   <div className="h-[2px] w-14 bg-gradient-to-r from-secondary/30 to-accent/30" />
-                                  <Badge variant="outline" className="bg-white dark:bg-background text-accent-foreground border-accent/20 px-3">
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-white dark:bg-background text-accent-foreground border-accent/20 px-3"
+                                  >
                                     {path.depositCount} deposit{path.depositCount === 1 ? '' : 's'}
                                   </Badge>
                                   <div className="h-[2px] w-14 bg-gradient-to-r from-accent/30 to-secondary/30" />
@@ -555,20 +580,26 @@ export default function SendaWallet() {
                                 )}
                               </div>
                             )}
-                          </motion.div>
+                          </div>
                         )
                       })}
-                    </div>
+                    </motion.div>
                   ) : (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        delay: 0.05,
+                        type: 'spring',
+                        stiffness: 100,
+                        damping: 15,
+                      }}
                       className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white dark:bg-background rounded-xl border border-border/5"
                     >
                       <img src={path.src} className="mx-auto mb-6 h-14 rounded-xl" />
                       <h3 className="text-xl font-medium text-card-foreground mb-2">No Trust Paths Yet</h3>
                       <p className="text-muted-foreground mb-8">Start connecting with your network here.</p>
-                      <Button 
+                      <Button
                         className="bg-accent text-accent-foreground font-medium
                           hover:bg-accent/90 transition-all duration-200"
                       >
@@ -578,18 +609,27 @@ export default function SendaWallet() {
                   )}
                 </TabsContent>
 
-                <TabsContent value="deposits" className="p-4 mt-0 h-full bg-foreground border-none rounded-b-xl">
-                  {isLoadingTransactions ? (
+                <TabsContent value="deposits" className="p-4 mt-0 min-h-[350px] bg-foreground border-none rounded-b-xl flex-1">
+                  {(isLoadingTransactions || isLoadingReceivedTransactions) ? (
                     <div className="py-8 flex justify-center h-full">
                       <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
                     </div>
-                  ) : transactions?.transactions?.length ? (
+                  ) : allTransactions?.length ? (
                     <div className="space-y-4 p-1">
-                      {transactions.transactions
+                      {allTransactions
                         .filter((tx) => {
-                          // Only show deposits that are in pendingWithdrawal state
                           const depositState = tx.depositRecord?.state;
-                          return depositState === 'PENDING' //@todo properly sync database states and statuses
+                          const depositPolicy = tx.depositRecord?.policy;
+                          const isReceiver = tx.destinationAddress === publicKey?.toString();
+                          const isSender = tx.userId === session?.user.id;
+
+                          // Show pending deposits that need the current user's signature
+                          return depositState === 'PENDING' && (
+                            // Show if sender needs to sign
+                            (isSender && (depositPolicy === 'SENDER' || depositPolicy === 'DUAL')) ||
+                            // Show if receiver needs to sign
+                            (isReceiver && (depositPolicy === 'RECEIVER' || depositPolicy === 'DUAL'))
+                          );
                         })
                         .map((tx, idx) => {
                           const isSender = tx.userId === session?.user.id
@@ -600,7 +640,12 @@ export default function SendaWallet() {
                               key={tx.id}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: idx * 0.05 }}
+                              transition={{
+                                delay: idx * 0.05,
+                                type: 'spring',
+                                stiffness: 100,
+                                damping: 15,
+                              }}
                               className="relative flex items-start gap-4 p-4 bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer focus-within:ring-2 ring-offset-2 ring-[#d7dfbe]"
                               onClick={() => handleOpenTransactionDetails(tx)}
                             >
@@ -613,7 +658,7 @@ export default function SendaWallet() {
                               <div className="flex-1">
                                 <div className="flex justify-between items-center">
                                   <h4 className="font-semibold text-gray-900">
-                                    To: {tx.destinationUser?.email || '—'}
+                                    {isSender ? `To: ${tx.destinationUser?.email || '—'}` : `From: ${tx.user?.email || '—'}`}
                                   </h4>
                                   <span
                                     className={`
@@ -664,62 +709,128 @@ export default function SendaWallet() {
                                         console.log('Sign as Sender clicked with:', {
                                           transaction: tx,
                                           sessionUser: session?.user,
-                                          fullSession: session
+                                          fullSession: session,
                                         })
                                         const transactionDetails: TransactionDetailsData = {
                                           id: tx.depositRecord?.id || '',
                                           amount: tx.amount,
                                           token: tx.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
-                                          recipientEmail: tx.destinationUserId ? tx.destinationUser?.email as string : '',
+                                          recipientEmail: tx.destinationUserId
+                                            ? (tx.destinationUser?.email as string)
+                                            : '',
+                                          senderEmail: tx.user?.email || '',
                                           createdAt: new Date(tx.createdAt),
-                                          status: tx.depositRecord?.state === 'COMPLETED' ? 'COMPLETED' as TransactionStatus :
-                                                 tx.depositRecord?.state === 'CANCELLED' ? 'CANCELLED' as TransactionStatus :
-                                                 tx.status,
+                                          status:
+                                            tx.depositRecord?.state === 'COMPLETED'
+                                              ? ('COMPLETED' as TransactionStatus)
+                                              : tx.depositRecord?.state === 'CANCELLED'
+                                                ? ('CANCELLED' as TransactionStatus)
+                                                : tx.status,
                                           authorization: tx.depositRecord?.policy as SignatureType,
                                           isDepositor: tx.userId === session?.user.id,
-                                          signatures: tx.depositRecord?.signatures?.map((sig: any) => {
-                                            try {
-                                              const parsedSig = typeof sig === 'string' ? JSON.parse(sig) : sig;
-                                              return {
-                                                ...parsedSig,
-                                                role: parsedSig.role.toUpperCase() as SignatureType
-                                              };
-                                            } catch (e) {
-                                              console.error('Error parsing signature:', e);
-                                              return null;
-                                            }
-                                          }).filter(Boolean) || [],
+                                          signatures:
+                                            tx.depositRecord?.signatures
+                                              ?.map((sig: any) => {
+                                                try {
+                                                  const parsedSig = typeof sig === 'string' ? JSON.parse(sig) : sig
+                                                  return {
+                                                    ...parsedSig,
+                                                    role: parsedSig.role.toUpperCase() as SignatureType,
+                                                  }
+                                                } catch (e) {
+                                                  console.error('Error parsing signature:', e)
+                                                  return null
+                                                }
+                                              })
+                                              .filter(Boolean) || [],
                                           statusHistory: [
                                             {
                                               status: tx.depositRecord?.state as string,
                                               timestamp: new Date(tx.createdAt),
-                                              actor: tx.userId
-                                            }
+                                              actor: tx.userId,
+                                            },
                                           ],
                                           depositIndex: tx.depositRecord?.depositIndex || 0,
                                           transactionSignature: tx.signature,
                                           senderPublicKey: tx.walletPublicKey,
-                                          receiverPublicKey: tx.destinationAddress || ''
+                                          receiverPublicKey: tx.destinationAddress || '',
                                         }
-                                        console.log('Setting transaction details and calling updateSignature:', {
-                                          transactionDetails,
-                                          depositId: tx.depositRecord?.id,
-                                          signerId: tx.userId,
-                                          userDetails: {
-                                            id: session.user.id,
-                                            email: session.user.email,
-                                            walletPublicKey: session.user.sendaWalletPublicKey
-                                          }
-                                        })
                                         setSelectedTransaction(transactionDetails)
                                         updateSignature({
                                           depositId: tx.depositRecord?.id || '',
                                           role: 'sender',
-                                          signerId: tx.userId
+                                          signerId: tx.userId,
                                         })
                                       }}
                                     >
                                       Sign as Sender
+                                    </Button>
+                                  )}
+                                  {!isSender && tx.destinationAddress === publicKey?.toString() && (tx.depositRecord?.policy === 'RECEIVER' || tx.depositRecord?.policy === 'DUAL') && (
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      className="hover:scale-105 transition-transform"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        console.log('Sign as Receiver clicked with:', {
+                                          transaction: tx,
+                                          sessionUser: session?.user,
+                                          fullSession: session,
+                                        })
+                                        const transactionDetails: TransactionDetailsData = {
+                                          id: tx.depositRecord?.id || '',
+                                          amount: tx.amount,
+                                          token: tx.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
+                                          recipientEmail: tx.destinationUserId
+                                            ? (tx.destinationUser?.email as string)
+                                            : '',
+                                          senderEmail: tx.user?.email || '',
+                                          createdAt: new Date(tx.createdAt),
+                                          status:
+                                            tx.depositRecord?.state === 'COMPLETED'
+                                              ? ('COMPLETED' as TransactionStatus)
+                                              : tx.depositRecord?.state === 'CANCELLED'
+                                                ? ('CANCELLED' as TransactionStatus)
+                                                : tx.status,
+                                          authorization: tx.depositRecord?.policy as SignatureType,
+                                          isDepositor: tx.userId === session?.user.id,
+                                          signatures:
+                                            tx.depositRecord?.signatures
+                                              ?.map((sig: any) => {
+                                                try {
+                                                  const parsedSig = typeof sig === 'string' ? JSON.parse(sig) : sig
+                                                  return {
+                                                    ...parsedSig,
+                                                    role: parsedSig.role.toUpperCase() as SignatureType,
+                                                  }
+                                                } catch (e) {
+                                                  console.error('Error parsing signature:', e)
+                                                  return null
+                                                }
+                                              })
+                                              .filter(Boolean) || [],
+                                          statusHistory: [
+                                            {
+                                              status: tx.depositRecord?.state as string,
+                                              timestamp: new Date(tx.createdAt),
+                                              actor: tx.userId,
+                                            },
+                                          ],
+                                          depositIndex: tx.depositRecord?.depositIndex || 0,
+                                          transactionSignature: tx.signature,
+                                          senderPublicKey: tx.walletPublicKey,
+                                          receiverPublicKey: tx.destinationAddress || '',
+                                        }
+                                        setSelectedTransaction(transactionDetails)
+                                        updateSignature({
+                                          depositId: tx.depositRecord?.id || '',
+                                          role: 'receiver',
+                                          signerId: tx.destinationUserId || '',
+                                        })
+                                      }}
+                                    >
+                                      Sign as Receiver
                                     </Button>
                                   )}
                                 </div>
@@ -743,22 +854,22 @@ export default function SendaWallet() {
                   )}
                 </TabsContent>
 
-                <TabsContent value="history" className="p-4 mt-0 min-h-[350px] h-full bg-foreground border-none rounded-b-xl">
-                  {isLoadingTransactions ? (
+                <TabsContent
+                  value="history"
+                  className="p-4 mt-0 min-h-[350px] bg-foreground border-none rounded-b-xl flex-1"
+                >
+                  {(isLoadingTransactions || isLoadingReceivedTransactions) ? (
                     <div className="py-8 flex justify-center">
                       <div className="h-8 w-8 animate-spin rounded-full border-2 border-secondary border-t-transparent" />
                     </div>
-                  ) : transactions?.transactions && transactions.transactions.length > 0 ? (
+                  ) : allTransactions?.length > 0 ? (
                     <div className="space-y-3 p-1 h-full">
                       {(() => {
-                        const filteredTransactions = transactions.transactions.filter(
-                          (tx) => {
-                            // Show only complete or cancelled deposits
-                            const depositState = tx.depositRecord?.state;
-                            console.log("Transaction state:", tx.id, depositState);
-                            return depositState === 'COMPLETED' || depositState === 'CANCELLED';
-                          }
-                        )
+                        const filteredTransactions = allTransactions.filter((tx) => {
+                          const depositState = tx.depositRecord?.state
+                          console.log('Transaction state:', tx.id, depositState)
+                          return depositState === 'COMPLETED' || depositState === 'CANCELLED'
+                        })
                         
                         if (filteredTransactions.length === 0) {
                           return (
@@ -773,81 +884,94 @@ export default function SendaWallet() {
                           )
                         }
 
-                        return filteredTransactions.map((tx, idx) => {
-                          const isSender = tx.userId === session?.user.id
-                          const completedDate = tx.completedAt ? new Date(tx.completedAt) : new Date(tx.updatedAt)
-                          const formattedDate = completedDate.toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{
+                              delay: 0.05,
+                              type: 'spring',
+                              stiffness: 100,
+                              damping: 15,
+                            }}
+                          >
+                            {filteredTransactions.map((tx, idx) => {
+                              const isSender = tx.userId === session?.user.id
+                              const completedDate = tx.completedAt ? new Date(tx.completedAt) : new Date(tx.updatedAt)
+                              const formattedDate = completedDate.toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })
 
-                          return (
-                            <motion.div
-                              key={tx.id}
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: idx * 0.05 }}
-                              className="relative flex items-start gap-4 p-4 bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-lg shadow hover:shadow-md transition-all duration-200 cursor-pointer"
-                              onClick={() => handleOpenTransactionDetails(tx)}
-                            >
-                              <Avatar className="relative z-10 flex-shrink-0 rounded-full flex items-center justify-center">
-                                <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
-                              </Avatar>
+                              return (
+                                <div
+                                  key={tx.id}
+                                  className="relative flex items-start gap-4 p-4 bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-lg shadow hover:shadow-md transition-all duration-200 cursor-pointer mb-3"
+                                  onClick={() => handleOpenTransactionDetails(tx)}
+                                >
+                                  <Avatar className="relative z-10 flex-shrink-0 rounded-full flex items-center justify-center">
+                                    <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
+                                  </Avatar>
 
-                              <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-center">
-                                  <div className="flex flex-col">
-                                    <h4 className="font-semibold text-card-foreground">
-                                      {isSender ? 'Sent to:' : 'Received from:'} {tx.destinationUser?.email || '—'}
-                                    </h4>
-                                    <span className="text-sm text-muted-foreground">{formattedDate}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-card-foreground">
-                                      {isSender ? '-' : '+'}
-                                      {tx.amount}
-                                      <span className="text-muted-foreground ml-1">
-                                        {tx.depositRecord?.stable?.toUpperCase()}
-                                      </span>
-                                    </span>
-                                    <span
-                                      className={`
-                                        inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                        ${
-                                          tx.depositRecord?.state === TransactionStatus.COMPLETED ? 'text-green-800 dark:text-green-200 bg-green-100 dark:bg-green-900/30' : tx.depositRecord?.state === TransactionStatus.CANCELLED ? 'text-red-800 dark:text-red-200 bg-red-100 dark:bg-red-900/30'
-                                            : 'text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800/50'
-                                        }
-                                      `}
-                                    >
-                                      {tx.depositRecord?.state.toUpperCase()}
-                                    </span>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-center">
+                                      <div className="flex flex-col">
+                                        <h4 className="font-semibold text-card-foreground">
+                                          {isSender ? 'Sent to:' : 'Received from:'} {isSender ? tx.destinationUser?.email : tx.user?.email || '—'}
+                                        </h4>
+                                        <span className="text-sm text-muted-foreground">{formattedDate}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-card-foreground">
+                                          {isSender ? '-' : '+'}
+                                          {tx.amount}
+                                          <span className="text-muted-foreground ml-1">
+                                            {tx.depositRecord?.stable?.toUpperCase()}
+                                          </span>
+                                        </span>
+                                        <span
+                                          className={`
+                                            inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                            ${
+                                              tx.depositRecord?.state === TransactionStatus.COMPLETED
+                                                ? 'text-green-800 dark:text-green-200 bg-green-100 dark:bg-green-900/30'
+                                                : tx.depositRecord?.state === TransactionStatus.CANCELLED
+                                                  ? 'text-red-800 dark:text-red-200 bg-red-100 dark:bg-red-900/30'
+                                                  : 'text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800/50'
+                                            }
+                                          `}
+                                        >
+                                          {tx.depositRecord?.state.toUpperCase()}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    {tx.depositRecord?.policy && (
+                                      <div className="mt-2">
+                                        {(() => {
+                                          const {
+                                            icon: PolicyIcon,
+                                            description,
+                                            className,
+                                          } = getPolicyDetails(tx.depositRecord.policy, true)
+                                          return (
+                                            <div
+                                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${className}`}
+                                            >
+                                              <PolicyIcon className="w-3.5 h-3.5 mr-1.5" />
+                                              {description}
+                                            </div>
+                                          )
+                                        })()}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
-
-                                {tx.depositRecord?.policy && (
-                                  <div className="mt-2">
-                                    {(() => {
-                                      const {
-                                        icon: PolicyIcon,
-                                        description,
-                                        className,
-                                      } = getPolicyDetails(tx.depositRecord.policy, true)
-                                      return (
-                                        <div
-                                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${className}`}
-                                        >
-                                          <PolicyIcon className="w-3.5 h-3.5 mr-1.5" />
-                                          {description}
-                                        </div>
-                                      )
-                                    })()}
-                                  </div>
-                                )}
-                              </div>
-                            </motion.div>
-                          )
-                        })
+                              )
+                            })}
+                          </motion.div>
+                        )
                       })()}
                     </div>
                   ) : (

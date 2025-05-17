@@ -26,7 +26,7 @@ interface TransactionDetailsProps {
     amount: number;
     token: 'USDC' | 'USDT';
     recipientEmail: string;
-    senderEmail?: string;
+    senderEmail: string;
     createdAt: Date;
     status: TransactionStatus;
     authorization: SignatureType;
@@ -74,67 +74,32 @@ export default function TransactionDetails({
     });
     
     try {
-      const { status, authorization, isDepositor, depositIndex } = transaction;
+      const { status, authorization, isDepositor, depositIndex, id } = transaction;
       
-      if (typeof depositIndex !== 'number') {
-        throw new Error('Invalid ');
+      if (!id) {
+        throw new Error('Missing transaction ID');
       }
       
-      if (status === 'PENDING') {
-        if (authorization === 'RECEIVER' && !isDepositor) {
-          await handleReleaseFunds(depositIndex);
-        } else if (authorization === 'SENDER' && isDepositor) {
-          await handleReleaseFunds(depositIndex);
-        } else if (authorization === 'DUAL') {
-          const currentSignatures = transaction.signatures.map(sig => {
-            try {
-              return typeof sig === 'string' ? JSON.parse(sig) : sig;
-            } catch (e) {
-              console.error('Error parsing signature:', e);
-              return null;
-            }
-          }).filter(Boolean);
+      if (status === 'PENDING' && transaction.depositRecord?.state === 'PENDING') {
+        const role = isDepositor ? 'sender' : 'receiver';
+        const signerId = isDepositor ? transaction.senderPublicKey : transaction.receiverPublicKey;
 
-          const senderSigned = currentSignatures.some(sig => 
-            sig.role === 'SENDER' && sig.status === 'signed'
-          );
-          const receiverSigned = currentSignatures.some(sig => 
-            sig.role === 'RECEIVER' && sig.status === 'signed'
-          );
+        const result = await updateDepositSignature({
+          depositId: id,
+          role,
+          signerId
+        });
 
-          if ((isDepositor && !senderSigned) || (!isDepositor && !receiverSigned)) {
-            const role = isDepositor ? 'SENDER' as const : 'RECEIVER' as const;
-            const signerId = isDepositor ? transaction.senderPublicKey : transaction.receiverPublicKey;
-
-            const result = await updateDepositSignature({
-              depositId: transaction.id,
-              role: role as 'sender' | 'receiver',
-              signerId
-            });
-
-            if (!result.success) {
-              throw result.error || new Error('Failed to update signature');
-            }
-
-            toast({
-              title: 'Signature Added',
-              description: 'Your signature has been recorded. Waiting for counterparty signature.',
-            });
-            onClose();
-            return;
-          }
-
-          if (senderSigned && receiverSigned) {
-            await handleReleaseFunds(depositIndex);
-          } else {
-            toast({
-              title: 'Waiting for Signatures',
-              description: 'Both parties must sign before funds can be released.',
-            });
-            onClose();
-            return;
-          }
+        if (!result.success) {
+          throw result.error || new Error('Failed to update signature');
         }
+
+        toast({
+          title: 'Signature Added',
+          description: authorization === 'DUAL' 
+            ? 'Your signature has been recorded. Waiting for counterparty signature.'
+            : 'Transaction signed successfully.',
+        });
       }
     } catch (error) {
       console.error('Transaction action failed:', error);
@@ -145,6 +110,7 @@ export default function TransactionDetails({
       });
     } finally {
       setIsProcessing(false);
+      onClose();
     }
   };
 
@@ -198,14 +164,21 @@ export default function TransactionDetails({
       return false;
     }
     
-    if (isDepositor && authorization === 'SENDER') {
-      return true;
+    // For sender-only deposits
+    if (authorization === 'SENDER') {
+      return isDepositor && !signatures.some(sig => 
+        sig.role === 'SENDER' && sig.status === 'signed'
+      );
     }
     
-    if (!isDepositor && authorization === 'RECEIVER') {
-      return true;
+    // For receiver-only deposits
+    if (authorization === 'RECEIVER') {
+      return !isDepositor && !signatures.some(sig => 
+        sig.role === 'RECEIVER' && sig.status === 'signed'
+      );
     }
     
+    // For dual signature deposits
     if (authorization === 'DUAL') {
       const userRole = isDepositor ? 'SENDER' : 'RECEIVER';
       const hasUserSigned = signatures.some(
@@ -219,21 +192,34 @@ export default function TransactionDetails({
   };
 
   const getActionButtonText = () => {
-    const { status, authorization, isDepositor } = transaction;
+    const { status, authorization, isDepositor, signatures } = transaction;
     
     // For completed or cancelled transactions, just show Close
     if (status !== 'PENDING' || transaction.depositRecord?.state !== 'PENDING') {
       return 'Close';
     }
-    
-    if (isDepositor && (authorization === 'SENDER' || authorization === 'DUAL')) {
-      return 'Release Funds';
-    } else if (!isDepositor && (authorization === 'RECEIVER' || authorization === 'DUAL')) {
-      return 'Withdraw Funds';
+
+    // For dual signature deposits
+    if (authorization === 'DUAL') {
+      const userRole = isDepositor ? 'SENDER' : 'RECEIVER';
+      const hasUserSigned = signatures.some(
+        sig => sig.role === userRole && sig.status === 'signed'
+      );
+      
+      if (!hasUserSigned) {
+        return isDepositor ? 'Sign as Sender' : 'Sign as Receiver';
+      }
+      
+      return 'Waiting for Other Party';
     }
     
-    if (isDepositor) {
-      return 'Cancel Deposit';
+    // For single signature deposits
+    if (isDepositor && authorization === 'SENDER') {
+      return 'Sign as Sender';
+    }
+    
+    if (!isDepositor && authorization === 'RECEIVER') {
+      return 'Sign as Receiver';
     }
     
     return 'Close';
@@ -337,7 +323,9 @@ export default function TransactionDetails({
               <p className="text-muted-foreground">From</p>
               <div className="flex items-center mt-1">
                 <Mail className="h-4 w-4 text-muted-foreground mr-1" />
-                <p className="text-card-foreground">{transaction.senderEmail || 'You'}</p>
+                <p className="text-card-foreground">
+                  {transaction.isDepositor ? transaction.senderEmail : transaction.senderEmail || 'Unknown'}
+                </p>
               </div>
             </div>
             
@@ -345,7 +333,9 @@ export default function TransactionDetails({
               <p className="text-muted-foreground">To</p>
               <div className="flex items-center mt-1">
                 <Mail className="h-4 w-4 text-muted-foreground mr-1" />
-                <p className="text-card-foreground">{transaction.recipientEmail}</p>
+                <p className="text-card-foreground">
+                  {transaction.isDepositor ? transaction.recipientEmail : transaction.recipientEmail}
+                </p>
               </div>
             </div>
             
