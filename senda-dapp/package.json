@@ -14,8 +14,8 @@
     "fetch-deposit": "ts-node src/scripts/fetch-deposit.ts"
   },
   "dependencies": {
-    "@auth/core": "^0.39.0",
-    "@auth/prisma-adapter": "^2.9.0",
+    "@auth/core": "0.39.1",
+    "@auth/prisma-adapter": "2.9.1",
     "@bonfida/spl-name-service": "^3.0.10",
     "@coral-xyz/anchor": "^0.31.1",
     "@hookform/resolvers": "^5.0.1",
@@ -62,7 +62,7 @@
     "next": "15.3.1",
     "next-auth": "5.0.0-beta.25",
     "next-themes": "^0.4.6",
-    "nodemailer": "^7.0.3",
+    "nodemailer": "6.10.1",
     "otplib": "^12.0.1",
     "prisma": "^6.6.0",
     "qrcode": "^1.5.4",
