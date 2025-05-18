@@ -202,6 +202,7 @@ export default function SendaWallet() {
       message = 'Deposit completed successfully.'
     }
     
+    toast.success(message)
   }
 
   const handleOpenTransactionDetails = (transaction: Transaction) => {

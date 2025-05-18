@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { totp } from "otplib";
-import { auth } from "@/lib/auth/auth";
 
 // Configure TOTP
 totp.options = {

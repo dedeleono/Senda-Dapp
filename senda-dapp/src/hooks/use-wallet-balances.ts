@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PublicKey } from '@solana/web3.js';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
 import { useWalletStore } from '@/stores/use-wallet-store';
@@ -42,7 +42,7 @@ export function useWalletBalances(): WalletBalances {
     const network = isMainnet ? 'mainnet' : 'devnet';
     const mints = NETWORK_MINTS[network];
 
-    const fetchBalances = async () => {
+    const fetchBalances = useCallback(async () => {
         if (!publicKey || !connection) {
             setBalances([]);
             return;
@@ -59,7 +59,6 @@ export function useWalletBalances(): WalletBalances {
                 { mint: mints.USDT, symbol: 'USDT', decimals: 9 }
             ];
 
-            // Fetch each token's balance
             for (const token of tokensToFetch) {
                 try {
                     const mintPubkey = new PublicKey(token.mint);
@@ -102,7 +101,7 @@ export function useWalletBalances(): WalletBalances {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [publicKey, connection, mints]);
 
     useEffect(() => {
         if (publicKey) {

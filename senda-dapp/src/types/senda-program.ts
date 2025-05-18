@@ -1,29 +1,14 @@
-import { Program } from "@coral-xyz/anchor";
+import { IdlTypes } from "@coral-xyz/anchor";
 import { SendaSmartc } from "@/lib/IDL";
 import { PublicKey } from "@solana/web3.js";
 
-type ProgramType = Program<SendaSmartc>;
-const program = null as unknown as ProgramType;
+type IdlAccounts<T> = IdlTypes<SendaSmartc>["Accounts"][T];
 
-export type InitFactoryAccounts = Parameters<
-    ReturnType<typeof program.methods.initFactory>["accounts"]
->[0];
-
-export type InitEscrowAccounts = Parameters<
-    ReturnType<typeof program.methods.initializeEscrow>["accounts"]
->[0];
-
-export type DepositAccounts = Parameters<
-    ReturnType<typeof program.methods.deposit>["accounts"]
->[0];
-
-export type ReleaseAccounts = Parameters<
-    ReturnType<typeof program.methods.release>["accounts"]
->[0];
-
-export type CancelAccounts = Parameters<
-    ReturnType<typeof program.methods.cancel>["accounts"]
->[0];
+export type InitFactoryAccounts = IdlAccounts<"InitFactory">;
+export type InitEscrowAccounts = IdlAccounts<"InitializeEscrow">;
+export type DepositAccounts = IdlAccounts<"Deposit">;
+export type ReleaseAccounts = IdlAccounts<"Release">;
+export type CancelAccounts = IdlAccounts<"Cancel">;
 
 export type Stable = 'usdc' | 'usdt';
 export type AuthorizedBy = 'sender' | 'receiver' | 'both';

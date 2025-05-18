@@ -87,20 +87,20 @@ export interface ServiceResponse<T> {
   error?: ServiceError;
 }
 
-export interface UserServiceResponse extends ServiceResponse<{
+export type UserServiceResponse = ServiceResponse<{
   id: string;
   email: string;
   publicKey: string;
   role: 'GUEST' | 'INDIVIDUAL' | 'BUSINESS';
-}> {}
+}>;
 
-export interface EscrowServiceResponse extends ServiceResponse<{
+export type EscrowServiceResponse = ServiceResponse<{
   escrowAddress: string;
   senderPublicKey: string;
   receiverPublicKey: string;
-}> {}
+}>;
 
-export interface CreateDepositResponse extends ServiceResponse<{
+export type CreateDepositResponse = ServiceResponse<{
   signature: string;
   escrowAddress: string;
   depositId: string;
@@ -113,7 +113,7 @@ export interface CreateDepositResponse extends ServiceResponse<{
     id: string;
     status: TransactionStatus;
   };
-}> {}
+}>;
 
 // UI Form Types
 export interface DepositFormState {

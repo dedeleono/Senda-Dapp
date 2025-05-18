@@ -61,7 +61,6 @@ export function getProvider(): {
   feePayer: Keypair;
 } {
   const { keypair: feePayer } = loadFeePayerKeypair();
-  const rpcUrl = process.env.SOLANA_RPC_URL!;
   const connection = getSharedConnection()
 
   const wallet = {

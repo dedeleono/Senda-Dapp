@@ -41,9 +41,8 @@ const ConfirmationView = ({ onComplete }: ConfirmationViewProps) => {
         amount: formData.amount
       });
       
-      // @ts-ignore
-      if (!result.success || !result.data) {
-        throw new Error(result.error || 'Failed to create deposit');
+      if (!result.success || !result.signature) {
+        throw new Error(result.error || 'Failed to transfer funds');
       }
 
       // Simulate API call with delay

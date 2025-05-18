@@ -2,21 +2,16 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { prisma } from "@/lib/db";
-import nodemailer from "nodemailer";
-import { 
-  TokenType, 
-  AuthorizationType, 
-} from "@/types/transaction";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_SERVER_HOST,
-  port: Number(process.env.EMAIL_SERVER_PORT),
-  auth: {
-    user: process.env.EMAIL_SERVER_USER,
-    pass: process.env.EMAIL_SERVER_PASSWORD,
-  },
-  secure: process.env.EMAIL_SERVER_SECURE === "true",
-});
+// const transporter = nodemailer.createTransport({
+//   host: process.env.EMAIL_SERVER_HOST,
+//   port: Number(process.env.EMAIL_SERVER_PORT),
+//   auth: {
+//     user: process.env.EMAIL_SERVER_USER,
+//     pass: process.env.EMAIL_SERVER_PASSWORD,
+//   },
+//   secure: process.env.EMAIL_SERVER_SECURE === "true",
+// });
 
 // async function sendEmail({
 //   to,

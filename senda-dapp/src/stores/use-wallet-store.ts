@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Connection, Keypair, PublicKey, Signer } from '@solana/web3.js';
+import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
 import { getSharedConnection } from '@/lib/senda/helpers';
 import { persist } from 'zustand/middleware';
@@ -58,6 +58,7 @@ export const useWalletStore = create<WalletStore>()(
           try {
             new PublicKey(publicKeyStr);
           } catch (error) {
+            console.error('Error initializing wallet:', error);
             throw new Error('Invalid wallet public key format');
           }
 

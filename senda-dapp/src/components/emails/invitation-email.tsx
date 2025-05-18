@@ -4,7 +4,6 @@ import {
   Head,
   Heading,
   Html,
-  Link,
   Preview,
   Text,
   Button,
@@ -60,7 +59,7 @@ export default function InvitationEmail({
                         {amount} {token}
                       </Heading>
                       <Text className="text-gray-600 text-center">
-                        To claim these funds, you'll need to set up your Senda account.
+                        To claim these funds, you&apos;ll need to set up your Senda account.
                       </Text>
                     </Column>
                   </Row>
@@ -72,7 +71,7 @@ export default function InvitationEmail({
               </>
             ) : (
               <Text className="text-gray-600 mb-4">
-                You've been invited to join Senda. Set up your account to start sending and receiving payments securely.
+                You&apos;ve been invited to join Senda. Set up your account to start sending and receiving payments securely.
               </Text>
             )}
             
@@ -96,7 +95,7 @@ export default function InvitationEmail({
             </Text>
             
             <Text className="text-gray-400 text-xs text-center mt-6">
-              © 2023 Senda. All rights reserved.
+              © 2025 Senda. All rights reserved.
             </Text>
           </Container>
         </Body>

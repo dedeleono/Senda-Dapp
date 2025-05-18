@@ -5,7 +5,7 @@ import { z } from "zod";
 import crypto from "crypto";
 import { totp } from "otplib";
 import qrcode from "qrcode";
-// @ts-ignore - no types available for this package
+
 import base32Encode from "base32-encode";
 
 // Helper function to get accurate time from internet
@@ -64,7 +64,7 @@ totp.options = {
 };
 
 // GET: Generate 2FA secret and QR code for setup
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {

@@ -46,7 +46,7 @@ const iconVariants = cva(
   }
 );
 
-export interface ThemeToggleProps extends VariantProps<typeof themeToggleVariants> {}
+type ThemeToggleProps = VariantProps<typeof themeToggleVariants>;
 
 export default function ThemeToggle({ size }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();

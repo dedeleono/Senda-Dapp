@@ -1,16 +1,7 @@
 import { auth } from '@/lib/auth/auth'
 import { redirect } from 'next/navigation'
 
-export default async function RootPage({
-  searchParams
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
-  const fromLogout = searchParams.from === 'logout'
-  
-  if (fromLogout) {
-    return redirect('/login')
-  }
+export default async function RootPage() {
   
   const session = await auth()
   
@@ -19,5 +10,4 @@ export default async function RootPage({
   } else {
     return redirect('/login')
   }
-
 }

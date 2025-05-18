@@ -143,6 +143,7 @@ export const customPrismaAdapter: Adapter = {
       });
       return verificationToken;
     } catch (error) {
+      console.error('Error in useVerificationToken:', error);
       return null;
     }
   },

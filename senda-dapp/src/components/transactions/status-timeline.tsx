@@ -100,7 +100,7 @@ export default function StatusTimeline({ statusHistory, signatures }: StatusTime
     sig.timestamp &&
     !sortedEvents.some(event => 
       event.status === `SIGNATURE_${sig.role}` && 
-      event.timestamp.getTime() === sig.timestamp.getTime()
+      event.timestamp.getTime() === sig.timestamp?.getTime()
     )
   );
 

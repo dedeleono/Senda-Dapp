@@ -70,7 +70,6 @@ const ConfirmationView = ({ onComplete }: ConfirmationViewProps) => {
         amount: amount.value
       });
       
-      // @ts-ignore
       if (!result.success || !result.data) {
         throw new Error(result.error?.message || 'Failed to create deposit');
       }

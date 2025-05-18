@@ -10,7 +10,7 @@ const initialFormData: DepositFormData = {
     value: 0,
     token: 'USDC',
   },
-  authorization: 'sender',
+  authorization: 'SENDER',
 };
 
 export const useDepositForm = create<DepositFormState & DepositFormActions>((set) => ({
