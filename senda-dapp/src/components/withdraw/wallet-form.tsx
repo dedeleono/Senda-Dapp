@@ -53,7 +53,7 @@ const WalletForm = () => {
           </div>
           <h3 className="text-lg font-medium">Withdraw to Solana Wallet</h3>
           <p className="text-sm text-gray-500 text-center mt-1">
-            Enter the Solana wallet address where you'd like to receive your funds.
+            Enter the Solana wallet address where you&apos;d like to receive your funds.
           </p>
         </div>
 

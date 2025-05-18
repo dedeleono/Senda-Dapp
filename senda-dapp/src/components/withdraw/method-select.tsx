@@ -11,7 +11,7 @@ const MethodSelect = () => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <p className="text-sm text-gray-500">Choose how you'd like to withdraw your funds</p>
+        <p className="text-sm text-gray-500">Choose how you&apos;d like to withdraw your funds</p>
       </div>
       
       <div className="space-y-6">

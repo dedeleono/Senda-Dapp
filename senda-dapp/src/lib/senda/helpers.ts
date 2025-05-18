@@ -1,5 +1,4 @@
 import { clusterApiUrl, Connection, PublicKey, Transaction } from "@solana/web3.js";
-import { trpc } from "@/app/_trpc/client";
 import { getProvider } from "@/utils/dapp-wallets";
 import { loadFeePayerKeypair } from "@/utils/dapp-wallets";
 import { 
@@ -171,9 +170,9 @@ export const createAta = async (mint: PublicKey, owner: PublicKey) => {
             }
         }
         throw new Error("Failed to create ATA after all retries");
-    } catch (error: any) {
+    } catch (error) {
         // If the error indicates the account already exists, return the address
-        if (error.message?.includes("already in use")) {
+        if (error instanceof Error && error.message?.includes("already in use")) {
             const ataAddress = getAssociatedTokenAddressSync(mint, owner);
             const account = await getProvider().connection.getAccountInfo(ataAddress);
             if (account && account.data.length > 0) {
@@ -181,13 +180,12 @@ export const createAta = async (mint: PublicKey, owner: PublicKey) => {
             }
         }
         console.error("Failed to create ATA:", error);
-        throw new Error(`Failed to create ATA: ${error.message || 'Unknown error'}`);
+        throw new Error(`Failed to create ATA: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 };
 
 export const getRecentBlockhashArray = async (connection: Connection): Promise<number[]> => {
     const { blockhash } = await connection.getLatestBlockhash();
-    // Convert the blockhash to a PublicKey first, then get its bytes
     const blockhashKey = new PublicKey(blockhash);
     const blockhashBytes = blockhashKey.toBytes();
     return Array.from(blockhashBytes);

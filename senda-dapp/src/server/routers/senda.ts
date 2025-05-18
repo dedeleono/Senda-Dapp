@@ -2,8 +2,6 @@ import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import {
     PublicKey,
-    SystemProgram,
-    SYSVAR_RENT_PUBKEY,
     Keypair,
     Transaction
 } from "@solana/web3.js";
@@ -14,7 +12,6 @@ import {
 } from "@coral-xyz/anchor";
 
 import {
-    findVaultPDA,
     findDepositRecordPDA,
     createAta,
     findEscrowPDA,
@@ -22,26 +19,21 @@ import {
 } from "@/lib/senda/helpers";
 import { USDC_MINT, USDT_MINT } from "@/lib/constants";
 import {
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_PROGRAM_ID,
     getAssociatedTokenAddressSync,
-    getOrCreateAssociatedTokenAccount
 } from "@solana/spl-token";
 import { TRPCError } from "@trpc/server";
-import { getProvider, loadSignerKeypair, loadUserSignerKeypair } from "@/utils/dapp-wallets";
+import { getProvider, loadUserSignerKeypair } from "@/utils/dapp-wallets";
 import { prisma } from "@/lib/db";
 import crypto from 'crypto';
-import { encryptPrivateKey } from "@/lib/utils/crypto";
 import { UserService } from "../services/user";
 import { EscrowService } from "../services/escrow";
 import { handleRouterError } from "../utils/error-handler";
 import { CreateDepositResponse } from "@/types/transaction";
-import { CancelAccounts, DepositAccounts, InitEscrowAccounts, ReleaseAccounts, ReleaseResult } from "@/types/senda-program";
+import { CancelAccounts, DepositAccounts, InitEscrowAccounts, ReleaseAccounts } from "@/types/senda-program";
 import { sendGuestDepositNotificationEmail } from "@/lib/validations/guest-deposit-notification";
 import { sendDepositNotificationEmail } from "@/lib/validations/deposit-notification";
 import { SignatureType } from "@/components/transactions/transaction-card";
 import { createTransferCheckedInstruction } from "@solana/spl-token";
-import { trpc } from "@/app/_trpc/client";
 
 
 export const sendaRouter = router({
@@ -159,7 +151,7 @@ export const sendaRouter = router({
                 userId: '[REDACTED]' 
             });
 
-            const {program, connection} = getProvider()
+            const {connection} = getProvider()
             const blockhashArray = await getRecentBlockhashArray(connection)
 
             const usdcMint = new PublicKey(USDC_MINT);
@@ -211,11 +203,11 @@ export const sendaRouter = router({
                     nextDepositIdx = escrowAccount.depositCount.toNumber();
                     console.log('Next deposit index:', nextDepositIdx);
                 } catch (error) {
-                    console.log('No existing escrow account found, using index 0');
+                    console.log('No existing escrow account found, using index 0', error);
                     nextDepositIdx = 0;
                 }
 
-                const [depositRecordPda, depositRecordBump] = findDepositRecordPDA(escrowPda, depositorPk, blockhashArray);
+                const [depositRecordPda] = findDepositRecordPDA(escrowPda, depositorPk, blockhashArray);
 
                 const stableEnum = input.stable === "usdc" ? { usdc: {} } : { usdt: {} };
                 const authEnum =
@@ -230,7 +222,7 @@ export const sendaRouter = router({
                 console.log('Building deposit transaction...');
 
                 const ix = await program.methods
-                    .deposit(stableEnum as any, authEnum as any, blockhashArray, new BN(lamports))
+                    .deposit(stableEnum, authEnum, blockhashArray, new BN(lamports))
                     .accounts({
                         escrow: escrowPda,
                         sender: depositorPk,
@@ -414,9 +406,8 @@ export const sendaRouter = router({
             const depositorPk = new PublicKey(input.originalDepositor);
             const counterpartyPk = new PublicKey(input.counterparty);
 
-            const { keypair: depositorKp } = await loadSignerKeypair(
-                ctx.session!.user.id,
-                depositorPk
+            const { keypair: depositorKp } = await loadUserSignerKeypair(
+                ctx.session!.user.id
             );
 
             const deposit = await prisma.depositRecord.findUnique({

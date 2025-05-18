@@ -1,5 +1,4 @@
 import React from 'react'
-import { Wallet, ArrowUp, Plus } from 'lucide-react'
 
 export default function DashboardLoading() {
   return (

@@ -1,9 +1,8 @@
 import { Program } from "@coral-xyz/anchor";
-import { SendaDapp } from "@/lib/IDL";
-import { Keypair, PublicKey } from "@solana/web3.js";
-import { SignatureType } from "@prisma/client";
+import { SendaSmartc } from "@/lib/IDL";
+import { PublicKey } from "@solana/web3.js";
 
-type ProgramType = Program<SendaDapp>;
+type ProgramType = Program<SendaSmartc>;
 const program = null as unknown as ProgramType;
 
 export type InitFactoryAccounts = Parameters<
@@ -122,7 +121,7 @@ export type EscrowStats = {
 
 export type DepositRecord = {
     escrow: PublicKey;
-    deposit_idx: number;
+    blockhash: number;
     amount: number;
     policy: SignaturePolicy;
     stable: Stable;

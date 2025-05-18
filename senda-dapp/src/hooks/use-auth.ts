@@ -3,7 +3,6 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { useWalletStore } from '@/stores/use-wallet-store';
-import { useSendaProgram } from '@/stores/use-senda-program';
 
 export function useAuth() {
   const { data: session, status } = useSession();

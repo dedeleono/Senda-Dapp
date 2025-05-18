@@ -1,11 +1,11 @@
 import { AnchorProvider, Program, Idl, setProvider } from '@coral-xyz/anchor';
 import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
-import { SENDA_IDL, SendaDapp } from "@/lib/IDL/sendaIDL";
+import { SENDA_IDL, SendaSmartc } from "@/lib/IDL/sendaIDL";
 import { prisma } from '@/lib/db';
 import { TRPCError } from '@trpc/server';
 import { getSharedConnection } from '@/lib/senda/helpers';
 
-type SendaProgram = Program<SendaDapp>;
+type SendaProgram = Program<SendaSmartc>;
 
 interface LoadedKeypair {
   publicKey: PublicKey;
@@ -84,7 +84,7 @@ export function getProvider(): {
 
   setProvider(provider);
 
-  const program = new Program<SendaDapp>(
+  const program = new Program<SendaSmartc>(
     SENDA_IDL as unknown as Idl,
     provider as any
   );
@@ -112,55 +112,6 @@ async function decryptViaEndpoint(encryptedData: {
 
   const result = await response.json();
   return Buffer.from(result.decrypted, 'base64');
-}
-
-export async function loadSignerKeypair(
-  userId: string,
-  requestedPk: PublicKey
-): Promise<LoadedKeypair> {
-  const { keypair: feePayerKp } = loadFeePayerKeypair();
-  if (feePayerKp.publicKey.equals(requestedPk)) {
-    return { keypair: feePayerKp, publicKey: feePayerKp.publicKey };
-  }
-
-  const walletRow = await prisma.linkedWallet.findFirst({
-    where: {
-      userId,
-      publicKey: requestedPk.toBase58()
-    },
-    select: {
-      user: {
-        select: {
-          encryptedPrivateKey: true,
-          iv: true,
-          authTag: true
-        }
-      }
-    }
-  });
-
-  if (!walletRow?.user?.encryptedPrivateKey) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "The requested signer is not linked to your account"
-    });
-  }
-
-  const secretBuffer = await decryptViaEndpoint({
-    iv: walletRow.user.iv,
-    authTag: walletRow.user.authTag,
-    data: walletRow.user.encryptedPrivateKey
-  });
-
-  const keypair = Keypair.fromSecretKey(secretBuffer);
-  if (!keypair.publicKey.equals(requestedPk)) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Decrypted key does not match requested signer"
-    });
-  }
-
-  return { keypair, publicKey: keypair.publicKey };
 }
 
 export async function loadUserSignerKeypair(

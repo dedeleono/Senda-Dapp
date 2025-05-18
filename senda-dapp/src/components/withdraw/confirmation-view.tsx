@@ -7,7 +7,6 @@ import Image from 'next/image';
 import usdcIcon from '@/public/usdc.svg';
 import usdtIcon from '@/public/usdt-round.svg';
 import { Loader2 } from 'lucide-react';
-import { SignatureType } from '@prisma/client';
 import { useAuth } from '@/hooks/use-auth';
 import { useSendaProgram } from '@/stores/use-senda-program';
 

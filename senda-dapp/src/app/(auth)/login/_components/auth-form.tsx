@@ -167,11 +167,11 @@ function AuthFormComponent() {
     isSubmittingRef.current = true;
     
     setLoading(true);
-    setError(null);
+    setError(error);
     try {
       
 
-      let callbackUrlValue = callbackUrl || "/";
+      const callbackUrlValue = callbackUrl || "/";
       
       const result = await signIn("email", {
         email: data.email,
@@ -203,7 +203,7 @@ function AuthFormComponent() {
         isSubmittingRef.current = false;
       }, 300);
     }
-  }, [callbackUrl, loading, isEmailSent]);
+  }, [callbackUrl, loading, isEmailSent, error]);
 
   const resetEmailSent = useCallback(() => {
     sessionStorage.removeItem('emailSent');

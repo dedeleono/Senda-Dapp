@@ -4,7 +4,6 @@ import {
   Head,
   Heading,
   Html,
-  Link,
   Preview,
   Text,
   Button,
@@ -51,7 +50,7 @@ export default function GuestDepositNotificationEmail({
                     {amount} {token}
                   </Heading>
                   <Text className="text-gray-600 text-center">
-                    To claim these funds, you'll need to set up your Senda account.
+                    To claim these funds, you&apos;ll need to set up your Senda account.
                   </Text>
                 </Column>
               </Row>

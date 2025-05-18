@@ -4,7 +4,6 @@ import {
   Head,
   Heading,
   Html,
-  Link,
   Preview,
   Text,
   Button,
@@ -48,7 +47,7 @@ export default function DepositNotificationEmail({
                     {amount} {token}
                   </Heading>
                   <Text className="text-gray-600 text-center">
-                    To claim these funds, you'll need to login to your Senda account.
+                    To claim these funds, you&apos;ll need to login to your Senda account.
                   </Text>
                 </Column>
               </Row>
@@ -78,7 +77,7 @@ export default function DepositNotificationEmail({
               This invitation link will expire in 24 hours. If you have any questions, please contact support@senda.com.
             </Text>
 
-            <Text className="text-gray-400 text-xs text-center mt-6">© 2023 Senda. All rights reserved.</Text>
+            <Text className="text-gray-400 text-xs text-center mt-6">© 2025 Senda. All rights reserved.</Text>
           </Container>
         </Body>
       </Tailwind>

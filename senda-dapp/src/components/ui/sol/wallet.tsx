@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { PublicKey } from '@solana/web3.js'
-import { useConnection } from '@solana/wallet-adapter-react'
 import { getPrimaryDomain } from '@bonfida/spl-name-service'
 import { SearchIcon } from 'lucide-react'
 
@@ -13,6 +12,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 
 import { Avatar } from '@/components/ui/sol/sol-avatar'
 import { TokenIcon } from '@/components/ui/sol/token-icon'
+import { getProvider } from '@/utils/dapp-wallets'
 
 type WalletProps = {
   address: PublicKey | null
@@ -23,13 +23,8 @@ type WalletProps = {
 
 const Wallet = ({ address, assets, trigger, onAssetClick }: WalletProps) => {
   const [search, setSearch] = React.useState('')
-  const { connection } = useConnection()
+  const { connection } = getProvider()
   const [domain, setDomain] = React.useState<string | null>(null)
-
-  const totalBalanceUsd = React.useMemo(
-    () => assets?.reduce((acc, asset) => acc + (asset.userTokenAccount?.amount || 0) * (asset.price || 0), 0),
-    [assets],
-  )
 
   const filteredAssets = React.useMemo(() => {
     return assets && assets.length > 0
@@ -44,6 +39,7 @@ const Wallet = ({ address, assets, trigger, onAssetClick }: WalletProps) => {
       setDomain(`${reverse}.sol`)
     } catch (error) {
       setDomain(null)
+      console.error('Error fetching domain:', error)
     }
   }, [connection, address])
 

@@ -1,8 +1,7 @@
 'use client'
 
 import React from 'react'
-
-// import { SolAsset } from '@/lib/types'
+import Image from 'next/image'
 
 type IconProps = {
   asset: any | null
@@ -18,14 +17,14 @@ const TokenIcon = ({ asset, size = 24 }: IconProps) => {
         height: size + 2,
       }}
     >
-      <img
+      <Image
         src="/token-icons/placeholder.jpg"
         alt={asset?.symbol ?? asset?.mint.toBase58() ?? ''}
         width={size}
         height={size}
         className="absolute inset-0 rounded-full"
       />
-      <img
+      <Image
         src={asset?.image ?? ''}
         alt={asset?.symbol ?? asset?.mint.toBase58() ?? ''}
         width={size}

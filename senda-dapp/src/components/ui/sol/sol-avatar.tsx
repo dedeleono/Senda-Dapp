@@ -2,8 +2,8 @@ import React from 'react'
 
 import { PublicKey } from '@solana/web3.js'
 import { minidenticon } from 'minidenticons'
-
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 type AvatarProps = {
   address: PublicKey
@@ -28,7 +28,7 @@ const Avatar = ({ address, size = 48, className, alt }: AvatarProps) => {
       )}
       style={{ width: size, height: size }}
     >
-      <img src={identicon} alt={alt || pubkeyStr || ''} width={size} height={size} />
+      <Image width={size || 48} height={size || 48} src={identicon} alt={alt || pubkeyStr || ''} />
     </div>
   )
 }

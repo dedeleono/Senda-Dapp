@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Toaster } from '@/components/ui/sonner';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trpc } from '@/app/_trpc/client';
@@ -80,7 +79,7 @@ export default function InvitationPage() {
         email: verificationData.email
       });
     } catch (error) {
-      // Error is handled by the mutation callbacks
+      console.log(error)
     }
   };
 

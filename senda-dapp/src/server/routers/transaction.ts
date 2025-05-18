@@ -3,7 +3,6 @@ import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { prisma } from "@/lib/db";
 import nodemailer from "nodemailer";
-import crypto from "crypto";
 import { 
   TokenType, 
   AuthorizationType, 
@@ -19,36 +18,36 @@ const transporter = nodemailer.createTransport({
   secure: process.env.EMAIL_SERVER_SECURE === "true",
 });
 
-async function sendEmail({
-  to,
-  subject,
-  html,
-}: {
-  to: string;
-  subject: string;
-  html: string;
-}) {
-  return transporter.sendMail({
-    from: process.env.EMAIL_FROM || "noreply@senda.com",
-    to,
-    subject,
-    html,
-  });
-}
+// async function sendEmail({
+//   to,
+//   subject,
+//   html,
+// }: {
+//   to: string;
+//   subject: string;
+//   html: string;
+// }) {
+//   return transporter.sendMail({
+//     from: process.env.EMAIL_FROM || "noreply@senda.com",
+//     to,
+//     subject,
+//     html,
+//   });
+// }
 
-const createDepositSchema = z.object({
-  recipientEmail: z.string().email(),
-  amount: z.number().positive(),
-  token: z.enum(["USDC", "USDT"]) as z.ZodType<TokenType>,
-  authorization: z.enum(["SENDER", "RECEIVER", "DUAL"]) as z.ZodType<AuthorizationType>,
-});
+// const createDepositSchema = z.object({
+//   recipientEmail: z.string().email(),
+//   amount: z.number().positive(),
+//   token: z.enum(["USDC", "USDT"]) as z.ZodType<TokenType>,
+//   authorization: z.enum(["SENDER", "RECEIVER", "DUAL"]) as z.ZodType<AuthorizationType>,
+// });
 
-const createInvitationSchema = z.object({
-  recipientEmail: z.string().email(),
-  depositId: z.string().optional(),
-  amount: z.number().optional(),
-  token: z.string().optional(),
-});
+// const createInvitationSchema = z.object({
+//   recipientEmail: z.string().email(),
+//   depositId: z.string().optional(),
+//   amount: z.number().optional(),
+//   token: z.string().optional(),
+// });
 
 export const transactionRouter = router({
 

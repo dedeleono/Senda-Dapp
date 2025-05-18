@@ -1,5 +1,4 @@
 import { TransactionInstruction, Connection, Keypair, Transaction, sendAndConfirmTransaction, VersionedTransaction, PublicKey } from '@solana/web3.js';
-import { TRPCError } from '@trpc/server';
 import bs58 from 'bs58';
 
 const SOLANA_RPC_URL = 'https://api.devnet.solana.com';//@todo change to mainnet

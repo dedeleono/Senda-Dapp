@@ -42,7 +42,7 @@ export default function TwoFactorEmail({
               <Heading style={h1}>Verify your email address</Heading>
               <Text style={mainText}>
                 Thanks for starting the new AWS account creation process. We
-                want to make sure it's really you. Please enter the following
+                want to make sure it&apos;s really you. Please enter the following
                 verification code when prompted. If you don&apos;t want to
                 create an account, you can ignore this message.
               </Text>

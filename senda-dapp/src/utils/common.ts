@@ -1,7 +1,6 @@
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import secret from "../../Turbin3-wallet.json";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

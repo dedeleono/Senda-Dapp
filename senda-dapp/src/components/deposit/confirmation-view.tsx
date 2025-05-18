@@ -9,7 +9,6 @@ import { useDepositForm } from '@/stores/use-deposit-form';
 import { useWalletStore } from '@/stores/use-wallet-store';
 import { useSendaProgram } from '@/stores/use-senda-program';
 import { toast } from 'sonner';
-import type { CreateDepositResponse } from '@/types/transaction';
 import { useAuth } from '@/hooks/use-auth';
 import { SignatureType } from '@prisma/client';
 

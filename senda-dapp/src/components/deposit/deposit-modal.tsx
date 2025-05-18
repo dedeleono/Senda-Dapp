@@ -28,8 +28,7 @@ const DepositModal = forwardRef<DepositModalRef, DepositModalProps>(
     } | undefined>();
     
     const { 
-      step, 
-      formData,
+      step,
       resetForm
     } = useDepositForm();
 

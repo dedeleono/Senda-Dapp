@@ -58,7 +58,7 @@ export function useSignOut() {
                 // Clear our logout flag if we somehow get here
                 sessionStorage.removeItem('in-logout-flow');
             } catch (e) {
-                // Ignore localStorage errors
+                console.error('Error clearing localStorage:', e);
             }
         } catch (error) {
             console.error('Error during sign out:', error);

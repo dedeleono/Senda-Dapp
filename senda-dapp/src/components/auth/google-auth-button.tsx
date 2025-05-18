@@ -21,9 +21,7 @@ export default function GoogleSignInButton() {
     setIsLoading(true);
     try {
       
-
-      // Use the callback URL if provided, or default to the wallet dashboard with locale
-      let callbackUrlValue = callbackUrl || `/home`;
+      const callbackUrlValue = callbackUrl || `/home`;
 
       const result = await signIn('google', {
         callbackUrl: callbackUrlValue,

@@ -88,6 +88,7 @@ export function useWalletBalances(): WalletBalances {
                             decimals: token.decimals,
                             uiBalance: 0
                         });
+                        console.error('Error fetching token balance:', err);
                     }
                 } catch (err) {
                     console.error(`Error fetching ${token.symbol} balance:`, err);
@@ -109,7 +110,7 @@ export function useWalletBalances(): WalletBalances {
         } else {
             setBalances([]);
         }
-    }, [publicKey?.toString()]);
+    }, [publicKey, fetchBalances]);
 
     return {
         isLoading,

@@ -11,7 +11,7 @@ import usdcIcon from '@/public/usdc.svg';
 import usdtIcon from '@/public/usdt-round.svg';
 import StatusTimeline from './status-timeline';
 import { 
-  ArrowUpRight, Copy, XCircle, Check, Loader2, ExternalLink, Calendar, Mail 
+  Copy, Loader2, ExternalLink, Calendar, Mail 
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { TransactionStatus, SignatureType } from './transaction-card';
@@ -74,7 +74,7 @@ export default function TransactionDetails({
     });
     
     try {
-      const { status, authorization, isDepositor, depositIndex, id } = transaction;
+      const { status, authorization, isDepositor, id } = transaction;
       
       if (!id) {
         throw new Error('Missing transaction ID');
@@ -104,55 +104,12 @@ export default function TransactionDetails({
     } catch (error) {
       console.error('Transaction action failed:', error);
       toast({
-        variant: 'destructive',
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to process transaction',
       });
     } finally {
       setIsProcessing(false);
       onClose();
-    }
-  };
-
-  const handleReleaseFunds = async (depositIdx: number) => {
-    try {
-      if (!transaction.id || !transaction.senderPublicKey || !transaction.receiverPublicKey) {
-        throw new Error('Missing required transaction information');
-      }
-
-      const receivingPartyPublicKey = transaction.isDepositor 
-        ? transaction.receiverPublicKey
-        : transaction.senderPublicKey;
-
-      // const result = await requestWithdrawal({
-      //   escrowPublicKey: transaction.id,
-      //   depositIndex: depositIdx,
-      //   receivingPartyPublicKey
-      // });
-
-      // if (!result.success) {
-      //   throw result.error || new Error('Failed to process withdrawal');
-      // }
-
-      await updateDepositSignature({
-        depositId: transaction.id,
-        role: transaction.isDepositor ? 'sender' : 'receiver',
-        signerId: transaction.isDepositor ? transaction.senderPublicKey : transaction.receiverPublicKey
-      });
-
-      toast({
-        title: 'Success',
-        description: 'Funds have been released successfully',
-      });
-
-      onClose();
-    } catch (error) {
-      console.error('Error releasing funds:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to release funds',
-      });
     }
   };
 

@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowUp, PlusIcon, Wallet, ArrowDown, ClockIcon, ShieldCheckIcon, UsersIcon, UserIcon } from 'lucide-react'
+import { ArrowUp, PlusIcon, ArrowDown, ClockIcon, ShieldCheckIcon, UsersIcon, UserIcon } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { trpc } from '@/app/_trpc/client'
 import path from '@/public/2.svg'
@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge'
 import { useWalletStore } from '@/stores/use-wallet-store'
 import WithdrawModal, { WithdrawModalRef } from '@/components/withdraw/withdraw-modal'
 import AddFundsModal, { AddFundsModalRef } from '@/components/deposit/add-funds-modal'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Sparklines } from 'react-sparklines'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
@@ -193,7 +193,7 @@ export default function SendaWallet() {
   const handleDepositComplete = (transactionId: string, depositId: string, recipientRole?: string) => {
     console.log('Deposit completed:', { transactionId, depositId, recipientRole })
     
-    let message = ''
+    let message: string
     if (recipientRole === 'GUEST') {
       message = 'Deposit completed. An invitation has been sent to the recipient to claim the funds.'
     } else if (recipientRole === 'INDIVIDUAL') {
@@ -275,52 +275,6 @@ export default function SendaWallet() {
       toast.error(error.message || 'Failed to sign transaction')
     }
   })
-
-  const handleSignatureComplete = async () => {
-    console.log('handleSignatureComplete called with:', {
-      selectedTransaction,
-      sessionUser: session?.user,
-      fullSession: session
-    })
-
-    if (!selectedTransaction?.id || !session?.user?.id) {
-      console.error('Missing required data:', {
-        transactionId: selectedTransaction?.id,
-        userId: session?.user?.id
-      })
-      toast.error('Missing required data for signature')
-      return
-    }
-
-    // Find the transaction in the transactions list
-    const transaction = transactions?.transactions.find(tx => 
-      tx.depositRecord?.id === selectedTransaction.id
-    );
-
-    if (!transaction) {
-      console.error('Could not find transaction:', selectedTransaction.id);
-      toast.error('Could not find transaction');
-      return;
-    }
-
-    console.log('Calling updateSignature with:', {
-      depositId: selectedTransaction.id,
-      role: 'sender',
-      signerId: transaction.userId, // Use the transaction's userId
-      userDetails: {
-        id: session.user.id,
-        email: session.user.email,
-        walletPublicKey: session.user.sendaWalletPublicKey
-      }
-    })
-
-    toast.loading('Signing transaction...')
-    updateSignature({
-      depositId: selectedTransaction.id,
-      role: 'sender',
-      signerId: transaction.userId // Use the transaction's userId
-    })
-  }
 
   if (error) {
     return (
@@ -499,7 +453,7 @@ export default function SendaWallet() {
                         damping: 15,
                       }}
                     >
-                      {paths.paths.map((path, i) => {
+                      {paths.paths.map((path) => {
                         const isSender = path.senderPublicKey === publicKey?.toString()
                         const other = isSender ? path.receiver : path.sender
 
@@ -596,7 +550,7 @@ export default function SendaWallet() {
                       }}
                       className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white dark:bg-background rounded-xl border border-border/5"
                     >
-                      <img src={path.src} className="mx-auto mb-6 h-14 rounded-xl" />
+                      <Image width={100} height={100} alt="No Trust Paths Yet" src={path.src} className="mx-auto mb-6 h-14 rounded-xl" />
                       <h3 className="text-xl font-medium text-card-foreground mb-2">No Trust Paths Yet</h3>
                       <p className="text-muted-foreground mb-8">Start connecting with your network here.</p>
                       <Button
@@ -680,7 +634,6 @@ export default function SendaWallet() {
                                     (() => {
                                       const {
                                         icon: PolicyIcon,
-                                        label,
                                         className,
                                         description,
                                       } = getPolicyDetails(tx.depositRecord.policy)
@@ -841,7 +794,7 @@ export default function SendaWallet() {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                      <h3 className="text-xl font-medium text-slate-700 mb-2">You don't have any active deposits!</h3>
+                      <h3 className="text-xl font-medium text-slate-700 mb-2">You don&apos;t have any active deposits!</h3>
                       <p className="text-slate-500 mb-6">Start by buying or depositing funds:</p>
                       <Button
                         className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] cursor-pointer"
@@ -878,7 +831,7 @@ export default function SendaWallet() {
                                 No completed transactions yet!
                               </h3>
                               <p className="text-muted-foreground">
-                                Your completed transactions will appear here once they're done.
+                                Your completed transactions will appear here once they&apos;re done.
                               </p>
                             </div>
                           )
@@ -895,7 +848,7 @@ export default function SendaWallet() {
                               damping: 15,
                             }}
                           >
-                            {filteredTransactions.map((tx, idx) => {
+                            {filteredTransactions.map((tx) => {
                               const isSender = tx.userId === session?.user.id
                               const completedDate = tx.completedAt ? new Date(tx.completedAt) : new Date(tx.updatedAt)
                               const formattedDate = completedDate.toLocaleDateString('en-US', {

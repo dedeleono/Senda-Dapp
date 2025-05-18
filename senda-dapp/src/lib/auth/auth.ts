@@ -3,9 +3,6 @@ import { authConfig } from "./auth.config";
 import { sendAuthEmail } from "@/lib/validations/auth-email";
 import Email from "next-auth/providers/email";
 import { customPrismaAdapter } from "./auth-adapter";
-import { GuestService } from "@/server/services/guest"
-import { sendGuestDepositNotificationEmail } from "../validations/guest-deposit-notification";
-import { UserRole } from "@prisma/client";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,

@@ -1,10 +1,6 @@
-import { Account, NextAuthConfig, Profile, User } from "next-auth";
+import { NextAuthConfig } from "next-auth";
 import { NextURL } from "next/dist/server/web/next-url";
 import Google from "next-auth/providers/google";
-import { prisma } from "@/lib/db";
-import { GuestService } from "@/server/services/guest";
-import { EmailConfig } from "next-auth/providers/email"
-import { AdapterUser } from "@auth/core/adapters";
 
 // interface VerificationRequestEvent {
 //     url: string;

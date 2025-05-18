@@ -1,9 +1,7 @@
 import { create } from 'zustand';
-import { PublicKey } from '@solana/web3.js';
 import { TransactionResult } from '@/lib/utils/solana-transaction';
-import { FactoryStats, EscrowStats, InitEscrowParams, CancelParams, ReleaseParams, TransferSplParams } from '@/types/senda-program';
+import { FactoryStats, EscrowStats, InitEscrowParams, CancelParams, TransferSplParams } from '@/types/senda-program';
 import { persist } from 'zustand/middleware';
-import { prisma } from '@/lib/db';
 import { CreateDepositResponse } from '@/types/transaction';
 import { SignatureType } from '@/components/transactions/transaction-card';
 
@@ -12,16 +10,6 @@ interface SendaProgramState {
   lastError: Error | null;
   lastInitialization: number | null;
   transactionCount: number;
-}
-
-interface EscrowData {
-  id: string;
-  senderPublicKey: string;
-  receiverPublicKey: string;
-  depositedUsdc: number;
-  depositedUsdt: number;
-  depositCount: number;
-  state: string;
 }
 
 interface DepositInput {
@@ -52,7 +40,7 @@ export interface SendaStore {
   initEscrow: (params: InitEscrowParams) => Promise<TransactionResult>;
   createDeposit: (params: DepositInput) => Promise<CreateDepositResponse>;
   cancelDeposit: (params: CancelParams) => Promise<TransactionResult>;
-  updateDepositSignature: (params: { depositId: string; role: 'sender' | 'receiver'; signerId: string }) => Promise<{ success: boolean; error?: any }>;
+  updateDepositSignature: (params: { depositId: string; role: 'sender' | 'receiver'; signerId: string }) => Promise<{ success: boolean; error?: Error }>;
   transferSpl: (params: TransferSplParams) => Promise<TransferSplResponse>;
   
   // Read methods

@@ -3,9 +3,7 @@ import { render } from '@react-email/render';
 
 import TwoFactorEmail from '@/components/emails/twoFactor-email'
 
-export async function sendTwoFactorEmail(email: string, url: string, token: string) {
-
-    const parsedUrl = new URL(url);
+export async function sendTwoFactorEmail(email: string, url: string) {
     
     const transport = createTransport({
         host: process.env.EMAIL_SERVER_HOST || "smtp.gmail.com",

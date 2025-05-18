@@ -53,43 +53,34 @@ export default function ThemeToggle({ size }: ThemeToggleProps) {
   const [mounted, setMounted] = useState(false);
   const [isChanging, setIsChanging] = useState(false);
 
-  // Prevent hydration mismatch and restore theme from localStorage if needed
   useEffect(() => {
     setMounted(true);
     
-    // Check if there's a saved theme in localStorage (set during language switch)
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('theme');
       
-      // If we have a saved theme and it's different from the current theme, apply it
       if (savedTheme && theme !== savedTheme) {
         setTheme(savedTheme);
       }
     }
   }, [setTheme, theme]);
 
-  // Handle theme switching with debounce to prevent flickering
   const handleThemeChange = (newTheme: string) => {
     setIsChanging(true);
     
-    // Add theme-transitioning class to prevent flickering, but only to html element
-    // This avoids interfering with component animations like dropdown menus
     document.documentElement.classList.add('theme-transitioning');
     
-    // Apply theme change with a small delay to allow for smooth animation
     setTimeout(() => {
       setTheme(newTheme);
       localStorage.setItem('theme', newTheme);
       
-      // Remove theme-transitioning class after theme is applied
       setTimeout(() => {
         document.documentElement.classList.remove('theme-transitioning');
         setIsChanging(false);
-      }, 100); // Reduced from 300ms to minimize impact on other animations
+      }, 100);
     }, 10);
   };
 
-  // Return a placeholder with same dimensions during SSR or theme change to prevent layout shift
   if (!mounted) {
     return <div className={cn(themeToggleVariants({ size }))} aria-hidden="true" />;
   }

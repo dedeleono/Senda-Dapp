@@ -1,7 +1,7 @@
 export type SendaSmartc = {
   "address": "B3DT8RTGLr4k34jidDKKDYaLZcsveSmMVD7CWfvq8bgn",
   "metadata": {
-    "name": "senda_smartc",
+    "name": "sendaSmartc",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
@@ -39,12 +39,12 @@ export type SendaSmartc = {
               {
                 "kind": "account",
                 "path": "escrow.sender",
-                "account": "Escrow"
+                "account": "escrow"
               },
               {
                 "kind": "account",
                 "path": "escrow.receiver",
-                "account": "Escrow"
+                "account": "escrow"
               }
             ]
           }
@@ -63,7 +63,7 @@ export type SendaSmartc = {
           "signer": true
         },
         {
-          "name": "sender_usdc_ata",
+          "name": "senderUsdcAta",
           "writable": true,
           "pda": {
             "seeds": [
@@ -110,7 +110,7 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdc_mint"
+                "path": "usdcMint"
               }
             ],
             "program": {
@@ -153,7 +153,7 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "sender_usdt_ata",
+          "name": "senderUsdtAta",
           "writable": true,
           "pda": {
             "seeds": [
@@ -200,7 +200,7 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdt_mint"
+                "path": "usdtMint"
               }
             ],
             "program": {
@@ -243,13 +243,13 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "usdc_mint"
+          "name": "usdcMint"
         },
         {
-          "name": "usdt_mint"
+          "name": "usdtMint"
         },
         {
-          "name": "vault_usdc",
+          "name": "vaultUsdc",
           "writable": true,
           "pda": {
             "seeds": [
@@ -274,13 +274,13 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdc_mint"
+                "path": "usdcMint"
               }
             ]
           }
         },
         {
-          "name": "vault_usdt",
+          "name": "vaultUsdt",
           "writable": true,
           "pda": {
             "seeds": [
@@ -305,13 +305,13 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdt_mint"
+                "path": "usdtMint"
               }
             ]
           }
         },
         {
-          "name": "deposit_record",
+          "name": "depositRecord",
           "writable": true,
           "pda": {
             "seeds": [
@@ -337,21 +337,21 @@ export type SendaSmartc = {
               },
               {
                 "kind": "arg",
-                "path": "recent_blockhash"
+                "path": "recentBlockhash"
               }
             ]
           }
         },
         {
-          "name": "associated_token_program",
+          "name": "associatedTokenProgram",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
-          "name": "token_program",
+          "name": "tokenProgram",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         },
         {
@@ -361,7 +361,7 @@ export type SendaSmartc = {
       ],
       "args": [
         {
-          "name": "recent_blockhash",
+          "name": "recentBlockhash",
           "type": {
             "array": [
               "u8",
@@ -403,12 +403,12 @@ export type SendaSmartc = {
               {
                 "kind": "account",
                 "path": "escrow.sender",
-                "account": "Escrow"
+                "account": "escrow"
               },
               {
                 "kind": "account",
                 "path": "escrow.receiver",
-                "account": "Escrow"
+                "account": "escrow"
               }
             ]
           }
@@ -428,7 +428,7 @@ export type SendaSmartc = {
           "signer": true
         },
         {
-          "name": "sender_usdc_ata",
+          "name": "senderUsdcAta",
           "writable": true,
           "pda": {
             "seeds": [
@@ -475,7 +475,7 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdc_mint"
+                "path": "usdcMint"
               }
             ],
             "program": {
@@ -518,7 +518,7 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "sender_usdt_ata",
+          "name": "senderUsdtAta",
           "writable": true,
           "pda": {
             "seeds": [
@@ -565,7 +565,7 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdt_mint"
+                "path": "usdtMint"
               }
             ],
             "program": {
@@ -608,7 +608,7 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "receiver_usdc_ata",
+          "name": "receiverUsdcAta",
           "pda": {
             "seeds": [
               {
@@ -654,7 +654,7 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdc_mint"
+                "path": "usdcMint"
               }
             ],
             "program": {
@@ -697,7 +697,7 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "receiver_usdt_ata",
+          "name": "receiverUsdtAta",
           "pda": {
             "seeds": [
               {
@@ -743,7 +743,7 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdt_mint"
+                "path": "usdtMint"
               }
             ],
             "program": {
@@ -786,13 +786,13 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "usdc_mint"
+          "name": "usdcMint"
         },
         {
-          "name": "usdt_mint"
+          "name": "usdtMint"
         },
         {
-          "name": "vault_usdc",
+          "name": "vaultUsdc",
           "writable": true,
           "pda": {
             "seeds": [
@@ -817,13 +817,13 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdc_mint"
+                "path": "usdcMint"
               }
             ]
           }
         },
         {
-          "name": "vault_usdt",
+          "name": "vaultUsdt",
           "writable": true,
           "pda": {
             "seeds": [
@@ -848,18 +848,18 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdt_mint"
+                "path": "usdtMint"
               }
             ]
           }
         },
         {
-          "name": "fee_payer",
+          "name": "feePayer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "deposit_record",
+          "name": "depositRecord",
           "writable": true,
           "pda": {
             "seeds": [
@@ -885,21 +885,21 @@ export type SendaSmartc = {
               },
               {
                 "kind": "arg",
-                "path": "recent_blockhash"
+                "path": "recentBlockhash"
               }
             ]
           }
         },
         {
-          "name": "associated_token_program",
+          "name": "associatedTokenProgram",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
-          "name": "token_program",
+          "name": "tokenProgram",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         },
         {
@@ -912,7 +912,7 @@ export type SendaSmartc = {
           "name": "stable",
           "type": {
             "defined": {
-              "name": "Stable"
+              "name": "stable"
             }
           }
         },
@@ -920,12 +920,12 @@ export type SendaSmartc = {
           "name": "authorization",
           "type": {
             "defined": {
-              "name": "AuthorizedBy"
+              "name": "authorizedBy"
             }
           }
         },
         {
-          "name": "_recent_blockhash",
+          "name": "recentBlockhash",
           "type": {
             "array": [
               "u8",
@@ -940,7 +940,7 @@ export type SendaSmartc = {
       ]
     },
     {
-      "name": "init_factory",
+      "name": "initFactory",
       "discriminator": [
         65,
         136,
@@ -977,7 +977,7 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "mint_authority",
+          "name": "mintAuthority",
           "pda": {
             "seeds": [
               {
@@ -1007,7 +1007,7 @@ export type SendaSmartc = {
           "signer": true
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         },
         {
@@ -1018,7 +1018,7 @@ export type SendaSmartc = {
       "args": []
     },
     {
-      "name": "initialize_escrow",
+      "name": "initializeEscrow",
       "discriminator": [
         243,
         160,
@@ -1031,7 +1031,7 @@ export type SendaSmartc = {
       ],
       "accounts": [
         {
-          "name": "fee_payer",
+          "name": "feePayer",
           "writable": true,
           "signer": true
         },
@@ -1099,7 +1099,7 @@ export type SendaSmartc = {
           "signer": true
         },
         {
-          "name": "sender_usdc_ata",
+          "name": "senderUsdcAta",
           "pda": {
             "seeds": [
               {
@@ -1108,11 +1108,11 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "token_program"
+                "path": "tokenProgram"
               },
               {
                 "kind": "account",
-                "path": "usdc_mint"
+                "path": "usdcMint"
               }
             ],
             "program": {
@@ -1155,7 +1155,7 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "sender_usdt_ata",
+          "name": "senderUsdtAta",
           "pda": {
             "seeds": [
               {
@@ -1164,11 +1164,11 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "token_program"
+                "path": "tokenProgram"
               },
               {
                 "kind": "account",
-                "path": "usdt_mint"
+                "path": "usdtMint"
               }
             ],
             "program": {
@@ -1211,7 +1211,7 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "receiver_usdc_ata",
+          "name": "receiverUsdcAta",
           "pda": {
             "seeds": [
               {
@@ -1220,11 +1220,11 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "token_program"
+                "path": "tokenProgram"
               },
               {
                 "kind": "account",
-                "path": "usdc_mint"
+                "path": "usdcMint"
               }
             ],
             "program": {
@@ -1267,7 +1267,7 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "receiver_usdt_ata",
+          "name": "receiverUsdtAta",
           "pda": {
             "seeds": [
               {
@@ -1276,11 +1276,11 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "token_program"
+                "path": "tokenProgram"
               },
               {
                 "kind": "account",
-                "path": "usdt_mint"
+                "path": "usdtMint"
               }
             ],
             "program": {
@@ -1323,13 +1323,13 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "usdc_mint"
+          "name": "usdcMint"
         },
         {
-          "name": "usdt_mint"
+          "name": "usdtMint"
         },
         {
-          "name": "vault_usdc",
+          "name": "vaultUsdc",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1354,13 +1354,13 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdc_mint"
+                "path": "usdcMint"
               }
             ]
           }
         },
         {
-          "name": "vault_usdt",
+          "name": "vaultUsdt",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1385,21 +1385,21 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdt_mint"
+                "path": "usdtMint"
               }
             ]
           }
         },
         {
-          "name": "associated_token_program",
+          "name": "associatedTokenProgram",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
-          "name": "token_program",
+          "name": "tokenProgram",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         },
         {
@@ -1446,12 +1446,12 @@ export type SendaSmartc = {
               {
                 "kind": "account",
                 "path": "escrow.sender",
-                "account": "Escrow"
+                "account": "escrow"
               },
               {
                 "kind": "account",
                 "path": "escrow.receiver",
-                "account": "Escrow"
+                "account": "escrow"
               }
             ]
           }
@@ -1470,17 +1470,17 @@ export type SendaSmartc = {
           "signer": true
         },
         {
-          "name": "receiving_party",
+          "name": "receivingParty",
           "writable": true
         },
         {
-          "name": "receiving_usdc_ata",
+          "name": "receivingUsdcAta",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "receiving_party"
+                "path": "receivingParty"
               },
               {
                 "kind": "const",
@@ -1521,7 +1521,7 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdc_mint"
+                "path": "usdcMint"
               }
             ],
             "program": {
@@ -1564,13 +1564,13 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "receiving_usdt_ata",
+          "name": "receivingUsdtAta",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "receiving_party"
+                "path": "receivingParty"
               },
               {
                 "kind": "const",
@@ -1611,7 +1611,7 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdt_mint"
+                "path": "usdtMint"
               }
             ],
             "program": {
@@ -1654,13 +1654,13 @@ export type SendaSmartc = {
           }
         },
         {
-          "name": "usdc_mint"
+          "name": "usdcMint"
         },
         {
-          "name": "usdt_mint"
+          "name": "usdtMint"
         },
         {
-          "name": "vault_usdc",
+          "name": "vaultUsdc",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1685,13 +1685,13 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdc_mint"
+                "path": "usdcMint"
               }
             ]
           }
         },
         {
-          "name": "vault_usdt",
+          "name": "vaultUsdt",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1716,13 +1716,13 @@ export type SendaSmartc = {
               },
               {
                 "kind": "account",
-                "path": "usdt_mint"
+                "path": "usdtMint"
               }
             ]
           }
         },
         {
-          "name": "deposit_record",
+          "name": "depositRecord",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1748,21 +1748,21 @@ export type SendaSmartc = {
               },
               {
                 "kind": "arg",
-                "path": "recent_blockhash"
+                "path": "recentBlockhash"
               }
             ]
           }
         },
         {
-          "name": "associated_token_program",
+          "name": "associatedTokenProgram",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
-          "name": "token_program",
+          "name": "tokenProgram",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         },
         {
@@ -1772,7 +1772,7 @@ export type SendaSmartc = {
       ],
       "args": [
         {
-          "name": "recent_blockhash",
+          "name": "recentBlockhash",
           "type": {
             "array": [
               "u8",
@@ -1785,7 +1785,7 @@ export type SendaSmartc = {
   ],
   "accounts": [
     {
-      "name": "DepositRecord",
+      "name": "depositRecord",
       "discriminator": [
         83,
         232,
@@ -1798,7 +1798,7 @@ export type SendaSmartc = {
       ]
     },
     {
-      "name": "Escrow",
+      "name": "escrow",
       "discriminator": [
         31,
         213,
@@ -1811,7 +1811,7 @@ export type SendaSmartc = {
       ]
     },
     {
-      "name": "Factory",
+      "name": "factory",
       "discriminator": [
         159,
         68,
@@ -1827,80 +1827,80 @@ export type SendaSmartc = {
   "errors": [
     {
       "code": 6000,
-      "name": "InvalidSigner",
+      "name": "invalidSigner",
       "msg": "Authorization error: Invalid signer for this policy"
     },
     {
       "code": 6001,
-      "name": "InvalidAuthority",
+      "name": "invalidAuthority",
       "msg": "Authorization error: Authority cannot be the same as sender"
     },
     {
       "code": 6002,
-      "name": "InvalidUsdcMint",
+      "name": "invalidUsdcMint",
       "msg": "Account validation error: Invalid USDC mint address"
     },
     {
       "code": 6003,
-      "name": "InvalidUsdtMint",
+      "name": "invalidUsdtMint",
       "msg": "Account validation error: Invalid USDT mint address"
     },
     {
       "code": 6004,
-      "name": "InvalidDepositor",
+      "name": "invalidDepositor",
       "msg": "Account validation error: Depositor must be either the sender or receiver of the escrow"
     },
     {
       "code": 6005,
-      "name": "InvalidCounterparty",
+      "name": "invalidCounterparty",
       "msg": "Account validation error: Counterparty must be the other party of the escrow"
     },
     {
       "code": 6006,
-      "name": "InvalidParties",
+      "name": "invalidParties",
       "msg": "Account validation error: Invalid parties for this escrow transaction"
     },
     {
       "code": 6007,
-      "name": "InvalidState",
+      "name": "invalidState",
       "msg": "State error: Invalid escrow or deposit state for this operation"
     },
     {
       "code": 6008,
-      "name": "InvalidPolicy",
+      "name": "invalidPolicy",
       "msg": "Policy error: Invalid signature policy configuration"
     },
     {
       "code": 6009,
-      "name": "DepositNotFound",
+      "name": "depositNotFound",
       "msg": "Deposit error: Deposit not found"
     },
     {
       "code": 6010,
-      "name": "DepositAlreadyProcessed",
+      "name": "depositAlreadyProcessed",
       "msg": "Deposit error: Deposit has already been processed"
     }
   ],
   "types": [
     {
-      "name": "AuthorizedBy",
+      "name": "authorizedBy",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Sender"
+            "name": "sender"
           },
           {
-            "name": "Receiver"
+            "name": "receiver"
           },
           {
-            "name": "Both"
+            "name": "both"
           }
         ]
       }
     },
     {
-      "name": "DepositRecord",
+      "name": "depositRecord",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1909,7 +1909,7 @@ export type SendaSmartc = {
             "type": "pubkey"
           },
           {
-            "name": "deposit_idx",
+            "name": "depositIdx",
             "type": "u64"
           },
           {
@@ -1920,7 +1920,7 @@ export type SendaSmartc = {
             "name": "policy",
             "type": {
               "defined": {
-                "name": "SignaturePolicy"
+                "name": "signaturePolicy"
               }
             }
           },
@@ -1932,7 +1932,7 @@ export type SendaSmartc = {
             "name": "stable",
             "type": {
               "defined": {
-                "name": "Stable"
+                "name": "stable"
               }
             }
           },
@@ -1940,7 +1940,7 @@ export type SendaSmartc = {
             "name": "state",
             "type": {
               "defined": {
-                "name": "DepositState"
+                "name": "depositState"
               }
             }
           }
@@ -1948,27 +1948,27 @@ export type SendaSmartc = {
       }
     },
     {
-      "name": "DepositState",
+      "name": "depositState",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "PendingWithdrawal"
+            "name": "pendingWithdrawal"
           },
           {
-            "name": "Complete"
+            "name": "complete"
           },
           {
-            "name": "Disputed"
+            "name": "disputed"
           },
           {
-            "name": "Cancelled"
+            "name": "cancelled"
           }
         ]
       }
     },
     {
-      "name": "Escrow",
+      "name": "escrow",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1989,19 +1989,19 @@ export type SendaSmartc = {
             "type": "pubkey"
           },
           {
-            "name": "usdc_mint",
+            "name": "usdcMint",
             "type": "pubkey"
           },
           {
-            "name": "usdt_mint",
+            "name": "usdtMint",
             "type": "pubkey"
           },
           {
-            "name": "vault_usdc",
+            "name": "vaultUsdc",
             "type": "pubkey"
           },
           {
-            "name": "vault_usdt",
+            "name": "vaultUsdt",
             "type": "pubkey"
           },
           {
@@ -2009,30 +2009,30 @@ export type SendaSmartc = {
             "type": "u8"
           },
           {
-            "name": "vault_usdc_bump",
+            "name": "vaultUsdcBump",
             "type": "u8"
           },
           {
-            "name": "vault_usdt_bump",
+            "name": "vaultUsdtBump",
             "type": "u8"
           },
           {
-            "name": "deposited_usdc",
+            "name": "depositedUsdc",
             "type": "u64"
           },
           {
-            "name": "deposited_usdt",
+            "name": "depositedUsdt",
             "type": "u64"
           },
           {
-            "name": "deposit_count",
+            "name": "depositCount",
             "type": "u64"
           },
           {
             "name": "state",
             "type": {
               "defined": {
-                "name": "EscrowState"
+                "name": "escrowState"
               }
             }
           }
@@ -2040,21 +2040,21 @@ export type SendaSmartc = {
       }
     },
     {
-      "name": "EscrowState",
+      "name": "escrowState",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Active"
+            "name": "active"
           },
           {
-            "name": "Closed"
+            "name": "closed"
           }
         ]
       }
     },
     {
-      "name": "Factory",
+      "name": "factory",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2063,34 +2063,34 @@ export type SendaSmartc = {
             "type": "pubkey"
           },
           {
-            "name": "factory_bump",
+            "name": "factoryBump",
             "type": "u8"
           },
           {
-            "name": "mint_authority",
+            "name": "mintAuthority",
             "type": "pubkey"
           },
           {
-            "name": "mint_auth_bump",
+            "name": "mintAuthBump",
             "type": "u8"
           },
           {
-            "name": "escrow_count",
+            "name": "escrowCount",
             "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "SignaturePolicy",
+      "name": "signaturePolicy",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Dual"
+            "name": "dual"
           },
           {
-            "name": "Single",
+            "name": "single",
             "fields": [
               {
                 "name": "signer",
@@ -2102,15 +2102,15 @@ export type SendaSmartc = {
       }
     },
     {
-      "name": "Stable",
+      "name": "stable",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Usdc"
+            "name": "usdc"
           },
           {
-            "name": "Usdt"
+            "name": "usdt"
           }
         ]
       }

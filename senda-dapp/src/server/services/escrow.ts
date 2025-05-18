@@ -1,5 +1,5 @@
 import { PublicKey, Transaction } from '@solana/web3.js';
-import { BN, AnchorProvider, web3 } from '@coral-xyz/anchor';
+import { BN, web3 } from '@coral-xyz/anchor';
 import { USDC_MINT, USDT_MINT } from '@/lib/constants';
 import { InitEscrowAccounts } from '@/types/senda-program';
 import { loadUserSignerKeypair, getProvider } from '@/utils/dapp-wallets';
