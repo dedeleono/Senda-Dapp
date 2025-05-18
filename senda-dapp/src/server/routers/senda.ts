@@ -36,7 +36,7 @@ import { UserService } from "../services/user";
 import { EscrowService } from "../services/escrow";
 import { handleRouterError } from "../utils/error-handler";
 import { CreateDepositResponse } from "@/types/transaction";
-import { DepositAccounts, InitEscrowAccounts, ReleaseAccounts, ReleaseResult } from "@/types/senda-program";
+import { CancelAccounts, DepositAccounts, InitEscrowAccounts, ReleaseAccounts, ReleaseResult } from "@/types/senda-program";
 import { sendGuestDepositNotificationEmail } from "@/lib/validations/guest-deposit-notification";
 import { sendDepositNotificationEmail } from "@/lib/validations/deposit-notification";
 import { SignatureType } from "@/components/transactions/transaction-card";
@@ -404,7 +404,7 @@ export const sendaRouter = router({
                 escrow: z.string(),
                 originalDepositor: z.string(),
                 counterparty: z.string(),
-                depositIdx: z.number().int().nonnegative()
+                depositId: z.string()
             })
         )
         .mutation(async ({ ctx, input }) => {
@@ -427,41 +427,35 @@ export const sendaRouter = router({
                 }
             });
 
+            if (!deposit) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Deposit record not found'
+                });
+            }
+
             const usdcMint = new PublicKey(USDC_MINT);
             const usdtMint = new PublicKey(USDT_MINT);
 
-            const [vaultUsdc] = findVaultPDA(escrowPk, usdcMint, "usdc", program.programId);
-            const [vaultUsdt] = findVaultPDA(escrowPk, usdtMint, "usdt", program.programId);
-
-            const depositorUsdcAta = await getAssociatedTokenAddressSync(usdcMint, depositorPk);
-            const depositorUsdtAta = await getAssociatedTokenAddressSync(usdtMint, depositorPk);
-
             const [depositRecord] = findDepositRecordPDA(escrowPk, depositorPk, deposit.blockhash);
 
-            const tx = await program.methods
-                .cancel(new BN(input.depositIdx))
+            const cancelIx = await program.methods
+                .cancel(deposit.blockhash)
                 .accounts({
                     escrow: escrowPk,
                     sender: depositorPk,
                     receiver: counterpartyPk,
                     authority: feePayer.publicKey,
-                    senderUsdcAta: depositorUsdcAta,
-                    senderUsdtAta: depositorUsdtAta,
                     usdcMint,
                     usdtMint,
-                    vaultUsdc,
-                    vaultUsdt,
                     depositRecord,
-                    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-                    tokenProgram: TOKEN_PROGRAM_ID,
-                    systemProgram: SystemProgram.programId,
-                    rent: SYSVAR_RENT_PUBKEY
-                } as any)
-                .transaction();
+                } as CancelAccounts)
+                .instruction();
 
-            const sig = await (program.provider as AnchorProvider).sendAndConfirm(tx, [feePayer, depositorKp]);
+            const cancelTx = new Transaction().add(cancelIx);
+            const cancelSig = await web3.sendAndConfirmTransaction(connection, cancelTx, [depositorKp, feePayer]);
 
-            return { signature: sig };
+            return { signature: cancelSig };
         }),
 
     updateDepositSignature: protectedProcedure
