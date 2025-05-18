@@ -161,8 +161,9 @@ model DepositRecord {
   amount       Float
   policy       SignatureType
   stable       String
-  signature    String? 
+  signature    String?
   state        String
+  blockhash    Int[]
   userId       String
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime      @default(now())

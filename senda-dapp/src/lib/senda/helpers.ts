@@ -44,26 +44,43 @@ export const findVaultPDA = (
     );
 };
 
+// export const findDepositRecordPDA = (
+//     escrowPda: PublicKey,
+//     depositIdx: number,
+//     programId: PublicKey
+// ): [PublicKey, number] => {
+
+//     const depositIdxBuf = Buffer.alloc(8);
+//     try {
+//         depositIdxBuf.writeBigUInt64LE(BigInt(depositIdx), 0);
+//     } catch (error) {
+//         const view = new DataView(new ArrayBuffer(8));
+//         view.setUint32(0, depositIdx, true)
+//         view.setUint32(4, 0, true);        
+
+//         Buffer.from(new Uint8Array(view.buffer)).copy(depositIdxBuf);
+//     }
+
+//     return PublicKey.findProgramAddressSync(
+//         [Buffer.from("deposit"), escrowPda.toBuffer(), depositIdxBuf],
+//         programId
+//     );
+// };
+
 export const findDepositRecordPDA = (
     escrowPda: PublicKey,
-    depositIdx: number,
-    programId: PublicKey
+    senderPubkey: PublicKey,
+    blockhashArray: number[]
 ): [PublicKey, number] => {
-
-    const depositIdxBuf = Buffer.alloc(8);
-    try {
-        depositIdxBuf.writeBigUInt64LE(BigInt(depositIdx), 0);
-    } catch (error) {
-        const view = new DataView(new ArrayBuffer(8));
-        view.setUint32(0, depositIdx, true)
-        view.setUint32(4, 0, true);        
-
-        Buffer.from(new Uint8Array(view.buffer)).copy(depositIdxBuf);
-    }
-
+    const { program } = getProvider()
     return PublicKey.findProgramAddressSync(
-        [Buffer.from("deposit"), escrowPda.toBuffer(), depositIdxBuf],
-        programId
+        [
+            Buffer.from("deposit"),
+            escrowPda.toBuffer(),
+            senderPubkey.toBuffer(),
+            Buffer.from(blockhashArray)
+        ],
+        program.programId
     );
 };
 
@@ -77,52 +94,6 @@ export function getSharedConnection(): Connection {
     }
     return _sharedConnection;
 }
-
-export const createInstructionData = (
-    discriminator: number[],
-    ...args: Array<{ type: 'u8' | 'u64' | 'pubkey', value: number | PublicKey }>
-): Buffer => {
-
-    let totalSize = 8;
-    for (const arg of args) {
-        switch (arg.type) {
-            case 'u8': totalSize += 1; break;
-            case 'u64': totalSize += 8; break;
-            case 'pubkey': totalSize += 32; break;
-        }
-    }
-
-    const data = Buffer.alloc(totalSize);
-
-    Buffer.from(discriminator).copy(data, 0);
-
-    let offset = 8;
-    for (const arg of args) {
-        switch (arg.type) {
-            case 'u8':
-                data.writeUInt8(arg.value as number, offset);
-                offset += 1;
-                break;
-            case 'u64':
-                try {
-                    data.writeBigUInt64LE(BigInt(arg.value as number), offset);
-                } catch (error) {
-                    const view = new DataView(new ArrayBuffer(8));
-                    view.setUint32(0, arg.value as number, true);
-                    view.setUint32(4, 0, true);
-                    Buffer.from(new Uint8Array(view.buffer)).copy(data, offset);
-                }
-                offset += 8;
-                break;
-            case 'pubkey':
-                (arg.value as PublicKey).toBuffer().copy(data, offset);
-                offset += 32;
-                break;
-        }
-    }
-
-    return data;
-};
 
 export const createAta = async (mint: PublicKey, owner: PublicKey) => {
     try {
@@ -139,7 +110,9 @@ export const createAta = async (mint: PublicKey, owner: PublicKey) => {
             // Check if the account already exists
             const account = await connection.getAccountInfo(ataAddress);
             if (account !== null) {
-                return [ataAddress, false];
+                if (account.data.length > 0) {
+                    return [ataAddress, false];
+                }
             }
         } catch (error) {
             console.log("Error checking account, proceeding with creation:", error);
@@ -159,27 +132,63 @@ export const createAta = async (mint: PublicKey, owner: PublicKey) => {
         tx.recentBlockhash = latestBlockhash.blockhash;
         tx.feePayer = feePayer.publicKey;
 
-        const signature = await connection.sendTransaction(tx, [feePayer], {
-            skipPreflight: false,
-            preflightCommitment: "confirmed",
-            maxRetries: 3
-        });
-        
-        // Wait for confirmation
-        await connection.confirmTransaction({
-            signature,
-            blockhash: latestBlockhash.blockhash,
-            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
-        }, "confirmed");
+        let signature: string | null = null;
+        let retries = 3;
 
-        return [ataAddress, true];
+        while (retries > 0 && !signature) {
+            try {
+                signature = await connection.sendTransaction(tx, [feePayer], {
+                    skipPreflight: false,
+                    preflightCommitment: "confirmed",
+                });
+
+                // Wait for confirmation with a timeout
+                const confirmation = await Promise.race([
+                    connection.confirmTransaction({
+                        signature,
+                        blockhash: latestBlockhash.blockhash,
+                        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+                    }, "confirmed"),
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error("Confirmation timeout")), 30000)
+                    )
+                ]);
+
+                if (confirmation) {
+                    // Verify the account was created
+                    const newAccount = await connection.getAccountInfo(ataAddress);
+                    if (!newAccount) {
+                        throw new Error("ATA account not found after creation");
+                    }
+                    return [ataAddress, true];
+                }
+            } catch (err) {
+                console.warn(`ATA creation attempt failed, retries left: ${retries - 1}`, err);
+                retries--;
+                if (retries === 0) throw err;
+                // Wait before retrying
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+        throw new Error("Failed to create ATA after all retries");
     } catch (error: any) {
         // If the error indicates the account already exists, return the address
         if (error.message?.includes("already in use")) {
             const ataAddress = getAssociatedTokenAddressSync(mint, owner);
-            return [ataAddress, false];
+            const account = await getProvider().connection.getAccountInfo(ataAddress);
+            if (account && account.data.length > 0) {
+                return [ataAddress, false];
+            }
         }
         console.error("Failed to create ATA:", error);
-        throw error;
+        throw new Error(`Failed to create ATA: ${error.message || 'Unknown error'}`);
     }
+};
+
+export const getRecentBlockhashArray = async (connection: Connection): Promise<number[]> => {
+    const { blockhash } = await connection.getLatestBlockhash();
+    // Convert the blockhash to a PublicKey first, then get its bytes
+    const blockhashKey = new PublicKey(blockhash);
+    const blockhashBytes = blockhashKey.toBytes();
+    return Array.from(blockhashBytes);
 };

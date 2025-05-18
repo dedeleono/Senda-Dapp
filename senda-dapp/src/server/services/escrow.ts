@@ -1,5 +1,5 @@
-import { PublicKey } from '@solana/web3.js';
-import { BN, AnchorProvider } from '@coral-xyz/anchor';
+import { PublicKey, Transaction } from '@solana/web3.js';
+import { BN, AnchorProvider, web3 } from '@coral-xyz/anchor';
 import { USDC_MINT, USDT_MINT } from '@/lib/constants';
 import { InitEscrowAccounts } from '@/types/senda-program';
 import { loadUserSignerKeypair, getProvider } from '@/utils/dapp-wallets';
@@ -51,7 +51,7 @@ export class EscrowService {
       const senderPk = new PublicKey(senderPublicKey);
       const receiverPk = new PublicKey(receiverPublicKey);
       
-      const { program, feePayer } = getProvider();
+      const { program, feePayer, connection } = getProvider();
       if (!program || !feePayer) {
         throw new Error('Provider not properly initialized');
       }
@@ -87,20 +87,20 @@ export class EscrowService {
 
       const { keypair: senderKeypair } = await loadUserSignerKeypair(userId);
 
-      const tx = await program.methods
+      const ix = await program.methods
         .initializeEscrow(new BN(seed))
         .accounts({
           feePayer: feePayer.publicKey,
-          // escrow: escrowPda,
           sender: senderPk,
           receiver: receiverPk,
+          authority: feePayer.publicKey,
           usdcMint,
           usdtMint,
         } as InitEscrowAccounts)
-        .transaction();
+        .instruction();
 
-      const anchorProvider = program.provider as AnchorProvider;
-      const txSignature = await anchorProvider.sendAndConfirm(tx, [feePayer, senderKeypair]);
+      const tx = new Transaction().add(ix);
+      const txSig = await web3.sendAndConfirmTransaction(connection, tx, [feePayer, senderKeypair]);
 
       return {
         success: true,
@@ -108,7 +108,7 @@ export class EscrowService {
           escrowAddress: escrowPda.toBase58(),
           senderPublicKey,
           receiverPublicKey,
-          signature: txSignature
+          signature: txSig
         }
       };
 
