@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useWithdrawForm } from '@/stores/use-withdraw-form';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 const BankForm = () => {
@@ -67,21 +68,22 @@ const BankForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <div className="mb-6 flex flex-col items-center justify-center">
-          <div className="bg-[#f6ead7] p-3 rounded-full mb-3">
-            <CreditCard className="h-16 w-8" />
-          </div>
-          <h3 className="text-lg font-medium">Withdraw to Bank Account</h3>
-          <p className="text-sm text-gray-500 text-center mt-1">
-            Enter your bank account details for withdrawal.
-          </p>
-          <p className="text-sm text-gray-500 text-center">
-            Currently available in Guatemala
-          </p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-sm text-gray-500">Powered by</span>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="h-full max-h-[calc(100vh-250px)] overflow-y-auto px-4"
+    >
+      <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl mx-auto py-8">
+        <div className="text-center flex flex-col spce-y-1">
+          
+          <h2 className="text-2xl font-bold text-[#1c3144] mb-1">
+            Withdraw to Bank Account
+          </h2>
+          
+          <div className="mt-1 flex items-center justify-center gap-2 text-sm text-gray-500">
+            <span>Available in Guatemala</span>
+            <span className="text-[#d7dfbe]">|</span>
+            <span>Powered by</span>
             <Image 
               src="https://cdn.prod.website-files.com/66c35e8262b10fa677d4282c/66c36d87c4b68f50f55a13b9_Copy%20of%20Maverick-Logo-09-p-500.png"
               alt="Maverick Capital Investment"
@@ -92,86 +94,119 @@ const BankForm = () => {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Account Holder Name
-            </label>
-            <Input
-              type="text"
-              placeholder="Your full name"
-              value={bankInfo.accountName}
-              onChange={(e) => handleInputChange('accountName', e.target.value)}
-              className="w-full"
-            />
-            {errors.accountName && (
-              <p className="text-sm text-red-500 mt-1">{errors.accountName}</p>
-            )}
-          </div>
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl p-6 border-2 border-[#d7dfbe]">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[#1c3144] mb-2">
+                  Account Holder Name
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Your full name"
+                  value={bankInfo.accountName}
+                  onChange={(e) => handleInputChange('accountName', e.target.value)}
+                  className="w-full rounded-md border-2 focus:border-[#7ea16b] transition-colors duration-200"
+                />
+                {errors.accountName && (
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-sm text-red-500 mt-2"
+                  >
+                    {errors.accountName}
+                  </motion.p>
+                )}
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Bank Name
-            </label>
-            <Input
-              type="text"
-              placeholder="Bank of America, Chase, etc."
-              value={bankInfo.bankName}
-              onChange={(e) => handleInputChange('bankName', e.target.value)}
-              className="w-full"
-            />
-            {errors.bankName && (
-              <p className="text-sm text-red-500 mt-1">{errors.bankName}</p>
-            )}
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-[#1c3144] mb-2">
+                  Bank Name
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Bank of America, Chase, etc."
+                  value={bankInfo.bankName}
+                  onChange={(e) => handleInputChange('bankName', e.target.value)}
+                  className="w-full rounded-md border-2 focus:border-[#7ea16b] transition-colors duration-200"
+                />
+                {errors.bankName && (
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-sm text-red-500 mt-2"
+                  >
+                    {errors.bankName}
+                  </motion.p>
+                )}
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Account Number
-            </label>
-            <Input
-              type="text"
-              placeholder="Enter account number"
-              value={bankInfo.accountNumber}
-              onChange={(e) => handleInputChange('accountNumber', e.target.value)}
-              className="w-full"
-            />
-            {errors.accountNumber && (
-              <p className="text-sm text-red-500 mt-1">{errors.accountNumber}</p>
-            )}
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-[#1c3144] mb-2">
+                  Account Number
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Enter account number"
+                  value={bankInfo.accountNumber}
+                  onChange={(e) => handleInputChange('accountNumber', e.target.value)}
+                  className="w-full rounded-md border-2 focus:border-[#7ea16b] transition-colors duration-200"
+                />
+                {errors.accountNumber && (
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-sm text-red-500 mt-2"
+                  >
+                    {errors.accountNumber}
+                  </motion.p>
+                )}
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Routing Number
-            </label>
-            <Input
-              type="text"
-              placeholder="9-digit routing number"
-              value={bankInfo.routingNumber}
-              onChange={(e) => handleInputChange('routingNumber', e.target.value)}
-              className="w-full"
-            />
-            {errors.routingNumber && (
-              <p className="text-sm text-red-500 mt-1">{errors.routingNumber}</p>
-            )}
+              <div>
+                <label className="block text-sm font-medium text-[#1c3144] mb-2">
+                  Routing Number
+                </label>
+                <Input
+                  type="text"
+                  placeholder="9-digit routing number"
+                  value={bankInfo.routingNumber}
+                  onChange={(e) => handleInputChange('routingNumber', e.target.value)}
+                  className="w-full rounded-md border-2 focus:border-[#7ea16b] transition-colors duration-200"
+                />
+                {errors.routingNumber && (
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-sm text-red-500 mt-2"
+                  >
+                    {errors.routingNumber}
+                  </motion.p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="pt-4 flex justify-between">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={prevStep}
-        >
-          Back
-        </Button>
-        <Button type="submit">
-          Continue
-        </Button>
-      </div>
-    </form>
+        <div className="flex justify-between items-center pt-6 sticky bottom-0 bg-white/80 backdrop-blur-sm py-4">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={prevStep}
+            className="text-[#1c3144] hover:text-[#7ea16b] flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <Button
+            type="submit"
+            className="bg-[#7ea16b] text-white hover:bg-[#729461] px-8 py-2 rounded-md transition-colors duration-300"
+          >
+            Continue
+          </Button>
+        </div>
+      </form>
+    </motion.div>
   );
 };
 

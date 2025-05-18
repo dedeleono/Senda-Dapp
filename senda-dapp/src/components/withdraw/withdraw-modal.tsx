@@ -76,7 +76,7 @@ const WithdrawModal = forwardRef<WithdrawModalRef, WithdrawModalProps>(
           else setIsOpen(true);
         }}
       >
-        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-xl p-0 overflow-hidden">
           <DialogHeader className="pt-6 px-6">
             <DialogTitle className="text-2xl font-bold">{stepTitles[step - 1]}</DialogTitle>
           </DialogHeader>
