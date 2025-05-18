@@ -1,6 +1,8 @@
 # Senda DApp
 
-A Next.js-based decentralized application built on the Solana blockchain.
+A Next.js-based decentralized application built on the Solana blockchain, focused on frictionless, off-chain access to programmable money through prepaid cards and smart wallet infrastructure.
+
+Senda aims to empower users—especially those in unbanked and underbanked regions—by simplifying access to crypto-based remittances and real-world payments.
 
 ## Features
 
@@ -9,6 +11,8 @@ A Next.js-based decentralized application built on the Solana blockchain.
 - **Modern UI/UX**: Built with Tailwind CSS and Radix UI components
 - **Type Safety**: Full TypeScript support throughout the application
 - **Coming Soon**: Fiat on-ramp functionality
+- **Guest Wallet Support**: Seamless onboarding for users with no prior crypto experience
+- **Prepaid Card Off-Ramps**: Let recipients withdraw to prepaid cards, avoiding banks and KYC
 
 ## Tech Stack
 
@@ -20,6 +24,8 @@ A Next.js-based decentralized application built on the Solana blockchain.
 - **State Management**: Zustand
 - **API Layer**: tRPC
 - **Type Safety**: TypeScript
+- **On-Ramp**: Helio integration for fiat-to-crypto onboarding
+- **Wallet Auth Layer**: Custom wallet + session system inspired by embedded onboarding
 
 ## Getting Started
 
@@ -100,3 +106,8 @@ The application will be available at [http://localhost:3000](http://localhost:30
 - `yarn start`: Start the production server
 - `yarn lint`: Run ESLint
 - `yarn format`: Format code with Prettier
+
+## Future Work
+
+- Integrated prepaid card issuance
+- Mobile app
