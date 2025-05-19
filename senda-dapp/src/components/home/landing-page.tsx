@@ -3,12 +3,20 @@
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import * as z from 'zod'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { WhyChooseUs } from '@/components/home/why-choose-us'
 import { useRouter } from 'next/navigation'
+import { trpc } from '@/app/_trpc/client'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 
 import loot_boxes from '@/public/loot_boxes.jpg'
 import Maverick from '@/public/Maverick-Black.png'
@@ -21,9 +29,34 @@ import MoneyTransfer from '@/public/money-transfer.png'
 import ComingSoon from '@/components/home/coming-soon'
 import { WorldMap } from '@/components/ui/acernity/world-map'
 
+const formSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+})
+
 export default function LandingPageContent() {
   const [activeTab, setActiveTab] = useState('features')
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+    },
+  })
+
+  const createUserAndSendInvitation = trpc.userRouter.createUserAndSendInvitation.useMutation({
+    onSuccess: () => {
+      toast.success('Invitation sent! Check your email to complete registration.')
+      form.reset()
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    },
+    onSettled: () => {
+      setIsLoading(false)
+    }
+  })
 
   useEffect(() => {
     // Function to handle hash changes
@@ -74,6 +107,11 @@ export default function LandingPageContent() {
 //   }
 
   const logos = [Maverick.src, Helix.src]
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true)
+    createUserAndSendInvitation.mutate({ email: values.email })
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -347,18 +385,17 @@ export default function LandingPageContent() {
             className="flex-1 flex flex-col items-start justify-center"
           >
             <span className="inline-block px-4 py-1.5 bg-[#1c3144]/10 rounded-full text-sm font-medium text-[#1c3144] mb-6">
-              Join the movement
+              Join us
             </span>
             <h2 className="text-4xl md:text-5xl font-bold text-[#1c3144] mb-6 leading-tight">
-              Be the First to Experience{' '}
+              Ready to send your first{' '}
               <span className="text-[#1c3144] relative">
-                Borderless Remittances
+                remesa?
                 <div className="absolute -bottom-2 left-0 w-full h-1 bg-[#1c3144]/20 rounded-full" />
               </span>
             </h2>
             <p className="text-gray-600 mb-8 max-w-md text-lg leading-relaxed">
-              Senda is launching soon! Join our waitlist and get early access to a new way to send money globally—fast,
-              secure, and with total transparency.
+              Send money to friends and family anywhere in the world with Senda.
             </p>
           </motion.div>
 
@@ -372,22 +409,41 @@ export default function LandingPageContent() {
             {/* <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-[#1c3144] rounded-full flex items-center justify-center">
               <span className="text-white text-sm">✨</span>
             </div> */}
-            <h3 className="text-2xl font-bold text-[#1c3144] mb-6 mt-2">Join the Waitlist</h3>
-            <form className="w-full flex flex-col items-center gap-4">
-              <div className="w-full max-w-xs relative">
-                <input
-                  type="email"
-                  required
-                  placeholder="Your email"
-                  className="w-full px-5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1c3144]/20 focus:border-[#1c3144] transition-all duration-200"
+            <h3 className="text-2xl font-bold text-[#1c3144] mb-6 mt-2">Join the journey</h3>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center gap-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="w-full max-w-xs">
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your email"
+                          className="w-full"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <button
-                className="w-full max-w-xs bg-[#1c3144] text-white font-semibold py-3 rounded-xl hover:bg-[#162536] transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
-              >
-                Join Waitlist
-              </button>
-            </form>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full max-w-xs"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending invitation...
+                    </>
+                  ) : (
+                    'Create my account'
+                  )}
+                </Button>
+              </form>
+            </Form>
             <div className="flex items-center gap-2 mt-6 text-sm text-gray-500">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               Launching soon mobile

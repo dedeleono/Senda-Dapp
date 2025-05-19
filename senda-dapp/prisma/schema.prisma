@@ -26,10 +26,10 @@ model User {
   country             String?
 
   // Senda-specific fields
-  sendaWalletPublicKey String         @unique
-  encryptedPrivateKey  String
-  iv                   String
-  authTag              String
+  sendaWalletPublicKey String?        @unique
+  encryptedPrivateKey  String?
+  iv                   String?
+  authTag              String?
 
   onChainTransactions     Transaction[]
   deposits                DepositRecord[]
@@ -269,8 +269,8 @@ model Escrow {
 
   // Relations
   deposits DepositRecord[]
-  sender   User            @relation("SenderEscrows", fields: [senderPublicKey], references: [sendaWalletPublicKey])
-  receiver User            @relation("ReceiverEscrows", fields: [receiverPublicKey], references: [sendaWalletPublicKey])
+  sender   User            @relation("SenderEscrows", fields: [senderPublicKey], references: [sendaWalletPublicKey], onDelete: NoAction)
+  receiver User            @relation("ReceiverEscrows", fields: [receiverPublicKey], references: [sendaWalletPublicKey], onDelete: NoAction)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

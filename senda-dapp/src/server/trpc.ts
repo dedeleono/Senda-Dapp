@@ -1,10 +1,11 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { auth } from "@/lib/auth/auth";
-import { type NextRequest } from "next/server";
+import { type NextRequest, type NextResponse } from "next/server";
 import { Session } from "next-auth";
 
 export interface Context {
   req: NextRequest;
+  res?: NextResponse;
   session: Session | null;
 }
 

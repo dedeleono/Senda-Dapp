@@ -1,6 +1,9 @@
 import { NextAuthConfig } from "next-auth";
 import { NextURL } from "next/dist/server/web/next-url";
 import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
+import { prisma } from "@/lib/db";
+import type { User } from "next-auth";
 
 // interface VerificationRequestEvent {
 //     url: string;
@@ -40,6 +43,47 @@ export const authConfig: NextAuthConfig = {
                 }
             }
         }),
+        Credentials({
+            id: "invitation",
+            name: "Invitation",
+            credentials: {
+                token: { label: "Token", type: "text" }
+            },
+            async authorize(credentials): Promise<User | null> {
+                if (!credentials?.token || typeof credentials.token !== 'string') {
+                    return null;
+                }
+
+                const verificationToken = await prisma.verificationToken.findUnique({
+                    where: { token: credentials.token }
+                });
+
+                if (!verificationToken) {
+                    return null;
+                }
+
+                if (new Date() > verificationToken.expires) {
+                    return null;
+                }
+
+                const user = await prisma.user.findUnique({
+                    where: { email: verificationToken.identifier }
+                });
+
+                if (!user || !user.sendaWalletPublicKey) {
+                    return null;
+                }
+
+                return {
+                    id: user.id,
+                    email: user.email || '',
+                    name: user.name || null,
+                    image: user.image || null,
+                    emailVerified: user.emailVerified || null,
+                    sendaWalletPublicKey: user.sendaWalletPublicKey,
+                };
+            }
+        })
     ],
     pages: {
         signIn: "/login",
@@ -48,7 +92,42 @@ export const authConfig: NextAuthConfig = {
         error: "/error",
     },
     callbacks: {
+        async jwt({ token, user, trigger, session }) {
+            if (user) {
+                // When signing in, include all user data
+                token.id = user.id;
+                token.email = user.email;
+                token.name = user.name;
+                token.picture = user.image;
+                token.emailVerified = user.emailVerified;
+                token.sendaWalletPublicKey = user.sendaWalletPublicKey;
+            }
+
+            if (trigger === 'update' && session) {
+                // When session is updated, refresh the token data
+                return { ...token, ...session.user };
+            }
+
+            return token;
+        },
+        async session({ session, token }) {
+            if (token && session.user) {
+                // Ensure session has all the latest user data
+                session.user.id = token.id as string;
+                session.user.email = token.email as string;
+                session.user.name = token.name as string;
+                session.user.image = token.picture as string;
+                session.user.emailVerified = token.emailVerified as Date | null;
+                session.user.sendaWalletPublicKey = token.sendaWalletPublicKey as string;
+            }
+            return session;
+        },
         async redirect({ url, baseUrl }) {
+            // If coming from verify-invitation, go directly to home
+            if (url.includes('/verify-invitation')) {
+                return `${baseUrl}/home`;
+            }
+
             console.log('Redirect callback called with:', { url, baseUrl });
 
             if (url.includes('/api/auth/callback/email')) {

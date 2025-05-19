@@ -1,0 +1,163 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { trpc } from "@/app/_trpc/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Loader2 } from "lucide-react";
+import { signIn, useSession } from "next-auth/react";
+import { toast } from "sonner";
+import { TRPCClientErrorLike } from "@trpc/client";
+
+const formSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    image: z.string().optional(),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+export default function VerifyInvitationPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const token = searchParams.get("token");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { update: updateSession } = useSession();
+
+    const { data: verificationData, isLoading: isLoadingVerification } = trpc.userRouter.verifyInvitation.useQuery(
+        { token: token || "" },
+        {
+            enabled: !!token,
+            retry: false,
+        }
+    );
+
+    useEffect(() => {
+        if (verificationData?.success === false) {
+            toast.error("Invalid or expired invitation link");
+            router.push("/");
+        }
+    }, [verificationData, router]);
+
+    const updateProfile = trpc.userRouter.updateProfile.useMutation({
+        onSuccess: () => {
+            toast.success("Profile updated successfully");
+        },
+        onError: (error: TRPCClientErrorLike<any>) => {
+            toast.error(error.message);
+            setIsSubmitting(false);
+        },
+    });
+
+    const createWallet = trpc.userRouter.createWallet.useMutation({
+        onSuccess: () => {
+            toast.success("Wallet created successfully");
+            router.push("/");
+        },
+        onError: (error: TRPCClientErrorLike<any>) => {
+            toast.error(error.message);
+            setIsSubmitting(false);
+        },
+    });
+
+    const form = useForm<FormData>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            name: "",
+            image: "",
+        },
+    });
+
+    const handleSubmit = async (data: FormData) => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+
+        try {
+            // Update profile first
+            await updateProfile.mutateAsync({
+                name: data.name,
+                image: data.image,
+            });
+
+            // Create wallet
+            await createWallet.mutateAsync();
+
+            // Sign in with the invitation token
+            const signInResult = await signIn("credentials", {
+                token,
+                redirect: false,
+            });
+
+            if (signInResult?.error) {
+                throw new Error(signInResult.error);
+            }
+
+            // Update the session to include the latest user data
+            await updateSession();
+
+            // Redirect to home page
+            router.push("/home");
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "An error occurred");
+            setIsSubmitting(false);
+        }
+    };
+
+    if (isLoadingVerification) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        );
+    }
+
+    if (!verificationData?.success) {
+        return null;
+    }
+
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+            <Card className="w-full max-w-md">
+                <CardHeader>
+                    <CardTitle>Complete Your Profile</CardTitle>
+                    <CardDescription>
+                        Set up your profile and create your wallet to get started
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <Input placeholder="Your name" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Setting up...
+                                    </>
+                                ) : (
+                                    "Complete Setup"
+                                )}
+                            </Button>
+                        </form>
+                    </Form>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
