@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1440" height="1024" viewBox="0 0 1440 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="swirls" x="0" y="0" width="1440" height="1024" patternUnits="userSpaceOnUse">
+      <g opacity="0.1">
+        <!-- Primary swirl -->
+        <path d="M-100 200C100 100 300 300 500 200C700 100 900 300 1100 200C1300 100 1500 300 1700 200" 
+              stroke="#7ea16b" stroke-width="4" fill="none"/>
+        <!-- Secondary swirl -->
+        <path d="M-100 400C100 300 300 500 500 400C700 300 900 500 1100 400C1300 300 1500 500 1700 400" 
+              stroke="#d7dfbe" stroke-width="4" fill="none"/>
+        <!-- Accent swirl -->
+        <path d="M-100 600C100 500 300 700 500 600C700 500 900 700 1100 600C1300 500 1500 700 1700 600" 
+              stroke="#f6ead7" stroke-width="4" fill="none"/>
+        <!-- Additional decorative elements -->
+        <circle cx="200" cy="200" r="50" fill="#7ea16b" opacity="0.1"/>
+        <circle cx="800" cy="400" r="40" fill="#d7dfbe" opacity="0.1"/>
+        <circle cx="1200" cy="600" r="30" fill="#f6ead7" opacity="0.1"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="1440" height="1024" fill="url(#swirls)"/>
+</svg> 
