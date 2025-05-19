@@ -746,7 +746,7 @@ export const sendaRouter = router({
                 }
 
                 const { connection, feePayer } = getProvider();
-                const senderPk = new PublicKey(user.sendaWalletPublicKey);
+                const senderPk = new PublicKey(user.sendaWalletPublicKey as string);
                 const receiverPk = new PublicKey(input.destinationAddress);
 
                 // Create transaction to transfer tokens
@@ -796,7 +796,7 @@ export const sendaRouter = router({
                 const transaction = await prisma.transaction.create({
                     data: {
                         userId: ctx.session.user.id,
-                        walletPublicKey: user.sendaWalletPublicKey,
+                        walletPublicKey: user.sendaWalletPublicKey as string,
                         destinationAddress: input.destinationAddress,
                         amount: input.amount,
                         status: 'COMPLETED',
