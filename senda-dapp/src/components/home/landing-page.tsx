@@ -82,12 +82,6 @@ export default function LandingPageContent() {
         <div className="font-bold text-xl">Senda</div>
         <nav className="hidden md:flex items-center space-x-6">
           <Link
-            href="#features"
-            className={cn('text-sm', activeTab === 'features' ? 'font-medium' : 'text-muted-foreground')}
-          >
-            Features
-          </Link>
-          <Link
             href="#why-choose-us"
             className={cn('text-sm', activeTab === 'why-choose-us' ? 'font-medium' : 'text-muted-foreground')}
           >
@@ -176,7 +170,7 @@ export default function LandingPageContent() {
 
       {/* Features Section */}
       <section
-        id="features"
+        id="why-choose-us"
         className="bg-cover bg-center py-16 md:py-24 overflow-hidden space-y-5 px-4"
       >
         <div className="text-center mt-24">
@@ -368,10 +362,8 @@ export default function LandingPageContent() {
         </div>
       </section>
 
-      {/* Why Choose Us Section */}
-      <section id="why-choose-us">
+
         <WhyChooseUs />
-      </section>
 
       <ComingSoon />
 

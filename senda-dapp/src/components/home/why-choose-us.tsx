@@ -44,7 +44,7 @@ export function WhyChooseUs() {
   }
 
   return (
-    <section id="why-choose-us" className="relative z-20 py-10 lg:py-20 overflow-hidden">
+    <section id="onboarding" className="relative z-20 py-10 lg:py-20 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="space-y-6 text-center mb-16">
