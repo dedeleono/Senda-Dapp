@@ -51,7 +51,7 @@ export function WhyChooseUs() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-bold mb-4 text-black"
+            className="text-4xl md:text-6xl font-bold mb-4 text-[#1c3144]"
           >
             We believe you deserve only the best.
           </motion.p>
