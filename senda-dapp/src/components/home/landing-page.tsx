@@ -76,7 +76,7 @@ export default function LandingPageContent() {
   const logos = [Maverick.src, Helix.src]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
       <header className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="font-bold text-xl">Senda</div>
