@@ -93,10 +93,7 @@ export default function LandingPageContent() {
           >
             Why Choose Us
           </Link>
-          <Link
-            href="#faqs"
-            className={cn('text-sm', activeTab === 'faqs' ? 'font-medium' : 'text-muted-foreground')}
-          >
+          <Link href="#faqs" className={cn('text-sm', activeTab === 'faqs' ? 'font-medium' : 'text-muted-foreground')}>
             FAQs
           </Link>
         </nav>
@@ -112,7 +109,7 @@ export default function LandingPageContent() {
             <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">
               <span className="text-muted-foreground">Join the movement</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1c3144]">
               The bridge between trusted relationships and borderless money
             </h1>
             <p className="text-muted-foreground max-w-md">Dedicated to building trust for the digital era.</p>
@@ -177,48 +174,17 @@ export default function LandingPageContent() {
         </div>
       </section>
 
-      {/* <section className="relative bg-cover bg-center dark:bg-darkmode overflow-hidden pt-16 md:pt-24">
-        <div className="container mx-auto lg:max-w-(--breakpoint-xl) md:max-w-(--breakpoint-md) rounded-3xl bg-[#d7dfbe] pb-60 relative">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <Image
-              src={bg.src}
-              alt="bg"
-              width={1000}
-              height={1000}
-              className="max-w-full mx-auto opacity-3 -mt-30 -ml-[31rem] rounded-4xl"
-              style={{ position: 'sticky' }}
-            />
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2">
-            <div className="pt-24 lg:pl-24">
-              <h4 className=" text-65 sm:text-5xl font-bold text-black mb-8 leading-snug text-center lg:text-start">
-                Make Lasting Financial Relationships; Strengthen Your Bonds with Transparency
-              </h4>
-            </div>
-          </div>
-          <div className="absolute top-48 -right-20">
-            <Image
-              src={hearts_doodle.src}
-              alt="doodle"
-              width={615}
-              height={491}
-              className="rounded-3xl"
-            />
-          </div>
-        </div>
-      </section> */}
-
       {/* Features Section */}
       <section
         id="features"
-        className="bg-cover bg-center py-16 md:py-24 dark:bg-darkmode overflow-hidden space-y-5 px-4"
+        className="bg-cover bg-center py-16 md:py-24 overflow-hidden space-y-5 px-4"
       >
         <div className="text-center mt-24">
-          <h3 className="text-4xl sm:text-6xl font-bold text-black dark:text-white my-2">Why choose us?</h3>
-          <h3 className="text-4xl sm:text-6xl font-bold text-black/50 dark:text-white/50 lg:mr-48 my-2">
+          <h3 className="text-4xl sm:text-6xl font-bold text-black ">Why choose us?</h3>
+          <h3 className="text-4xl sm:text-6xl font-bold text-black/50 lg:mr-48 my-2">
             Why choose us?
           </h3>
-          <h3 className="text-4xl sm:text-6xl font-bold text-black/25 dark:text-white/25 lg:-mr-32 my-2">
+          <h3 className="text-4xl sm:text-6xl font-bold text-black/25 lg:-mr-32 my-2">
             Why choose us?
           </h3>
         </div>
@@ -304,8 +270,8 @@ export default function LandingPageContent() {
                 We know <span className="text-white/60">that sending money is the easy part</span>
               </h3>
               <h5 className="text-white/75 pt-2 mb-16 text-end sm:text-start font-semibold">
-                That&apos;s why we&apos;re partnering with the best in the industry to help you on and off-ramp your funds with
-                ease
+                That&apos;s why we&apos;re partnering with the best in the industry to help you on and off-ramp your
+                funds with ease
               </h5>
               <div className="text-center sm:text-start">
                 <Link
@@ -327,21 +293,21 @@ export default function LandingPageContent() {
         </div>
       </section>
 
-      <section className="relative dark:bg-darkmode py-4 bg-cover bg-center overflow-hidden">
+      <section className="relative py-4 bg-cover bg-center overflow-hidden">
         <div className="container mx-auto lg:max-w-(--breakpoint-xl) md:max-w-(--breakpoint-md)">
           <div className="text-center">
-            <h3 className="text-4xl sm:text-6xl font-bold text-black dark:text-white my-2">
+            <h3 className="text-4xl sm:text-6xl font-bold text-black my-2">
               We work anywhere in the world.
             </h3>
-            <h3 className="text-4xl sm:text-6xl font-bold text-black/50 dark:text-white/50 lg:mr-48 my-2">
+            <h3 className="text-4xl sm:text-6xl font-bold text-black/50 lg:mr-48 my-2">
               We work anywhere in the world.
             </h3>
-            <h3 className="text-4xl sm:text-6xl font-bold text-black/25 dark:text-white/25 lg:-mr-32 my-2">
+            <h3 className="text-4xl sm:text-6xl font-bold text-black/25 lg:-mr-32 my-2">
               We work anywhere in the world.
             </h3>
           </div>
         </div>
-        <div className=" py-10 dark:bg-black bg-white w-full">
+        <div className=" py-10 bg-white w-full">
           <WorldMap
             dots={[
               {
@@ -387,9 +353,9 @@ export default function LandingPageContent() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeIn}
-            className="max-w-3xl mx-auto text-center space-y-8 bg-muted/20 p-8 rounded-lg"
+            className="max-w-3xl mx-auto text-center space-y-8 p-8 rounded-lg"
           >
-            <h2 className="text-3xl font-bold">Ready to Send your first remesa?</h2>
+            <h2 className="text-3xl font-bold text-[#1c3144]">Ready to Send your first remesa?</h2>
             <p className="text-muted-foreground">
               Create trust paths and start sending money to your friends and family in minutes.
             </p>
@@ -410,23 +376,26 @@ export default function LandingPageContent() {
       <ComingSoon />
 
       {/* FAQ Section */}
-      <section id="faqs" className="py-24 bg-gradient-to-b from-slate-50/50 via-emerald-50/30 to-white dark:from-background dark:via-emerald-950/5 dark:to-background">
+      <section
+        id="faqs"
+        className="py-24 bg-gradient-to-b from-slate-50/50 via-emerald-50/30 to-white "
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-start gap-12 max-w-7xl mx-auto">
             {/* Left Column: Title & Description */}
             <div className="md:w-1/2 md:sticky md:top-24">
               <span className="text-[#596f62] font-semibold text-sm uppercase tracking-wider">Help & Support</span>
-              <h2 className="mt-3 text-6xl font-black tracking-tight text-primary dark:text-white/90 ">
+              <h2 className="mt-3 text-6xl font-black tracking-tight text-primary ">
                 Frecuently Asked Questions
               </h2>
-              <p className="mt-4 text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+              <p className="mt-4 text-lg leading-relaxed text-gray-600 ">
                 We&apos;re here to help you with any questions you may have.
               </p>
-              <div className="mt-8 p-6 bg-[#f6ead7] dark:bg-emerald-950/20 rounded-2xl">
+              <div className="mt-8 p-6 bg-[#f6ead7] rounded-2xl">
                 <p className="text-sm text-black">Couldn&apos;t find what you were looking for?</p>
                 <Link
                   href="/contact"
-                  className="mt-2 inline-flex items-center text-black font-semibold hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+                  className="mt-2 inline-flex items-center text-black font-semibold hover:text-emerald-700 transition-colors"
                 >
                   Contact us directly →
                 </Link>
@@ -438,17 +407,17 @@ export default function LandingPageContent() {
               <Accordion type="single" collapsible className="space-y-4">
                 <AccordionItem
                   value="faq1"
-                  className="border border-gray-200 dark:border-gray-700/50 rounded-xl overflow-hidden bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                  className="border border-gray-200 rounded-xl overflow-hidden bg-white/50 backdrop-blur-sm"
                 >
                   <AccordionTrigger className="px-6 py-4 text-left hover:no-underline">
                     <div className="flex items-center gap-4">
-                      <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                      <span className="text-lg font-semibold text-gray-800">
                         How is Senda different from traditional remittances services?
                       </span>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-6 py-4 border-t border-gray-200 dark:border-gray-700/50">
-                    <p className="text-gray-700 dark:text-gray-300">
+                  <AccordionContent className="px-6 py-4 border-t border-gray-200">
+                    <p className="text-gray-700">
                       Our platform eliminates unnecessary intermediaries, reduces fees, and offers transparent tracking
                       of your money through the entire transfer process.
                     </p>
@@ -456,17 +425,17 @@ export default function LandingPageContent() {
                 </AccordionItem>
                 <AccordionItem
                   value="faq2"
-                  className="border border-gray-200 dark:border-gray-700/50 rounded-xl overflow-hidden bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                  className="border border-gray-200 rounded-xl overflow-hidden bg-white/50 backdrop-blur-sm"
                 >
                   <AccordionTrigger className="px-6 py-4 text-left hover:no-underline">
                     <div className="flex items-center gap-4">
-                      <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                      <span className="text-lg font-semibold text-gray-800">
                         How much does Senda charge?
                       </span>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-6 py-4 border-t border-gray-200 dark:border-gray-700/50">
-                    <p className="text-gray-700 dark:text-gray-300 ">
+                  <AccordionContent className="px-6 py-4 border-t border-gray-200">
+                    <p className="text-gray-700 ">
                       Senda only charges a small fee per successful on/off ramp (fiat-stablecoin) transaction. There are
                       no hidden fees or unfavorable exchange rates. Sending money with Senda is free.
                     </p>
@@ -474,17 +443,17 @@ export default function LandingPageContent() {
                 </AccordionItem>
                 <AccordionItem
                   value="faq3"
-                  className="border border-gray-200 dark:border-gray-700/50 rounded-xl overflow-hidden bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                  className="border border-gray-200 rounded-xl overflow-hidden bg-white/50 backdrop-blur-sm"
                 >
                   <AccordionTrigger className="px-6 py-4 text-left hover:no-underline">
                     <div className="flex items-center gap-4">
-                      <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                      <span className="text-lg font-semibold text-gray-800 ">
                         Is this platform secure?
                       </span>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-6 py-4 border-t border-gray-200 dark:border-gray-700/50">
-                    <p className="text-gray-700 dark:text-gray-300">
+                  <AccordionContent className="px-6 py-4 border-t border-gray-200">
+                    <p className="text-gray-700 ">
                       Absolutely. All transactions are encrypted and verified by multiple nodes on the blockchain;
                       we&apos;ve also gone through rigorous testing and audits to keep your funds safe.
                     </p>
@@ -492,34 +461,34 @@ export default function LandingPageContent() {
                 </AccordionItem>
                 <AccordionItem
                   value="faq4"
-                  className="border border-gray-200 dark:border-gray-700/50 rounded-xl overflow-hidden bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                  className="border border-gray-200 rounded-xl overflow-hidden bg-white/50 backdrop-blur-sm"
                 >
                   <AccordionTrigger className="px-6 py-4 text-left hover:no-underline">
                     <div className="flex items-center gap-4">
-                      <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                      <span className="text-lg font-semibold text-gray-800 ">
                         Is this platform free to use?
                       </span>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-6 py-4 border-t border-gray-200 dark:border-gray-700/50">
-                    <p className="text-gray-700 dark:text-gray-300">
+                  <AccordionContent className="px-6 py-4 border-t border-gray-200 ">
+                    <p className="text-gray-700">
                       Certainly! Creating trust paths and sending money is completely free.
                     </p>
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem
                   value="faq5"
-                  className="border border-gray-200 dark:border-gray-700/50 rounded-xl overflow-hidden bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                  className="border border-gray-200 rounded-xl overflow-hidden bg-white/50 backdrop-blur-sm"
                 >
                   <AccordionTrigger className="px-6 py-4 text-left hover:no-underline">
                     <div className="flex items-center gap-4">
-                      <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                      <span className="text-lg font-semibold text-gray-800 ">
                         Where can I download the Senda app?
                       </span>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-6 py-4 border-t border-gray-200 dark:border-gray-700/50">
-                    <p className="text-gray-700 dark:text-gray-300">
+                  <AccordionContent className="px-6 py-4 border-t border-gray-200">
+                    <p className="text-gray-700 ">
                       Our app is currently not available for download. However, you can use our platform by creating an
                       account on our website.
                     </p>

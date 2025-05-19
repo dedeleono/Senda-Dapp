@@ -51,7 +51,7 @@ export function WhyChooseUs() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-bold mb-4 "
+            className="text-4xl md:text-6xl font-bold mb-4 text-black"
           >
             We believe you deserve only the best.
           </motion.p>
@@ -105,7 +105,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isActive, stepNumber, onClick
           'flex items-center gap-4 p-6 rounded-xl cursor-pointer transition-all duration-300',
           isActive
             ? 'bg-[#d7dfbe]/25 shadow-lg border-t border-l border-r border-[#d7dfbe]/20'
-            : 'bg-background/80 hover:bg-background/90 border border-neutral-200/50 dark:border-neutral-700/50 shadow',
+            : 'bg-background/80 dark:bg-foreground/80 hover:bg-background/90 border border-neutral-200/50 shadow',
         )}
         layout
       >
@@ -113,7 +113,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isActive, stepNumber, onClick
         <div
           className={cn(
             'w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold transition-colors',
-            isActive ? 'bg-[#f6ead7] text-black' : 'bg-neutral-100 dark:bg-neutral-800 text-foreground',
+            isActive ? 'bg-[#f6ead7] text-black' : 'bg-neutral-100 dark:text-background text-foreground',
           )}
         >
           {stepNumber}
@@ -121,7 +121,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isActive, stepNumber, onClick
 
         {/* Title */}
         <div className="flex-1">
-          <h3 className="text-xl font-semibold">{step.title}</h3>
+          <h3 className="text-xl font-semibold text-[#1c3144]">{step.title}</h3>
         </div>
 
         {/* Expand icon */}
@@ -138,17 +138,17 @@ const StepCard: React.FC<StepCardProps> = ({ step, isActive, stepNumber, onClick
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="overflow-hidden border-l border-r border-b rounded-b-xl border-[#d7dfbe]/40 bg-background"
+            className="overflow-hidden border-l border-r border-b rounded-b-xl border-[#d7dfbe]/40 dark:bg-foreground bg-background"
           >
             <div className="p-6 space-y-6">
               {/* Description */}
-              <p className="text-neutral-800 dark:text-neutral-200 text-sm leading-relaxed">{step.description}</p>
+              <p className="text-neutral-800  text-sm leading-relaxed">{step.description}</p>
 
               {/* Features (if any) */}
               {step.features && (
                 <div className="space-y-2">
                   {step.features.map((feature, i) => (
-                    <div key={i} className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-sm">
+                    <div key={i} className="flex gap-2 items-center text-neutral-700 text-sm">
                       <span className="text-green-500">✓</span> {feature}
                     </div>
                   ))}
@@ -165,7 +165,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isActive, stepNumber, onClick
                 {step.images.map((src, i) => (
                   <div
                     key={i}
-                    className="aspect-video rounded-lg overflow-hidden shadow-md border border-neutral-200/50 dark:border-neutral-700/50"
+                    className="aspect-video rounded-lg overflow-hidden shadow-md border border-neutral-200/50 "
                   >
                     <Image
                       src={src}

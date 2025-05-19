@@ -14,7 +14,7 @@ export function AppLayout({
   useAuthRedirects();
   
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
       <main className="bg-[#d7dfbe] dark:bg-[#596f62] overflow-hidden">{children}</main>
       <Toaster />
     </ThemeProvider>
