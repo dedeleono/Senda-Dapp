@@ -63,7 +63,7 @@ export const GuestService = {
                     id: escrow.receiver.id,
                     email: escrow.receiver.email,
                     role: escrow.receiver.role,
-                    sendaWalletPublicKey: escrow.receiver.sendaWalletPublicKey
+                    sendaWalletPublicKey: escrow.receiver.sendaWalletPublicKey as string
                 }
             }
         } catch (error) {
