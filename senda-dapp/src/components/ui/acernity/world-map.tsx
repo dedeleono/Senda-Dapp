@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { motion } from "framer-motion";
 import DottedMap from "dotted-map";
 
-import { useTheme } from "next-themes";
+import Image from "next/image";
 
 interface MapProps {
   dots?: Array<{
@@ -17,8 +17,6 @@ interface MapProps {
 export function WorldMap({ dots = [], lineColor = "#0ea5e9" }: MapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const map = new DottedMap({ height: 100, grid: "diagonal" });
-
-  const { theme } = useTheme();
 
   const svgMap = map.getSVG({
     radius: 0.22,
@@ -44,7 +42,7 @@ export function WorldMap({ dots = [], lineColor = "#0ea5e9" }: MapProps) {
 
   return (
     <div className="w-full aspect-[2/1] bg-white rounded-lg  relative font-sans">
-      <img
+      <Image
         src={`data:image/svg+xml;utf8,${encodeURIComponent(svgMap)}`}
         className="h-full w-full [mask-image:linear-gradient(to_bottom,transparent,white_10%,white_90%,transparent)] pointer-events-none select-none"
         alt="world map"
