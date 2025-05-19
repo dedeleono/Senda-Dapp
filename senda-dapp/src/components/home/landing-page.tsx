@@ -169,18 +169,11 @@ export default function LandingPageContent() {
       </section>
 
       {/* Features Section */}
-      <section
-        id="why-choose-us"
-        className="bg-cover bg-center py-16 md:py-24 overflow-hidden space-y-5 px-4"
-      >
+      <section id="why-choose-us" className="bg-cover bg-center py-16 md:py-24 overflow-hidden space-y-5 px-4">
         <div className="text-center mt-24">
           <h3 className="text-4xl sm:text-6xl font-bold text-black ">Why choose us?</h3>
-          <h3 className="text-4xl sm:text-6xl font-bold text-black/50 lg:mr-48 my-2">
-            Why choose us?
-          </h3>
-          <h3 className="text-4xl sm:text-6xl font-bold text-black/25 lg:-mr-32 my-2">
-            Why choose us?
-          </h3>
+          <h3 className="text-4xl sm:text-6xl font-bold text-black/50 lg:mr-48 my-2">Why choose us?</h3>
+          <h3 className="text-4xl sm:text-6xl font-bold text-black/25 lg:-mr-32 my-2">Why choose us?</h3>
         </div>
         <div className="container mx-auto lg:max-w-(--breakpoint-xl) md:max-w-(--breakpoint-md)">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -290,9 +283,7 @@ export default function LandingPageContent() {
       <section className="relative py-4 bg-cover bg-center overflow-hidden">
         <div className="container mx-auto lg:max-w-(--breakpoint-xl) md:max-w-(--breakpoint-md)">
           <div className="text-center">
-            <h3 className="text-4xl sm:text-6xl font-bold text-black my-2">
-              We work anywhere in the world.
-            </h3>
+            <h3 className="text-4xl sm:text-6xl font-bold text-black my-2">We work anywhere in the world.</h3>
             <h3 className="text-4xl sm:text-6xl font-bold text-black/50 lg:mr-48 my-2">
               We work anywhere in the world.
             </h3>
@@ -340,46 +331,83 @@ export default function LandingPageContent() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-[#f6ead7]/50">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeIn}
-            className="max-w-3xl mx-auto text-center space-y-8 p-8 rounded-lg"
+      <section className="w-full bg-gradient-to-br from-[#f6ead7]/50 via-[#f6ead7]/30 to-white/60 py-20 px-4 relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#1c3144]/5 rounded-full blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-[#1c3144]/5 rounded-full blur-3xl" />
+        </div>
+
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 relative">
+          {/* Left: Text */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex-1 flex flex-col items-start justify-center"
           >
-            <h2 className="text-3xl font-bold text-[#1c3144]">Ready to Send your first remesa?</h2>
-            <p className="text-muted-foreground">
-              Create trust paths and start sending money to your friends and family in minutes.
+            <span className="inline-block px-4 py-1.5 bg-[#1c3144]/10 rounded-full text-sm font-medium text-[#1c3144] mb-6">
+              Join the movement
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-[#1c3144] mb-6 leading-tight">
+              Be the First to Experience{' '}
+              <span className="text-[#1c3144] relative">
+                Borderless Remittances
+                <div className="absolute -bottom-2 left-0 w-full h-1 bg-[#1c3144]/20 rounded-full" />
+              </span>
+            </h2>
+            <p className="text-gray-600 mb-8 max-w-md text-lg leading-relaxed">
+              Senda is launching soon! Join our waitlist and get early access to a new way to send money globally—fast,
+              secure, and with total transparency.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button size="default" variant="default" className="rounded-md">
-                Start a Trust Path
-              </Button>
+          </motion.div>
+
+          {/* Right: CTA Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex-1 bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center relative min-w-[320px] border border-gray-100"
+          >
+            {/* <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-[#1c3144] rounded-full flex items-center justify-center">
+              <span className="text-white text-sm">✨</span>
+            </div> */}
+            <h3 className="text-2xl font-bold text-[#1c3144] mb-6 mt-2">Join the Waitlist</h3>
+            <form className="w-full flex flex-col items-center gap-4">
+              <div className="w-full max-w-xs relative">
+                <input
+                  type="email"
+                  required
+                  placeholder="Your email"
+                  className="w-full px-5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1c3144]/20 focus:border-[#1c3144] transition-all duration-200"
+                />
+              </div>
+              <button
+                className="w-full max-w-xs bg-[#1c3144] text-white font-semibold py-3 rounded-xl hover:bg-[#162536] transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
+              >
+                Join Waitlist
+              </button>
+            </form>
+            <div className="flex items-center gap-2 mt-6 text-sm text-gray-500">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              Launching soon mobile
             </div>
           </motion.div>
         </div>
       </section>
 
-
-        <WhyChooseUs />
+      <WhyChooseUs />
 
       <ComingSoon />
 
       {/* FAQ Section */}
-      <section
-        id="faqs"
-        className="py-24 bg-gradient-to-b from-slate-50/50 via-emerald-50/30 to-white "
-      >
+      <section id="faqs" className="py-24 bg-gradient-to-b from-slate-50/50 via-emerald-50/30 to-white ">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-start gap-12 max-w-7xl mx-auto">
             {/* Left Column: Title & Description */}
             <div className="md:w-1/2 md:sticky md:top-24">
               <span className="text-[#596f62] font-semibold text-sm uppercase tracking-wider">Help & Support</span>
-              <h2 className="mt-3 text-6xl font-black tracking-tight text-primary ">
-                Frecuently Asked Questions
-              </h2>
+              <h2 className="mt-3 text-6xl font-black tracking-tight text-primary ">Frecuently Asked Questions</h2>
               <p className="mt-4 text-lg leading-relaxed text-gray-600 ">
                 We&apos;re here to help you with any questions you may have.
               </p>
@@ -421,9 +449,7 @@ export default function LandingPageContent() {
                 >
                   <AccordionTrigger className="px-6 py-4 text-left hover:no-underline">
                     <div className="flex items-center gap-4">
-                      <span className="text-lg font-semibold text-gray-800">
-                        How much does Senda charge?
-                      </span>
+                      <span className="text-lg font-semibold text-gray-800">How much does Senda charge?</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 py-4 border-t border-gray-200">
@@ -439,9 +465,7 @@ export default function LandingPageContent() {
                 >
                   <AccordionTrigger className="px-6 py-4 text-left hover:no-underline">
                     <div className="flex items-center gap-4">
-                      <span className="text-lg font-semibold text-gray-800 ">
-                        Is this platform secure?
-                      </span>
+                      <span className="text-lg font-semibold text-gray-800 ">Is this platform secure?</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 py-4 border-t border-gray-200">
@@ -457,9 +481,7 @@ export default function LandingPageContent() {
                 >
                   <AccordionTrigger className="px-6 py-4 text-left hover:no-underline">
                     <div className="flex items-center gap-4">
-                      <span className="text-lg font-semibold text-gray-800 ">
-                        Is this platform free to use?
-                      </span>
+                      <span className="text-lg font-semibold text-gray-800 ">Is this platform free to use?</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 py-4 border-t border-gray-200 ">
@@ -474,9 +496,7 @@ export default function LandingPageContent() {
                 >
                   <AccordionTrigger className="px-6 py-4 text-left hover:no-underline">
                     <div className="flex items-center gap-4">
-                      <span className="text-lg font-semibold text-gray-800 ">
-                        Where can I download the Senda app?
-                      </span>
+                      <span className="text-lg font-semibold text-gray-800 ">Where can I download the Senda app?</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 py-4 border-t border-gray-200">
