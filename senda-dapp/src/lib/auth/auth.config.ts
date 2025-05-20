@@ -92,36 +92,6 @@ export const authConfig: NextAuthConfig = {
         error: "/error",
     },
     callbacks: {
-        async jwt({ token, user, trigger, session }) {
-            if (user) {
-                // When signing in, include all user data
-                token.id = user.id;
-                token.email = user.email;
-                token.name = user.name;
-                token.picture = user.image;
-                token.emailVerified = user.emailVerified;
-                token.sendaWalletPublicKey = user.sendaWalletPublicKey;
-            }
-
-            if (trigger === 'update' && session) {
-                // When session is updated, refresh the token data
-                return { ...token, ...session.user };
-            }
-
-            return token;
-        },
-        async session({ session, token }) {
-            if (token && session.user) {
-                // Ensure session has all the latest user data
-                session.user.id = token.id as string;
-                session.user.email = token.email as string;
-                session.user.name = token.name as string;
-                session.user.image = token.picture as string;
-                session.user.emailVerified = token.emailVerified as Date | null;
-                session.user.sendaWalletPublicKey = token.sendaWalletPublicKey as string;
-            }
-            return session;
-        },
         async redirect({ url, baseUrl }) {
             // If coming from verify-invitation, go directly to home
             if (url.includes('/verify-invitation')) {

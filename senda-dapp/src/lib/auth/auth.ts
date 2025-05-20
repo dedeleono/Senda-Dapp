@@ -63,9 +63,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 token.email = user.email;
                 token.name = user.name;
                 token.picture = user.image;
-                if (user.sendaWalletPublicKey) {
-                    token.sendaWalletPublicKey = user.sendaWalletPublicKey;
-                }
+                token.emailVerified = user.emailVerified;
+                token.sendaWalletPublicKey = user.sendaWalletPublicKey;
             }
 
             if (trigger === 'update' && session) {
@@ -86,9 +85,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 session.user.email = token.email as string;
                 session.user.name = token.name as string;
                 session.user.image = token.picture as string;
-                if (token.sendaWalletPublicKey) {
-                    session.user.sendaWalletPublicKey = token.sendaWalletPublicKey as string;
-                }
+                session.user.emailVerified = token.emailVerified as Date | null;
+                session.user.sendaWalletPublicKey = token.sendaWalletPublicKey as string;
             }
             
             return session;
@@ -104,6 +102,7 @@ export type AuthSession = {
             sendaWalletPublicKey: string;
             name?: string | null;
             image?: string | null;
+            emailVerified?: Date | null;
         };
     } | null;
 };
