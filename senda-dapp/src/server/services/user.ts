@@ -24,7 +24,7 @@ export class UserService {
           data: {
             id: user.id,
             email: user.email as string,
-            publicKey: user.sendaWalletPublicKey,
+            publicKey: user.sendaWalletPublicKey as string,
             role: user.role
           }
         };
@@ -78,7 +78,7 @@ export class UserService {
         data: {
           id: user.id,
           email: user.email as string,
-          publicKey: user.sendaWalletPublicKey,
+          publicKey: user.sendaWalletPublicKey as string,
           role: user.role
         }
       };
