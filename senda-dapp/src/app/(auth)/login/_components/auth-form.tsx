@@ -117,14 +117,14 @@ const FormFooter = memo(() => (
     <p className="text-sm text-muted-foreground">
       Terms of Service{" "}
       <a
-        href="#"
+        href="/terms"
         className="underline hover:text-primary transition-colors"
       >
         Terms of Service
       </a>{" "}
       and{" "}
       <a
-        href="#"
+        href="/privacy"
         className="underline hover:text-primary transition-colors"
       >
         Privacy Policy
