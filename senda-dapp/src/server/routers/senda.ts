@@ -34,6 +34,7 @@ import { sendGuestDepositNotificationEmail } from "@/lib/validations/guest-depos
 import { sendDepositNotificationEmail } from "@/lib/validations/deposit-notification";
 import { SignatureType } from "@/components/transactions/transaction-card";
 import { createTransferCheckedInstruction } from "@solana/spl-token";
+import userRouter from "./user";
 
 
 export const sendaRouter = router({
@@ -319,44 +320,16 @@ export const sendaRouter = router({
                 // Send notification email
                 try {
                     console.log('Sending notification email...');
-                    if (receiver.role === 'GUEST') {
-                        const inviteToken = crypto.randomBytes(32).toString('hex');
-                        await prisma.verificationToken.create({
-                            data: {
-                                identifier: input.recipientEmail,
-                                token: inviteToken,
-                                expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-                            },
-                        });
-
-                        const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invitation?token=${inviteToken}`;
-                        await prisma.verificationToken.update({
-                            where: { token: inviteToken },
-                            data: {
-                                // Add any additional metadata you need for the invitation
-                                metadata: JSON.stringify({
-                                    escrowId: escrowData.escrowAddress,
-                                    amount: input.amount,
-                                    token: input.stable.toUpperCase(),
-                                })
-                            }
-                        });
-                        await sendGuestDepositNotificationEmail(
-                            input.recipientEmail,
-                            inviteUrl,
-                            ctx.session.user.email!,
-                            input.amount.toFixed(2),
-                            input.stable.toUpperCase(),
-                            ctx.session.user.name || undefined
-                        );
-                    } else {
-                        await sendDepositNotificationEmail(
-                            input.recipientEmail,
-                            input.amount,
-                            input.stable.toUpperCase(),
-                            ctx.session.user.name || undefined
-                        );
-                    }
+                    const userRouterInstance = userRouter.createCaller(ctx);
+                    await userRouterInstance.sendDepositNotification({
+                        recipientEmail: input.recipientEmail,
+                        recipientRole: receiver.role,
+                        senderEmail: ctx.session.user.email!,
+                        senderName: ctx.session.user.name || undefined,
+                        amount: input.amount,
+                        token: input.stable.toUpperCase(),
+                        escrowId: escrowData.escrowAddress
+                    });
                     console.log('Notification email sent successfully');
                 } catch (error) {
                     console.error('Error sending email notification:', error);

@@ -8,6 +8,9 @@ import { createTransport } from 'nodemailer';
 import { render } from '@react-email/render';
 import InvitationEmail from '@/components/emails/invitation-email';
 import crypto from 'crypto';
+import { sendGuestDepositNotificationEmail } from "@/lib/validations/guest-deposit-notification";
+import { sendDepositNotificationEmail } from "@/lib/validations/deposit-notification";
+import jwt from 'jsonwebtoken';
 
 const userRouter = router({
     getUserById: protectedProcedure.input(z.object({ userId: z.string() })).query(async ({ input }) => {
@@ -112,7 +115,8 @@ const userRouter = router({
     }),
     verifyInvitation: publicProcedure
         .input(z.object({
-            token: z.string()
+            token: z.string(),
+            jwt: z.string().optional()
         }))
         .query(async ({ input }) => {
             try {
@@ -160,12 +164,28 @@ const userRouter = router({
                     }
                 });
 
+                // If JWT token is provided, verify it
+                if (input.jwt) {
+                    try {
+                        const decoded = jwt.verify(input.jwt, process.env.AUTH_SECRET!) as { email: string, role: string };
+                        if (decoded.email !== user.email) {
+                            throw new Error('Invalid JWT token');
+                        }
+                    } catch (error) {
+                        throw new TRPCError({
+                            code: 'UNAUTHORIZED',
+                            message: 'Invalid JWT token'
+                        });
+                    }
+                }
+
                 return {
                     success: true,
                     data: {
                         email: verificationToken.identifier,
                         amount: deposit?.amount.toString(),
-                        token: deposit?.stable
+                        token: deposit?.stable,
+                        userId: user.id
                     }
                 };
             } catch (error) {
@@ -218,6 +238,19 @@ const userRouter = router({
                     return newUser;
                 });
 
+                // Create a JWT token
+                console.log('Creating JWT token with token:', token);
+                const jwtToken = jwt.sign(
+                    { 
+                        token,
+                        email: input.email,
+                        role: "GUEST"
+                    },
+                    process.env.AUTH_SECRET!,
+                    { expiresIn: '7d' }
+                );
+                console.log('Generated JWT token:', jwtToken);
+
                 // Send invitation email using existing infrastructure
                 const transport = createTransport({
                     host: "smtp.gmail.com",
@@ -233,7 +266,8 @@ const userRouter = router({
                     }
                 });
 
-                const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-invitation?token=${token}`;
+                const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-invitation?token=${token}&jwt=${jwtToken}`;
+                console.log('Generated invite URL:', inviteUrl);
                 const props = {
                     userEmail: input.email,
                     inviteUrl,
@@ -254,7 +288,8 @@ const userRouter = router({
                 return {
                     success: true,
                     message: 'User created and invitation sent successfully',
-                    userId: result.id
+                    userId: result.id,
+                    jwtToken
                 };
             } catch (error) {
                 console.error("Error creating user and sending invitation:", error);
@@ -323,6 +358,105 @@ const userRouter = router({
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
                     message: error instanceof Error ? error.message : 'Failed to update profile'
+                });
+            }
+        }),
+    sendDepositNotification: protectedProcedure
+        .input(z.object({
+            recipientEmail: z.string().email(),
+            recipientRole: z.enum(['GUEST', 'INDIVIDUAL', 'BUSINESS']),
+            senderEmail: z.string().email(),
+            senderName: z.string().optional(),
+            amount: z.number(),
+            token: z.string(),
+            escrowId: z.string().optional(),
+        }))
+        .mutation(async ({ input }) => {
+            try {
+                if (input.recipientRole && input.recipientRole === 'GUEST') {
+                    // Check if user exists, if not create them with a wallet
+                    let user = await prisma.user.findUnique({
+                        where: { email: input.recipientEmail }
+                    });
+
+                    if (!user) {
+                        const keypair = Keypair.generate();
+                        const secretBuffer = Buffer.from(keypair.secretKey);
+                        const { iv, authTag, data: encryptedPrivateKey } = encryptPrivateKey(secretBuffer);
+
+                        user = await prisma.user.create({
+                            data: {
+                                email: input.recipientEmail,
+                                role: "GUEST",
+                                sendaWalletPublicKey: keypair.publicKey.toString(),
+                                encryptedPrivateKey,
+                                iv,
+                                authTag,
+                            },
+                        });
+                    }
+
+                    const inviteToken = crypto.randomBytes(32).toString('hex');
+                    await prisma.verificationToken.create({
+                        data: {
+                            identifier: input.recipientEmail,
+                            token: inviteToken,
+                            expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+                        },
+                    });
+
+                    // Create a JWT token
+                    const jwtToken = jwt.sign(
+                        { 
+                            token: inviteToken,
+                            email: input.recipientEmail,
+                            role: "GUEST"
+                        },
+                        process.env.AUTH_SECRET!,
+                        { expiresIn: '24h' }
+                    );
+
+                    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-invitation?token=${inviteToken}&jwt=${jwtToken}`;
+                    
+                    if (input.escrowId) {
+                        await prisma.verificationToken.update({
+                            where: { token: inviteToken },
+                            data: {
+                                metadata: JSON.stringify({
+                                    escrowId: input.escrowId,
+                                    amount: input.amount,
+                                    token: input.token,
+                                })
+                            }
+                        });
+                    }
+
+                    await sendGuestDepositNotificationEmail(
+                        input.recipientEmail,
+                        inviteUrl,
+                        input.senderEmail,
+                        input.amount.toFixed(2),
+                        input.token,
+                        input.senderName
+                    );
+                } else {
+                    await sendDepositNotificationEmail(
+                        input.recipientEmail,
+                        input.amount,
+                        input.token,
+                        input.senderName
+                    );
+                }
+
+                return {
+                    success: true,
+                    message: 'Notification sent successfully'
+                };
+            } catch (error) {
+                console.error('Error sending deposit notification:', error);
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: error instanceof Error ? error.message : 'Failed to send deposit notification'
                 });
             }
         }),

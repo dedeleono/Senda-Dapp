@@ -70,7 +70,7 @@ export const authConfig: NextAuthConfig = {
                     where: { email: verificationToken.identifier }
                 });
 
-                if (!user || !user.sendaWalletPublicKey) {
+                if (!user) {
                     return null;
                 }
 
@@ -80,7 +80,7 @@ export const authConfig: NextAuthConfig = {
                     name: user.name || null,
                     image: user.image || null,
                     emailVerified: user.emailVerified || null,
-                    sendaWalletPublicKey: user.sendaWalletPublicKey,
+                    sendaWalletPublicKey: user.sendaWalletPublicKey as string,
                 };
             }
         })

@@ -94,24 +94,19 @@ export function getSharedConnection(): Connection {
     return _sharedConnection;
 }
 
-export const createAta = async (mint: PublicKey, owner: PublicKey) => {
+export const createAta = async (mint: PublicKey, owner: PublicKey): Promise<[PublicKey, boolean]> => {
     try {
         const { connection } = getProvider();
         const { keypair: feePayer } = loadFeePayerKeypair();
         
         // Get the ATA address
-        const ataAddress = getAssociatedTokenAddressSync(
-            mint,
-            owner
-        );
+        const ataAddress = getAssociatedTokenAddressSync(mint, owner);
 
+        // First check if the account already exists and is valid
         try {
-            // Check if the account already exists
             const account = await connection.getAccountInfo(ataAddress);
-            if (account !== null) {
-                if (account.data.length > 0) {
-                    return [ataAddress, false];
-                }
+            if (account !== null) {  // Only check if account exists, not its data length
+                return [ataAddress, false];
             }
         } catch (error) {
             console.log("Error checking account, proceeding with creation:", error);
@@ -133,49 +128,89 @@ export const createAta = async (mint: PublicKey, owner: PublicKey) => {
 
         let signature: string | null = null;
         let retries = 3;
+        let lastError: Error | null = null;
 
         while (retries > 0 && !signature) {
             try {
                 signature = await connection.sendTransaction(tx, [feePayer], {
                     skipPreflight: false,
-                    preflightCommitment: "confirmed",
+                    preflightCommitment: "finalized",
                 });
 
-                // Wait for confirmation with a timeout
+                console.log("Transaction sent with signature:", signature);
+
+                // Wait for confirmation with a longer timeout for devnet
                 const confirmation = await Promise.race([
                     connection.confirmTransaction({
                         signature,
                         blockhash: latestBlockhash.blockhash,
                         lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
-                    }, "confirmed"),
+                    }, "finalized"),
                     new Promise((_, reject) =>
-                        setTimeout(() => reject(new Error("Confirmation timeout")), 30000)
+                        setTimeout(() => reject(new Error("Confirmation timeout")), 90000)
                     )
                 ]);
 
                 if (confirmation) {
-                    // Verify the account was created
-                    const newAccount = await connection.getAccountInfo(ataAddress);
-                    if (!newAccount) {
-                        throw new Error("ATA account not found after creation");
+                    console.log("Transaction confirmed, checking status...");
+                    const status = await connection.getSignatureStatus(signature);
+                    console.log("Transaction status:", status);
+
+                    // Wait longer for the account to be available
+                    console.log("Waiting for account to be available...");
+                    await new Promise(resolve => setTimeout(resolve, 10000));
+                    
+                    let verificationAttempts = 5;
+                    let accountVerified = false;
+                    
+                    while (verificationAttempts > 0 && !accountVerified) {
+                        try {
+                            console.log(`Verification attempt ${6 - verificationAttempts}/5 for ATA: ${ataAddress.toString()}`);
+                            const newAccount = await connection.getAccountInfo(ataAddress, "finalized");
+                            console.log("Account info:", {
+                                exists: newAccount !== null,
+                                dataLength: newAccount?.data.length,
+                                owner: newAccount?.owner.toString(),
+                                lamports: newAccount?.lamports
+                            });
+                            
+                            if (newAccount) {
+                                accountVerified = true;
+                                console.log("ATA verified successfully");
+                                return [ataAddress, true];
+                            }
+                        } catch (err) {
+                            console.log("Error verifying account:", err);
+                        }
+                        verificationAttempts--;
+                        if (verificationAttempts > 0) {
+                            console.log(`Waiting before next verification attempt...`);
+                            await new Promise(resolve => setTimeout(resolve, 5000));
+                        }
                     }
-                    return [ataAddress, true];
+
+                    if (!accountVerified) {
+                        console.error("Failed to verify ATA after all attempts");
+                        throw new Error("ATA account not found or empty after creation");
+                    }
                 }
             } catch (err) {
-                console.warn(`ATA creation attempt failed, retries left: ${retries - 1}`, err);
+                lastError = err instanceof Error ? err : new Error(String(err));
+                console.warn(`ATA creation attempt failed, retries left: ${retries - 1}`, lastError);
                 retries--;
-                if (retries === 0) throw err;
-                // Wait before retrying
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                if (retries === 0) break;
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, 3 - retries) * 2000));
             }
         }
-        throw new Error("Failed to create ATA after all retries");
+
+        throw lastError || new Error("Failed to create ATA after all retries");
     } catch (error) {
-        // If the error indicates the account already exists, return the address
-        if (error instanceof Error && error.message?.includes("already in use")) {
+        if (error instanceof Error && 
+            (error.message?.includes("already in use") || 
+             error.message?.includes("already exists"))) {
             const ataAddress = getAssociatedTokenAddressSync(mint, owner);
             const account = await getProvider().connection.getAccountInfo(ataAddress);
-            if (account && account.data.length > 0) {
+            if (account) {  // Only check if account exists, not its data length
                 return [ataAddress, false];
             }
         }

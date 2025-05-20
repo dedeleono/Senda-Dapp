@@ -77,6 +77,11 @@ export class EscrowService {
         };
       }
 
+      // Get factory PDA
+      const [factoryPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from("factory"), feePayer.publicKey.toBuffer()],
+        program.programId
+      );
       // Sender ATAs
       await createAta(usdcMint, senderPk);
       await createAta(usdtMint, senderPk);
@@ -91,6 +96,8 @@ export class EscrowService {
         .initializeEscrow(new BN(seed))
         .accounts({
           feePayer: feePayer.publicKey,
+          factory: factoryPda,
+          escrow: escrowPda,
           sender: senderPk,
           receiver: receiverPk,
           authority: feePayer.publicKey,
@@ -101,6 +108,32 @@ export class EscrowService {
 
       const tx = new Transaction().add(ix);
       const txSig = await web3.sendAndConfirmTransaction(connection, tx, [feePayer, senderKeypair]);
+
+      // Wait for the escrow account to be properly initialized
+      let verificationAttempts = 5;
+      let accountVerified = false;
+      
+      while (verificationAttempts > 0 && !accountVerified) {
+        try {
+          // Add a longer delay between attempts
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          
+          console.log(`Escrow account verification attempt ${11 - verificationAttempts}/10 for account: ${escrowPda.toBase58()}`);
+          
+          const escrowAccount = await program.account.escrow.fetch(escrowPda);
+          if (escrowAccount) {
+            console.log('Escrow account verified successfully:', escrowAccount);
+            accountVerified = true;
+          }
+        } catch (err) {
+          console.log(`Escrow account verification attempt ${11 - verificationAttempts} failed:`, err);
+        }
+        verificationAttempts--;
+      }
+
+      if (!accountVerified) {
+        throw new Error("Escrow account not properly initialized after transaction confirmation");
+      }
 
       return {
         success: true,

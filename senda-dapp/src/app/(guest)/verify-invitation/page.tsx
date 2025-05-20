@@ -13,7 +13,7 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { TRPCClientErrorLike } from "@trpc/client";
+import { TRPCClientError } from "@trpc/client";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -26,13 +26,17 @@ function VerifyInvitationContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
+    const jwtToken = searchParams.get("jwt");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { update: updateSession } = useSession();
 
     const { data: verificationData, isLoading: isLoadingVerification } = trpc.userRouter.verifyInvitation.useQuery(
-        { token: token || "" },
+        { 
+            token: token || "",
+            jwt: jwtToken || ""
+        },
         {
-            enabled: !!token,
+            enabled: !!token && !!jwtToken,
             retry: false,
         }
     );
@@ -48,7 +52,7 @@ function VerifyInvitationContent() {
         onSuccess: () => {
             toast.success("Profile updated successfully");
         },
-        onError: (error: TRPCClientErrorLike<any>) => {
+        onError: (error) => {
             toast.error(error.message);
             setIsSubmitting(false);
         },
@@ -59,7 +63,7 @@ function VerifyInvitationContent() {
             toast.success("Wallet created successfully");
             router.push("/");
         },
-        onError: (error: TRPCClientErrorLike<any>) => {
+        onError: (error) => {
             toast.error(error.message);
             setIsSubmitting(false);
         },
@@ -78,18 +82,13 @@ function VerifyInvitationContent() {
         setIsSubmitting(true);
 
         try {
-            // Update profile first
-            await updateProfile.mutateAsync({
-                name: data.name,
-                image: data.image,
-            });
+            if (!jwtToken) {
+                throw new Error("No JWT token available");
+            }
 
-            // Create wallet
-            await createWallet.mutateAsync();
-
-            // Sign in with the invitation token
+            // Sign in with the JWT token first
             const signInResult = await signIn("credentials", {
-                token,
+                token: jwtToken,
                 redirect: false,
             });
 
@@ -97,11 +96,26 @@ function VerifyInvitationContent() {
                 throw new Error(signInResult.error);
             }
 
-            // Update the session to include the latest user data
+            // Wait for session to be established
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await updateSession();
+
+            // Update profile and create wallet in parallel
+            const [profileResult, walletResult] = await Promise.all([
+                updateProfile.mutateAsync({
+                    name: data.name,
+                    image: data.image,
+                }),
+                createWallet.mutateAsync()
+            ]);
+
+            // Update the session with all new data
             await updateSession();
 
             // Redirect to home page
             router.push("/home");
+            toast.success("Profile updated successfully");
+            return [profileResult, walletResult];
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "An error occurred");
             setIsSubmitting(false);

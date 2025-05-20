@@ -42,7 +42,7 @@ export class UserService {
           encryptedPrivateKey,
           iv,
           authTag,
-          role: 'INDIVIDUAL',
+          role: 'GUEST',
         },
         select: {
           id: true,
