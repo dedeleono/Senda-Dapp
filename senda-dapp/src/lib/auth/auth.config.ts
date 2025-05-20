@@ -162,6 +162,8 @@ export const authConfig: NextAuthConfig = {
                 '/about',
                 '/contact',
                 '/invitation',
+                '/terms',
+                '/privacy',
             ];
             
             const isPublicPath = publicPaths.some(path => 

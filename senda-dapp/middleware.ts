@@ -16,6 +16,8 @@ const PUBLIC_ROUTES = [
   '/about',
   '/contact',
   '/invitation',
+  '/terms',
+  '/privacy',
 ];
 
 export function middleware(request: NextRequest) {
