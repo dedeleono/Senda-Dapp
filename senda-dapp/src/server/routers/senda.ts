@@ -24,14 +24,11 @@ import {
 import { TRPCError } from "@trpc/server";
 import { getProvider, loadUserSignerKeypair } from "@/utils/dapp-wallets";
 import { prisma } from "@/lib/db";
-import crypto from 'crypto';
 import { UserService } from "../services/user";
 import { EscrowService } from "../services/escrow";
 import { handleRouterError } from "../utils/error-handler";
 import { CreateDepositResponse } from "@/types/transaction";
 import { CancelAccounts, DepositAccounts, InitEscrowAccounts, ReleaseAccounts } from "@/types/senda-program";
-import { sendGuestDepositNotificationEmail } from "@/lib/validations/guest-deposit-notification";
-import { sendDepositNotificationEmail } from "@/lib/validations/deposit-notification";
 import { SignatureType } from "@/components/transactions/transaction-card";
 import { createTransferCheckedInstruction } from "@solana/spl-token";
 import userRouter from "./user";

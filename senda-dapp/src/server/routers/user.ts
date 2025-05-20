@@ -172,6 +172,7 @@ const userRouter = router({
                             throw new Error('Invalid JWT token');
                         }
                     } catch (error) {
+                        console.error("Error verifying JWT token:", error);
                         throw new TRPCError({
                             code: 'UNAUTHORIZED',
                             message: 'Invalid JWT token'

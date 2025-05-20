@@ -13,7 +13,6 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { TRPCClientError } from "@trpc/client";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
