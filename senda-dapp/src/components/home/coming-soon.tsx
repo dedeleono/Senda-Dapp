@@ -72,7 +72,7 @@ const ComingSoon = () => {
                   />
                 </div>
                 <div className="w-full mt-8">
-                  <h4 className="text-3xl font-bold text-center sm:text-start text-black dark:text-white">{items.heading}</h4>
+                  <h4 className="text-3xl font-bold text-center sm:text-start text-black ">{items.heading}</h4>
                 </div>
               </div>
             </div>
