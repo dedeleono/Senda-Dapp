@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, Suspense, lazy } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
@@ -28,79 +28,19 @@ import Escrow from '@/public/escrow.png'
 import MoneyTransfer from '@/public/money-transfer.png'
 import ComingSoon from '@/components/home/coming-soon'
 import { WorldMap } from '@/components/ui/acernity/world-map'
+import SignupForm from './sign-up-form'
 
-const formSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-})
+// Add loading spinner component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center w-full h-32">
+    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+  </div>
+)
+
 
 export default function LandingPageContent() {
   const [activeTab, setActiveTab] = useState('features')
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: '',
-    },
-    mode: 'onChange',
-  })
-
-  const createUserAndSendInvitation = trpc.userRouter.createUserAndSendInvitation.useMutation({
-    onSuccess: () => {
-      toast.success('Invitation sent! Check your email to complete registration.')
-      form.reset()
-      setIsLoading(false)
-    },
-    onError: (error) => {
-      toast.error(error.message)
-      setIsLoading(false)
-    }
-  })
-
-  const onSubmit = useCallback(async (values: z.infer<typeof formSchema>) => {
-    if (isLoading) return
-    setIsLoading(true)
-    createUserAndSendInvitation.mutate({ email: values.email })
-  }, [isLoading, createUserAndSendInvitation])
-
-  const FormComponent = useMemo(() => (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center gap-6 w-full">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormControl>
-                <Input
-                  placeholder="Enter your email"
-                  className="w-full h-12 text-lg"
-                  {...field}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button
-          type="submit"
-          disabled={isLoading || !form.formState.isValid}
-          className="w-full h-12 text-lg cursor-pointer"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Sending invitation...
-            </>
-          ) : (
-            'Create'
-          )}
-        </Button>
-      </form>
-    </Form>
-  ), [form, isLoading, onSubmit])
 
   useEffect(() => {
     // Function to handle hash changes
@@ -121,8 +61,6 @@ export default function LandingPageContent() {
 
     // Add event listener for hash changes
     window.addEventListener('hashchange', handleHashChange)
-
-    // Cleanup
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
 
@@ -181,7 +119,15 @@ export default function LandingPageContent() {
             transition={{ duration: 0.5 }}
             className="relative"
           >
-            <Image src={loot_boxes.src} alt="Hero Image" width={500} height={500} />
+            <Image 
+              src={loot_boxes.src} 
+              alt="Hero Image" 
+              width={500} 
+              height={500}
+              priority
+              className="object-cover"
+              loading="eager"
+            />
           </motion.div>
         </div>
       </section>
@@ -205,6 +151,7 @@ export default function LandingPageContent() {
                   src={Solami.src}
                   alt="Solami Logo"
                   className="object-contain w-auto h-auto max-w-[25px] max-h-[25px] opacity-80"
+                  loading="eager"
                 />
                 <Image
                   width={100}
@@ -212,6 +159,7 @@ export default function LandingPageContent() {
                   src={SolamiWord.src}
                   alt="Solami Word Logo"
                   className="object-contain invert w-auto h-auto max-w-[100px] max-h-[100px] opacity-80"
+                  loading="eager"
                 />
               </div>
               {logos.map((logo, index) => (
@@ -222,6 +170,7 @@ export default function LandingPageContent() {
                     width={100}
                     height={100}
                     className="object-contain w-auto h-auto max-w-[150px] max-h-[150px]"
+                    loading="eager"
                   />
                 </div>
               ))}
@@ -355,40 +304,42 @@ export default function LandingPageContent() {
           </div>
         </div>
         <div className=" py-10 bg-white w-full">
-          <WorldMap
-            dots={[
-              {
-                start: {
-                  lat: 64.2008,
-                  lng: -149.4937,
-                }, // Alaska (Fairbanks)
-                end: {
-                  lat: 34.0522,
-                  lng: -118.2437,
-                }, // Los Angeles
-              },
-              {
-                start: { lat: 64.2008, lng: -149.4937 }, // Alaska (Fairbanks)
-                end: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
-              },
-              {
-                start: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
-                end: { lat: 38.7223, lng: -9.1393 }, // Lisbon
-              },
-              {
-                start: { lat: 51.5074, lng: -0.1278 }, // London
-                end: { lat: 28.6139, lng: 77.209 }, // New Delhi
-              },
-              {
-                start: { lat: 28.6139, lng: 77.209 }, // New Delhi
-                end: { lat: 43.1332, lng: 131.9113 }, // Vladivostok
-              },
-              {
-                start: { lat: 28.6139, lng: 77.209 }, // New Delhi
-                end: { lat: -1.2921, lng: 36.8219 }, // Nairobi
-              },
-            ]}
-          />
+          <Suspense fallback={<LoadingSpinner />}>
+            <WorldMap
+              dots={[
+                {
+                  start: {
+                    lat: 64.2008,
+                    lng: -149.4937,
+                  }, // Alaska (Fairbanks)
+                  end: {
+                    lat: 34.0522,
+                    lng: -118.2437,
+                  }, // Los Angeles
+                },
+                {
+                  start: { lat: 64.2008, lng: -149.4937 }, // Alaska (Fairbanks)
+                  end: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
+                },
+                {
+                  start: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
+                  end: { lat: 38.7223, lng: -9.1393 }, // Lisbon
+                },
+                {
+                  start: { lat: 51.5074, lng: -0.1278 }, // London
+                  end: { lat: 28.6139, lng: 77.209 }, // New Delhi
+                },
+                {
+                  start: { lat: 28.6139, lng: 77.209 }, // New Delhi
+                  end: { lat: 43.1332, lng: 131.9113 }, // Vladivostok
+                },
+                {
+                  start: { lat: 28.6139, lng: 77.209 }, // New Delhi
+                  end: { lat: -1.2921, lng: 36.8219 }, // Nairobi
+                },
+              ]}
+            />
+          </Suspense>
         </div>
       </section>
 
@@ -431,14 +382,18 @@ export default function LandingPageContent() {
             className="flex-1 bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center relative min-w-[420px] border border-gray-100"
           >
             <h3 className="text-3xl font-bold text-[#1c3144] mb-8 mt-2">Open your account</h3>
-            {FormComponent}
+            <SignupForm />
           </motion.div>
         </div>
       </section>
 
-      <WhyChooseUs />
+      <Suspense fallback={<LoadingSpinner />}>
+        <WhyChooseUs />
+      </Suspense>
 
-      <ComingSoon />
+      <Suspense fallback={<LoadingSpinner />}>
+        <ComingSoon />
+      </Suspense>
 
       {/* FAQ Section */}
       <section id="faqs" className="py-24 bg-gradient-to-b from-slate-50/50 via-emerald-50/30 to-white ">
