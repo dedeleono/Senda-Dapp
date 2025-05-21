@@ -50,11 +50,11 @@ const ComingSoon = () => {
     <section className="relative bg-deepSlate dark:bg-darkmode ">
       <div className="container mx-auto lg:max-w-(--breakpoint-xl) md:max-w-(--breakpoint-md) relative">
         <div className="text-center mt-24">
-          <h3 className="text-4xl sm:text-6xl font-bold text-black dark:text-white my-2">Coming soon.</h3>
-          <h3 className="text-4xl sm:text-6xl font-bold text-black/50 dark:text-white/50 lg:mr-48 my-2">
+          <h3 className="text-4xl sm:text-6xl font-bold text-black  my-2">Coming soon.</h3>
+          <h3 className="text-4xl sm:text-6xl font-bold text-black/50 lg:mr-48 my-2">
             Coming soon.
           </h3>
-          <h3 className="text-4xl sm:text-6xl font-bold text-black/25 dark:text-white/25 lg:-mr-32 my-2">
+          <h3 className="text-4xl sm:text-6xl font-bold text-black/25 lg:-mr-32 my-2">
             Coming soon.
           </h3>
         </div>
