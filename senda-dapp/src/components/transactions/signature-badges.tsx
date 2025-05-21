@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge'
-import { UserIcon, UsersIcon, ShieldCheckIcon } from 'lucide-react'
+import { UserIcon } from 'lucide-react'
 import { SignatureType } from '@prisma/client'
 import { cn } from '@/lib/utils'
 import { Signature } from '@/types/transaction'
@@ -20,38 +20,7 @@ export function SignatureBadges({
   isReceiver,
   className
 }: SignatureBadgesProps) {
-  const getPolicyDetails = (policy: string) => {
-    switch (policy.toUpperCase()) {
-      case 'SENDER':
-        return {
-          icon: UserIcon,
-          label: 'Single Signature',
-          description: 'Requires sender signature',
-          className: 'text-[#596f62] dark:text-[#d7dfbe] bg-[#596f62]/20 dark:bg-[#1c3144]/20',
-        }
-      case 'RECEIVER':
-        return {
-          icon: UserIcon,
-          label: 'Single Signature',
-          description: 'Requires receiver signature',
-          className: 'text-[#596f62] dark:text-[#d7dfbe] bg-[#596f62]/20 dark:bg-[#1c3144]/20',
-        }
-      case 'DUAL':
-        return {
-          icon: UsersIcon,
-          label: 'Multi-Signature',
-          description: 'Requires multiple signatures',
-          className: 'text-[#7ea16b] dark:text-[#7ea16b] bg-[#7ea16b]/20 dark:bg-[#7ea16b]/10',
-        }
-      default:
-        return {
-          icon: ShieldCheckIcon,
-          label: policy,
-          description: 'Custom policy',
-          className: 'text-[#1c3144] dark:text-[#f6ead7] bg-[#f6ead7]/30 dark:bg-[#f6ead7]/10',
-        }
-    }
-  }
+  
   
 
   const renderSignatureBadge = (role: SignatureType, isCurrentUser: boolean) => {
