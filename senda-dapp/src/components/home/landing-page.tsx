@@ -96,9 +96,11 @@ export default function LandingPageContent() {
             </h1>
             <p className="text-muted-foreground max-w-md">Dedicated to building trust for the digital era.</p>
             <div className="flex flex-wrap gap-4">
-              <Button variant={'default'} className="rounded-md text-white hover:bg-gray-800">
-                Get Started For Free
-              </Button>
+              <Link href="#cta" className="rounded-md text-white hover:bg-gray-800">
+                <Button variant={'default'} className="rounded-md text-white hover:bg-gray-800">
+                  Open Account for Free
+                </Button>
+              </Link>
             </div>
           </motion.div>
           <motion.div
@@ -107,10 +109,10 @@ export default function LandingPageContent() {
             transition={{ duration: 0.5 }}
             className="relative"
           >
-            <Image 
-              src={loot_boxes.src} 
-              alt="Hero Image" 
-              width={500} 
+            <Image
+              src={loot_boxes.src}
+              alt="Hero Image"
+              width={500}
               height={500}
               priority
               className="object-cover"
@@ -261,10 +263,10 @@ export default function LandingPageContent() {
               </h5>
               <div className="text-center sm:text-start">
                 <Link
-                  href="#"
+                  href="#cta"
                   className="text-xl py-5 px-14 mt-5 font-semibold text-white rounded-lg duration-300 bg-primary border border-primary hover:bg-darkmode hover:border-darkmode"
                 >
-                  Get Started
+                  Open Account
                 </Link>
               </div>
               <Image
@@ -332,7 +334,7 @@ export default function LandingPageContent() {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full bg-gradient-to-br from-[#f6ead7]/50 via-[#f6ead7]/30 to-white/60 py-20 px-4 relative overflow-hidden">
+      <section id="cta" className="w-full bg-gradient-to-br from-[#f6ead7]/50 via-[#f6ead7]/30 to-white/60 py-20 px-4 relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#1c3144]/5 rounded-full blur-3xl" />
@@ -341,7 +343,7 @@ export default function LandingPageContent() {
 
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 relative">
           {/* Left: Text */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
@@ -363,7 +365,7 @@ export default function LandingPageContent() {
           </motion.div>
 
           {/* Right: CTA Card */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
