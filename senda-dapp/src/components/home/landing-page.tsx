@@ -67,7 +67,7 @@ export default function LandingPageContent() {
     <div className="min-h-screen bg-white">
       {/* Navigation */}
       <header className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="font-bold text-xl">Senda</div>
+        <div className="font-bold text-xl text-[#1c3144]">Senda</div>
         <nav className="hidden md:flex items-center space-x-6">
           <Link
             href="#why-choose-us"
