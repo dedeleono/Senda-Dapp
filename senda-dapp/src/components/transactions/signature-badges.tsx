@@ -2,13 +2,8 @@ import { Badge } from '@/components/ui/badge'
 import { UserIcon, UsersIcon, ShieldCheckIcon } from 'lucide-react'
 import { SignatureType } from '@prisma/client'
 import { cn } from '@/lib/utils'
-
-interface Signature {
-  signer: string
-  role: SignatureType
-  timestamp?: Date
-  status: 'signed' | 'pending'
-}
+import { Signature } from '@/types/transaction'
+import { hasRoleSigned } from '@/utils/transaction'
 
 interface SignatureBadgesProps {
   policy: SignatureType
@@ -61,14 +56,8 @@ export function SignatureBadges({
   const policyDetails = getPolicyDetails(policy)
   const PolicyIcon = policyDetails.icon
 
-  // Helper to check if a role has signed
-  const hasSigned = (role: SignatureType) => {
-    return signatures.some(sig => sig.role === role && sig.status === 'signed')
-  }
-
   const renderSignatureBadge = (role: SignatureType, isCurrentUser: boolean) => {
-    const isSigned = hasSigned(role)
-    const signature = signatures.find(sig => sig.role === role)
+    const isSigned = hasRoleSigned(signatures, role)
     return (
       <Badge
         variant="outline"
@@ -84,7 +73,6 @@ export function SignatureBadges({
         <UserIcon className="w-3.5 h-3.5" />
         <span>{role === 'SENDER' ? 'Sender' : 'Receiver'}: {isSigned ? 'Approved' : 'Pending'}</span>
         {isSigned ? <span className="text-[10px]">✓</span> : <span className="text-[10px]">⏳</span>}
-        
       </Badge>
     )
   }

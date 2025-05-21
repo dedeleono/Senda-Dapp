@@ -1,4 +1,5 @@
-export type TransactionStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'REJECTED';
+import { TransactionStatus, SignatureType } from '@prisma/client'
+
 export type TokenType = 'USDC' | 'USDT';
 export type AuthorizationType = 'SENDER' | 'RECEIVER' | 'DUAL';
 export type AuthorizedBy = 'sender' | 'receiver' | 'both';
@@ -133,29 +134,104 @@ export interface DepositFormActions {
   setError: (error?: string) => void;
 }
 
+export interface Signature {
+  signer: string
+  role: SignatureType
+  timestamp?: Date
+  status: 'signed' | 'pending'
+}
+
 export interface TransactionDetailsData {
-  id: string;  // escrowId
-  amount: number;
-  token: 'USDC' | 'USDT';
-  recipientEmail: string;
-  senderEmail?: string;
-  createdAt: Date;
-  status: TransactionStatus;
-  authorization: AuthorizedBy;
-  isDepositor: boolean;
-  signatures: Array<{
-    signer: string;
-    role: 'sender' | 'receiver';
-    timestamp?: Date;
-    status: 'signed' | 'pending';
-  }>;
+  id: string
+  amount: number
+  token: 'USDC' | 'USDT'
+  recipientEmail: string
+  senderEmail: string
+  createdAt: Date
+  status: TransactionStatus
+  authorization: SignatureType
+  isDepositor: boolean
+  signatures: Signature[]
   statusHistory: Array<{
-    status: string;
-    timestamp: Date;
-    actor?: string;
-  }>;
-  depositIndex: number;
-  transactionSignature?: string;
-  senderPublicKey: string;
-  receiverPublicKey: string;
+    status: string
+    timestamp: Date
+    actor?: string
+  }>
+  depositIndex: number
+  transactionSignature?: string
+  senderPublicKey: string
+  receiverPublicKey: string
+  depositRecord?: {
+    state: string
+  }
+}
+
+export interface PolicyDetails {
+  icon: any
+  label: string
+  description: string
+  className: string
+}
+
+export const getPolicyDetails = (policy: string, history: boolean = false): PolicyDetails => {
+  switch (policy.toUpperCase()) {
+    case 'SENDER':
+      return {
+        icon: 'UserIcon',
+        label: 'Single Signature',
+        description: !history ? 'Requires sender signature' : 'Signed by sender',
+        className: 'text-[#596f62] dark:text-[#d7dfbe] bg-[#596f62]/20 dark:bg-[#1c3144]/20',
+      }
+    case 'RECEIVER':
+      return {
+        icon: 'UserIcon',
+        label: 'Single Signature',
+        description: !history ? 'Requires receiver signature' : 'Signed by receiver',
+        className: 'text-[#596f62] dark:text-[#d7dfbe] bg-[#596f62]/20 dark:bg-[#1c3144]/20',
+      }
+    case 'DUAL':
+      return {
+        icon: 'UsersIcon',
+        label: 'Multi-Signature',
+        description: !history ? 'Requires multiple signatures' : 'Signed by both',
+        className: 'text-[#7ea16b] dark:text-[#7ea16b] bg-[#7ea16b]/20 dark:bg-[#7ea16b]/10',
+      }
+    default:
+      return {
+        icon: 'ShieldCheckIcon',
+        label: policy,
+        description: 'Custom policy',
+        className: 'text-[#1c3144] dark:text-[#f6ead7] bg-[#f6ead7]/30 dark:bg-[#f6ead7]/10',
+      }
+  }
+}
+
+export const getAuthorizationText = (authorization: SignatureType): string => {
+  switch (authorization) {
+    case 'SENDER':
+      return 'Sender only'
+    case 'RECEIVER':
+      return 'Receiver only'
+    case 'DUAL':
+      return 'Both parties must approve'
+    default:
+      return authorization
+  }
+}
+
+export const hasRoleSigned = (signatures: Signature[], role: SignatureType): boolean => {
+  return signatures.some(sig => sig.role === role && sig.status === 'signed')
+}
+
+export const getStatusBadgeStyles = (status: TransactionStatus): string => {
+  switch (status) {
+    case 'COMPLETED':
+      return 'text-green-800 dark:text-green-200 bg-green-100 dark:bg-green-900/30'
+    case 'CANCELLED':
+      return 'text-red-800 dark:text-red-200 bg-red-100 dark:bg-red-900/30'
+    case 'PENDING':
+      return 'text-yellow-800 dark:text-yellow-200 bg-yellow-100 dark:bg-yellow-900/30'
+    default:
+      return 'text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800/50'
+  }
 } 

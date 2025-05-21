@@ -14,44 +14,20 @@ import {
   Copy, Loader2, ExternalLink, Calendar, Mail 
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { TransactionStatus, SignatureType } from './transaction-card';
+import { TransactionStatus, SignatureType } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
 import { useSendaProgram } from '@/stores/use-senda-program';
 import { SignatureBadges } from './signature-badges'
 import { Separator } from '../ui/separator';
+import { TransactionDetailsData } from '@/types/transaction';
+import { getAuthorizationText, getStatusBadgeStyles } from '@/types/transaction';
+import { canPerformAction, getActionButtonText } from '@/utils/transaction';
+import { cn } from '@/lib/utils';
 
 interface TransactionDetailsProps {
   isOpen: boolean;
   onClose: () => void;
-  transaction: {
-    id: string;
-    amount: number;
-    token: 'USDC' | 'USDT';
-    recipientEmail: string;
-    senderEmail: string;
-    createdAt: Date;
-    status: TransactionStatus;
-    authorization: SignatureType;
-    isDepositor: boolean;
-    signatures: Array<{
-      signer: string;
-      role: SignatureType;
-      timestamp?: Date;
-      status: 'signed' | 'pending';
-    }>;
-    statusHistory: Array<{
-      status: string;
-      timestamp: Date;
-      actor?: string;
-    }>;
-    depositIndex: number;
-    transactionSignature?: string;
-    senderPublicKey: string;
-    receiverPublicKey: string;
-    depositRecord?: {
-      state: string;
-    };
-  };
+  transaction: TransactionDetailsData;
 }
 
 export default function TransactionDetails({ 
@@ -115,80 +91,6 @@ export default function TransactionDetails({
     }
   };
 
-  const canPerformAction = () => {
-    const { status, authorization, isDepositor, signatures } = transaction;
-    
-    // Don't allow actions for completed or cancelled transactions
-    if (status !== 'PENDING' || transaction.depositRecord?.state !== 'PENDING') {
-      return false;
-    }
-    
-    // For sender-only deposits
-    if (authorization === 'SENDER') {
-      return isDepositor && !signatures.some(sig => 
-        sig.role === 'SENDER' && sig.status === 'signed'
-      );
-    }
-    
-    // For receiver-only deposits
-    if (authorization === 'RECEIVER') {
-      return !isDepositor && !signatures.some(sig => 
-        sig.role === 'RECEIVER' && sig.status === 'signed'
-      );
-    }
-    
-    // For dual signature deposits
-    if (authorization === 'DUAL') {
-      const userRole = isDepositor ? 'SENDER' : 'RECEIVER';
-      const hasUserSigned = signatures.some(
-        sig => sig.role === userRole && sig.status === 'signed'
-      );
-      
-      return !hasUserSigned;
-    }
-    
-    return false;
-  };
-
-  const getActionButtonText = () => {
-    const { status, authorization, isDepositor, signatures } = transaction;
-
-    // For dual signature deposits
-    if (authorization === 'DUAL') {
-      const userRole = isDepositor ? 'SENDER' : 'RECEIVER';
-      const hasUserSigned = signatures.some(
-        sig => sig.role === userRole && sig.status === 'signed'
-      );
-      
-      if (!hasUserSigned) {
-        return isDepositor ? 'Sign as Sender' : 'Sign as Receiver';
-      }
-      
-      return 'Signed';
-    }
-    
-    // For single signature deposits
-    if (isDepositor && authorization === 'SENDER') {
-      return 'Sign as Sender';
-    }
-    
-    if (!isDepositor && authorization === 'RECEIVER') {
-      return 'Sign as Receiver';
-    }
-    
-    return 'Close';
-  };
-
-  const getActionButtonVariant = () => {
-    const { status } = transaction;
-    
-    if (status === 'PENDING' && transaction.depositRecord?.state === 'PENDING') {
-      return 'default';
-    }
-    
-    return 'outline';
-  };
-
   const copyToClipboard = (text: string, message: string) => {
     navigator.clipboard.writeText(text)
       .then(() => {
@@ -205,37 +107,6 @@ export default function TransactionDetails({
   const getTokenIcon = (token: 'USDC' | 'USDT') => {
     return token === 'USDC' ? usdcIcon : usdtIcon;
   };
-
-  const getAuthorizationText = (authorization: SignatureType) => {
-    switch (authorization) {
-      case 'SENDER':
-        return 'Sender only';
-      case 'RECEIVER':
-        return 'Receiver only';
-      case 'DUAL':
-        return 'Both parties must approve';
-      default:
-        return authorization;
-    }
-  };
-
-  // Build signatures array from booleans if present, fallback to signatures prop if available
-  const senderSigned = (transaction.signatures?.find(sig => sig.role === 'SENDER')?.status === 'signed') || (transaction as any).senderApproved || (transaction.depositRecord as any)?.senderApproved || false;
-  const receiverSigned = (transaction.signatures?.find(sig => sig.role === 'RECEIVER')?.status === 'signed') || (transaction as any).receiverApproved || (transaction.depositRecord as any)?.receiverApproved || false;
-  const senderEmail = transaction.senderEmail || (transaction as any).user?.email || (transaction as any).userId || 'Unknown sender';
-  const receiverEmail = transaction.recipientEmail || (transaction as any).destinationUser?.email || (transaction as any).destinationUserId || 'Unknown receiver';
-  const signatures: { signer: string; role: SignatureType; status: 'signed' | 'pending' }[] = [
-    {
-      signer: senderEmail,
-      role: 'SENDER',
-      status: senderSigned ? 'signed' : 'pending',
-    },
-    {
-      signer: receiverEmail,
-      role: 'RECEIVER',
-      status: receiverSigned ? 'signed' : 'pending',
-    },
-  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -259,15 +130,10 @@ export default function TransactionDetails({
             </div>
 
             <div className="flex items-center">
-              <span
-                className={`text-xs px-2 py-1 rounded-full ${
-                  transaction.status === 'COMPLETED'
-                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
-                    : transaction.status === 'PENDING'
-                      ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200'
-                      : 'bg-gray-100 dark:bg-gray-800/50 text-gray-800 dark:text-gray-200'
-                }`}
-              >
+              <span className={cn(
+                "text-xs px-2 py-1 rounded-full",
+                getStatusBadgeStyles(transaction.status)
+              )}>
                 {transaction.status}
               </span>
             </div>
@@ -328,7 +194,7 @@ export default function TransactionDetails({
           <Separator className="my-4" />
           <SignatureBadges
             policy={transaction.authorization}
-            signatures={signatures}
+            signatures={transaction.signatures}
             isSender={transaction.isDepositor}
             isReceiver={!transaction.isDepositor}
           />
@@ -350,11 +216,17 @@ export default function TransactionDetails({
           </Button>
 
           <Button
-            variant={getActionButtonVariant()}
+            variant={transaction.status === 'PENDING' && transaction.depositRecord?.state === 'PENDING' ? 'default' : 'outline'}
             onClick={handleActionClick}
-            disabled={isProcessing || !canPerformAction()}
+            disabled={isProcessing || !canPerformAction(
+              transaction.status,
+              transaction.authorization,
+              transaction.isDepositor,
+              transaction.signatures,
+              transaction.depositRecord?.state
+            )}
             className={`min-w-[120px] ${
-              getActionButtonVariant() === 'default'
+              transaction.status === 'PENDING' && transaction.depositRecord?.state === 'PENDING'
                 ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:hover:bg-secondary/80'
                 : 'border-border text-card-foreground hover:bg-muted'
             }`}
@@ -365,7 +237,12 @@ export default function TransactionDetails({
                 Processing...
               </>
             ) : (
-              getActionButtonText()
+              getActionButtonText(
+                transaction.status,
+                transaction.authorization,
+                transaction.isDepositor,
+                transaction.signatures
+              )
             )}
           </Button>
         </DialogFooter>

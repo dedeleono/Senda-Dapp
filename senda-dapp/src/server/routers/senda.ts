@@ -603,28 +603,36 @@ export const sendaRouter = router({
                 }
 
                 // Determine who is the authorized signer based on the deposit record
-
                 const signers: Keypair[] = [];
                 signers.push(feePayer);
 
-                if (deposit.policy === "SENDER" || deposit.policy === "DUAL") {
-                    console.log("Loading depositor keypair");
-                    const { keypair: depositor } = await loadUserSignerKeypair(
-                        deposit.user.id
-                    );                    
-                    // signers.push(depositor);
-                } 
-                if (deposit.policy === "RECEIVER" || deposit.policy === "DUAL") {
+                if (deposit.policy === "SENDER") {
+                    // Only sender signs
+                    const { keypair: depositor } = await loadUserSignerKeypair(deposit.user.id);
+                    signers.push(depositor);
+                }
+                if (deposit.policy === "RECEIVER") {
+                    // Only receiver signs
                     if (!deposit.transaction?.destinationUserId) {
                         throw new TRPCError({
                             code: 'NOT_FOUND',
                             message: 'Destination user not found'
                         });
                     }
-                    const { keypair: receiver } = await loadUserSignerKeypair(
-                        deposit.transaction.destinationUserId
-                    );
-                    
+                    const { keypair: receiver } = await loadUserSignerKeypair(deposit.transaction.destinationUserId);
+                    signers.push(receiver);
+                }
+                if (deposit.policy === "DUAL") {
+                    // Both sign
+                    const { keypair: depositor } = await loadUserSignerKeypair(deposit.user.id);
+                    signers.push(depositor);
+                    if (!deposit.transaction?.destinationUserId) {
+                        throw new TRPCError({
+                            code: 'NOT_FOUND',
+                            message: 'Destination user not found'
+                        });
+                    }
+                    const { keypair: receiver } = await loadUserSignerKeypair(deposit.transaction.destinationUserId);
                     signers.push(receiver);
                 }
 

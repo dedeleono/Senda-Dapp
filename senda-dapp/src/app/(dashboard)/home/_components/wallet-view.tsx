@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   ArrowUp,
   PlusIcon,
-  Wallet,
   ArrowDown,
   ClockIcon,
   ShieldCheckIcon,
@@ -40,33 +39,10 @@ import { Sparklines } from 'react-sparklines'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
 import { SignatureBadges } from '@/components/transactions/signature-badges'
-
-interface TransactionDetailsData {
-  id: string
-  amount: number
-  token: 'USDC' | 'USDT'
-  recipientEmail: string
-  senderEmail: string
-  createdAt: Date
-  status: TransactionStatus
-  authorization: SignatureType
-  isDepositor: boolean
-  signatures: Array<{
-    signer: string
-    role: SignatureType
-    timestamp?: Date
-    status: 'signed' | 'pending'
-  }>
-  statusHistory: Array<{
-    status: string
-    timestamp: Date
-    actor?: string
-  }>
-  depositIndex: number
-  transactionSignature?: string
-  senderPublicKey: string
-  receiverPublicKey: string
-}
+import { TransactionDetailsData } from '@/types/transaction'
+import { parseTransactionSignatures, getTransactionAge } from '@/utils/transaction'
+import { getStatusBadgeStyles } from '@/types/transaction'
+import { cn } from '@/lib/utils'
 
 interface Transaction {
   id: string
@@ -399,36 +375,7 @@ export default function SendaWallet() {
 
     console.log('Transaction deposit record:', transaction.depositRecord)
 
-    const senderHasSigned = transaction.depositRecord?.signatures?.some(sig => {
-      try {
-        const parsedSig = typeof sig === 'string' ? JSON.parse(sig) : sig
-        return parsedSig.role?.toUpperCase() === 'SENDER' && parsedSig.status === 'signed'
-      } catch {
-        return false
-      }
-    }) ?? !!transaction.depositRecord?.senderApproved
-
-    const receiverHasSigned = transaction.depositRecord?.signatures?.some(sig => {
-      try {
-        const parsedSig = typeof sig === 'string' ? JSON.parse(sig) : sig
-        return parsedSig.role?.toUpperCase() === 'RECEIVER' && parsedSig.status === 'signed'
-      } catch {
-        return false
-      }
-    }) ?? !!transaction.depositRecord?.receiverApproved
-
-    const signatures: { signer: string; role: SignatureType; status: 'signed' | 'pending' }[] = [
-      {
-        signer: transaction.user?.email || transaction.userId || 'Unknown sender',
-        role: 'SENDER',
-        status: senderHasSigned ? 'signed' : 'pending',
-      },
-      {
-        signer: transaction.destinationUser?.email || transaction.destinationUserId || 'Unknown receiver',
-        role: 'RECEIVER',
-        status: receiverHasSigned ? 'signed' : 'pending',
-      },
-    ]
+    const signatures = parseTransactionSignatures(transaction.depositRecord?.signatures || [])
 
     const transactionDetails: TransactionDetailsData = {
       id: transaction.depositRecord?.id || '',
@@ -457,6 +404,7 @@ export default function SendaWallet() {
       transactionSignature: transaction.signature,
       senderPublicKey,
       receiverPublicKey,
+      depositRecord: transaction.depositRecord,
     }
 
     console.log('Setting transaction details:', transactionDetails)
@@ -868,37 +816,8 @@ export default function SendaWallet() {
                         .map((tx, idx) => {
                           const isSender = tx.userId === session?.user.id
                           const isReceiver = tx.destinationAddress === publicKey?.toString()
-                          const ageHours = Math.floor((Date.now() - new Date(tx.createdAt).getTime()) / 3600000)
-
-                          const senderHasSigned = tx.depositRecord?.signatures?.some(sig => {
-                            try {
-                              const parsedSig = typeof sig === 'string' ? JSON.parse(sig) : sig
-                              return parsedSig.role?.toUpperCase() === 'SENDER' && parsedSig.status === 'signed'
-                            } catch {
-                              return false
-                            }
-                          }) ?? !!tx.depositRecord?.senderApproved
-                          const receiverHasSigned = tx.depositRecord?.signatures?.some(sig => {
-                            try {
-                              const parsedSig = typeof sig === 'string' ? JSON.parse(sig) : sig
-                              return parsedSig.role?.toUpperCase() === 'RECEIVER' && parsedSig.status === 'signed'
-                            } catch {
-                              return false
-                            }
-                          }) ?? !!tx.depositRecord?.receiverApproved
-
-                          const signatures: { signer: string; role: SignatureType; status: 'signed' | 'pending' }[] = [
-                            {
-                              signer: tx.user?.email || tx.userId || 'Unknown sender',
-                              role: 'SENDER',
-                              status: senderHasSigned ? 'signed' : 'pending',
-                            },
-                            {
-                              signer: tx.destinationUser?.email || tx.destinationUserId || 'Unknown receiver',
-                              role: 'RECEIVER',
-                              status: receiverHasSigned ? 'signed' : 'pending',
-                            },
-                          ]
+                          const ageHours = getTransactionAge(tx.createdAt)
+                          const signatures = parseTransactionSignatures(tx.depositRecord?.signatures || [])
 
                           return (
                             <motion.div
@@ -927,16 +846,10 @@ export default function SendaWallet() {
                                       ? `To: ${tx.destinationUser?.email || '—'}`
                                       : `From: ${tx.user?.email || '—'}`}
                                   </h4>
-                                  <span
-                                    className={`
-                      inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full
-                      ${
-                        tx.depositRecord?.state === TransactionStatus.PENDING
-                          ? 'text-yellow-800 bg-yellow-100'
-                          : 'text-green-800 bg-green-100'
-                      }
-                    `}
-                                  >
+                                  <span className={cn(
+                                    "inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full",
+                                    getStatusBadgeStyles(tx.depositRecord?.state as TransactionStatus)
+                                  )}>
                                     <ClockIcon className="h-4 w-4 mr-1" />
                                     {tx.depositRecord?.state.toUpperCase()}
                                   </span>
@@ -957,7 +870,7 @@ export default function SendaWallet() {
                                   <span className="font-semibold text-gray-800">
                                     {tx.amount} {tx.depositRecord?.stable?.toUpperCase()}
                                   </span>
-                                  {isSender && tx.depositRecord?.policy !== 'RECEIVER' && !senderHasSigned && (
+                                  {isSender && tx.depositRecord?.policy !== 'RECEIVER' && !signatures.some(sig => sig.role === 'SENDER') && (
                                     <Button
                                       size="sm"
                                       variant="default"
@@ -999,6 +912,7 @@ export default function SendaWallet() {
                                           transactionSignature: tx.signature,
                                           senderPublicKey: tx.walletPublicKey,
                                           receiverPublicKey: tx.destinationAddress || '',
+                                          depositRecord: tx.depositRecord,
                                         }
                                         setSelectedTransaction(transactionDetails)
                                         setSigningTransactionId(tx.id)
@@ -1022,7 +936,7 @@ export default function SendaWallet() {
                                       )}
                                     </Button>
                                   )}
-                                  {isReceiver && tx.depositRecord?.policy !== 'SENDER' && !receiverHasSigned && (
+                                  {isReceiver && tx.depositRecord?.policy !== 'SENDER' && !signatures.some(sig => sig.role === 'RECEIVER') && (
                                     <Button
                                       size="sm"
                                       variant="default"
@@ -1064,6 +978,7 @@ export default function SendaWallet() {
                                           transactionSignature: tx.signature,
                                           senderPublicKey: tx.walletPublicKey,
                                           receiverPublicKey: tx.destinationAddress || '',
+                                          depositRecord: tx.depositRecord,
                                         }
                                         setSelectedTransaction(transactionDetails)
                                         setSigningTransactionId(tx.id)
@@ -1087,7 +1002,7 @@ export default function SendaWallet() {
                                       )}
                                     </Button>
                                   )}
-                                  {((isSender && senderHasSigned) || (isReceiver && receiverHasSigned)) && tx.depositRecord?.state === 'PENDING' && (
+                                  {((isSender && signatures.some(sig => sig.role === 'SENDER')) || (isReceiver && signatures.some(sig => sig.role === 'RECEIVER'))) && tx.depositRecord?.state === 'PENDING' && (
                                     <span className="text-muted-foreground text-xs ml-2">Waiting for counterparty...</span>
                                   )}
                                 </div>
