@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/db";
 import type { User } from "next-auth";
+import jwt from "jsonwebtoken";
 
 // interface VerificationRequestEvent {
 //     url: string;
@@ -50,38 +51,59 @@ export const authConfig: NextAuthConfig = {
                 token: { label: "Token", type: "text" }
             },
             async authorize(credentials): Promise<User | null> {
+                console.log('Credentials provider called with:', credentials);
+                
                 if (!credentials?.token || typeof credentials.token !== 'string') {
+                    console.log('No token provided');
                     return null;
                 }
 
-                const verificationToken = await prisma.verificationToken.findUnique({
-                    where: { token: credentials.token }
-                });
+                try {
+                    // First try to verify as JWT
+                    const decoded = jwt.verify(credentials.token, process.env.AUTH_SECRET!) as { 
+                        email: string, 
+                        role: string,
+                        token: string 
+                    };
 
-                if (!verificationToken) {
+                    const verificationToken = await prisma.verificationToken.findUnique({
+                        where: { token: decoded.token }
+                    });
+
+                    if (!verificationToken) {
+                        console.log('No verification token found');
+                        return null;
+                    }
+
+                    if (new Date() > verificationToken.expires) {
+                        console.log('Token expired');
+                        return null;
+                    }
+
+                    const user = await prisma.user.findUnique({
+                        where: { email: verificationToken.identifier }
+                    });
+
+                    if (!user) {
+                        console.log('No user found');
+                        return null;
+                    }
+
+                    const userData = {
+                        id: user.id,
+                        email: user.email || '',
+                        name: user.name || null,
+                        image: user.image || null,
+                        emailVerified: user.emailVerified || null,
+                        sendaWalletPublicKey: user.sendaWalletPublicKey as string,
+                    };
+
+                    console.log('Returning user data:', userData);
+                    return userData;
+                } catch (error) {
+                    console.log('Error verifying JWT:', error);
                     return null;
                 }
-
-                if (new Date() > verificationToken.expires) {
-                    return null;
-                }
-
-                const user = await prisma.user.findUnique({
-                    where: { email: verificationToken.identifier }
-                });
-
-                if (!user) {
-                    return null;
-                }
-
-                return {
-                    id: user.id,
-                    email: user.email || '',
-                    name: user.name || null,
-                    image: user.image || null,
-                    emailVerified: user.emailVerified || null,
-                    sendaWalletPublicKey: user.sendaWalletPublicKey as string,
-                };
             }
         })
     ],

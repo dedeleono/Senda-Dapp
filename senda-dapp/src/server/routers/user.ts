@@ -167,8 +167,11 @@ const userRouter = router({
                 // If JWT token is provided, verify it
                 if (input.jwt) {
                     try {
+                        console.log('Verifying JWT token:', input.jwt);
                         const decoded = jwt.verify(input.jwt, process.env.AUTH_SECRET!) as { email: string, role: string };
+                        console.log('Decoded JWT:', decoded);
                         if (decoded.email !== user.email) {
+                            console.log('Email mismatch:', { decoded: decoded.email, user: user.email });
                             throw new Error('Invalid JWT token');
                         }
                     } catch (error) {
@@ -186,7 +189,8 @@ const userRouter = router({
                         email: verificationToken.identifier,
                         amount: deposit?.amount.toString(),
                         token: deposit?.stable,
-                        userId: user.id
+                        userId: user.id,
+                        hasWallet: !!user.sendaWalletPublicKey
                     }
                 };
             } catch (error) {

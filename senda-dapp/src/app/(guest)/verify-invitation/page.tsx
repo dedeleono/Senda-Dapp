@@ -81,41 +81,60 @@ function VerifyInvitationContent() {
         setIsSubmitting(true);
 
         try {
+            console.log('Starting profile completion with data:', data);
+            console.log('JWT Token:', jwtToken);
+            console.log('Verification Data:', verificationData);
+
             if (!jwtToken) {
                 throw new Error("No JWT token available");
             }
 
             // Sign in with the JWT token first
-            const signInResult = await signIn("credentials", {
+            console.log('Attempting to sign in with JWT...');
+            const signInResult = await signIn("invitation", {
                 token: jwtToken,
                 redirect: false,
             });
+
+            console.log('Sign in result:', signInResult);
 
             if (signInResult?.error) {
                 throw new Error(signInResult.error);
             }
 
             // Wait for session to be established
+            console.log('Waiting for session...');
             await new Promise(resolve => setTimeout(resolve, 1000));
-            await updateSession();
+            const sessionUpdate = await updateSession();
+            console.log('Session update result:', sessionUpdate);
 
-            // Update profile and create wallet in parallel
-            const [profileResult, walletResult] = await Promise.all([
-                updateProfile.mutateAsync({
-                    name: data.name,
-                    image: data.image,
-                }),
-                createWallet.mutateAsync()
-            ]);
+            // Update profile
+            console.log('Updating profile...');
+            const profileResult = await updateProfile.mutateAsync({
+                name: data.name,
+                image: data.image,
+            });
+            console.log('Profile update result:', profileResult);
+
+            // Create wallet if needed
+            if (!verificationData?.data?.hasWallet) {
+                console.log('Creating wallet...');
+                const walletResult = await createWallet.mutateAsync();
+                console.log('Wallet creation result:', walletResult);
+            }
 
             // Update the session with all new data
-            await updateSession();
+            console.log('Final session update...');
+            const finalSessionUpdate = await updateSession();
+            console.log('Final session update result:', finalSessionUpdate);
 
             // Redirect to home page
+            console.log('Redirecting to home...');
+            router.refresh();
             router.push("/home");
             toast.success("Profile updated successfully");
-            return [profileResult, walletResult];
         } catch (error) {
+            console.error("Error in handleSubmit:", error);
             toast.error(error instanceof Error ? error.message : "An error occurred");
             setIsSubmitting(false);
         }

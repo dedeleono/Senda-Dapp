@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
@@ -43,20 +43,64 @@ export default function LandingPageContent() {
     defaultValues: {
       email: '',
     },
+    mode: 'onChange',
   })
 
   const createUserAndSendInvitation = trpc.userRouter.createUserAndSendInvitation.useMutation({
     onSuccess: () => {
       toast.success('Invitation sent! Check your email to complete registration.')
       form.reset()
+      setIsLoading(false)
     },
     onError: (error) => {
       toast.error(error.message)
-    },
-    onSettled: () => {
       setIsLoading(false)
     }
   })
+
+  const onSubmit = useCallback(async (values: z.infer<typeof formSchema>) => {
+    if (isLoading) return
+    setIsLoading(true)
+    createUserAndSendInvitation.mutate({ email: values.email })
+  }, [isLoading, createUserAndSendInvitation])
+
+  const FormComponent = useMemo(() => (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center gap-6 w-full">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem className="w-full">
+              <FormControl>
+                <Input
+                  placeholder="Enter your email"
+                  className="w-full h-12 text-lg"
+                  {...field}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button
+          type="submit"
+          disabled={isLoading || !form.formState.isValid}
+          className="w-full h-12 text-lg cursor-pointer"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Sending invitation...
+            </>
+          ) : (
+            'Create'
+          )}
+        </Button>
+      </form>
+    </Form>
+  ), [form, isLoading, onSubmit])
 
   useEffect(() => {
     // Function to handle hash changes
@@ -82,11 +126,6 @@ export default function LandingPageContent() {
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
 
-//   const handleNavigation = (tab: string) => {
-//     setActiveTab(tab)
-//     window.location.hash = tab
-//   }
-
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -96,22 +135,7 @@ export default function LandingPageContent() {
     },
   }
 
-//   const staggerContainer = {
-//     hidden: { opacity: 0 },
-//     visible: {
-//       opacity: 1,
-//       transition: {
-//         staggerChildren: 0.1,
-//       },
-//     },
-//   }
-
   const logos = [Maverick.src, Helix.src]
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true)
-    createUserAndSendInvitation.mutate({ email: values.email })
-  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -404,50 +428,10 @@ export default function LandingPageContent() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex-1 bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center relative min-w-[320px] border border-gray-100"
+            className="flex-1 bg-white rounded-3xl shadow-xl p-8 flex flex-col items-center relative min-w-[420px] border border-gray-100"
           >
-            {/* <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-[#1c3144] rounded-full flex items-center justify-center">
-              <span className="text-white text-sm">✨</span>
-            </div> */}
-            <h3 className="text-2xl font-bold text-[#1c3144] mb-6 mt-2">Join the journey</h3>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-center gap-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="w-full max-w-xs">
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your email"
-                          className="w-full"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full max-w-xs"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending invitation...
-                    </>
-                  ) : (
-                    'Create my account'
-                  )}
-                </Button>
-              </form>
-            </Form>
-            <div className="flex items-center gap-2 mt-6 text-sm text-gray-500">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              Launching soon mobile
-            </div>
+            <h3 className="text-3xl font-bold text-[#1c3144] mb-8 mt-2">Open your account</h3>
+            {FormComponent}
           </motion.div>
         </div>
       </section>

@@ -35,10 +35,10 @@ export function useAuth() {
       }
     };
 
-    if (status === 'authenticated' && !publicKey) {
+    if (session?.user?.id && session?.user?.sendaWalletPublicKey) {
       initializeWallet();
     }
-  }, [status, session?.user?.id, session?.user?.sendaWalletPublicKey, publicKey, initWallet]);
+  }, [session]);
 
   return {
     isInitializingWallet,
