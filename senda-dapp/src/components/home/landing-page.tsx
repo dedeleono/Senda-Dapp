@@ -1,21 +1,14 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState, useEffect, Suspense, lazy } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import * as z from 'zod'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { WhyChooseUs } from '@/components/home/why-choose-us'
 import { useRouter } from 'next/navigation'
-import { trpc } from '@/app/_trpc/client'
-import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
 import loot_boxes from '@/public/loot_boxes.jpg'
@@ -30,7 +23,6 @@ import ComingSoon from '@/components/home/coming-soon'
 import { WorldMap } from '@/components/ui/acernity/world-map'
 import SignupForm from './sign-up-form'
 
-// Add loading spinner component
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center w-full h-32">
     <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -43,12 +35,10 @@ export default function LandingPageContent() {
   const router = useRouter()
 
   useEffect(() => {
-    // Function to handle hash changes
     const handleHashChange = () => {
-      const hash = window.location.hash.slice(1) // Remove the # symbol
+      const hash = window.location.hash.slice(1)
       if (hash) {
         setActiveTab(hash)
-        // Smooth scroll to the section
         const element = document.getElementById(hash)
         if (element) {
           element.scrollIntoView({ behavior: 'smooth' })
@@ -56,10 +46,8 @@ export default function LandingPageContent() {
       }
     }
 
-    // Initial hash check
     handleHashChange()
 
-    // Add event listener for hash changes
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
