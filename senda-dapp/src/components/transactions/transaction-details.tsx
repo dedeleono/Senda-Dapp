@@ -17,6 +17,8 @@ import { format } from 'date-fns';
 import { TransactionStatus, SignatureType } from './transaction-card';
 import { useToast } from '@/hooks/use-toast';
 import { useSendaProgram } from '@/stores/use-senda-program';
+import { SignatureBadges } from './signature-badges'
+import { Separator } from '../ui/separator';
 
 interface TransactionDetailsProps {
   isOpen: boolean;
@@ -150,11 +152,6 @@ export default function TransactionDetails({
 
   const getActionButtonText = () => {
     const { status, authorization, isDepositor, signatures } = transaction;
-    
-    // For completed or cancelled transactions, just show Close
-    if (status !== 'PENDING' || transaction.depositRecord?.state !== 'PENDING') {
-      return 'Close';
-    }
 
     // For dual signature deposits
     if (authorization === 'DUAL') {
@@ -167,7 +164,7 @@ export default function TransactionDetails({
         return isDepositor ? 'Sign as Sender' : 'Sign as Receiver';
       }
       
-      return 'Waiting for Other Party';
+      return 'Signed';
     }
     
     // For single signature deposits
@@ -222,44 +219,66 @@ export default function TransactionDetails({
     }
   };
 
+  // Build signatures array from booleans if present, fallback to signatures prop if available
+  const senderSigned = (transaction.signatures?.find(sig => sig.role === 'SENDER')?.status === 'signed') || (transaction as any).senderApproved || (transaction.depositRecord as any)?.senderApproved || false;
+  const receiverSigned = (transaction.signatures?.find(sig => sig.role === 'RECEIVER')?.status === 'signed') || (transaction as any).receiverApproved || (transaction.depositRecord as any)?.receiverApproved || false;
+  const senderEmail = transaction.senderEmail || (transaction as any).user?.email || (transaction as any).userId || 'Unknown sender';
+  const receiverEmail = transaction.recipientEmail || (transaction as any).destinationUser?.email || (transaction as any).destinationUserId || 'Unknown receiver';
+  const signatures: { signer: string; role: SignatureType; status: 'signed' | 'pending' }[] = [
+    {
+      signer: senderEmail,
+      role: 'SENDER',
+      status: senderSigned ? 'signed' : 'pending',
+    },
+    {
+      signer: receiverEmail,
+      role: 'RECEIVER',
+      status: receiverSigned ? 'signed' : 'pending',
+    },
+  ];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] bg-card">
         <DialogHeader>
           <DialogTitle className="text-card-foreground">Transaction Details</DialogTitle>
         </DialogHeader>
-        
+
         {/* Transaction Summary */}
         <Card className="p-4 border border-border rounded-lg bg-card">
           <div className="flex justify-between items-center mb-4">
             <div className="text-xl font-semibold flex items-center text-card-foreground">
-              <Image 
-                src={getTokenIcon(transaction.token)} 
-                alt={transaction.token} 
-                width={24} 
-                height={24} 
+              <Image
+                src={getTokenIcon(transaction.token)}
+                alt={transaction.token}
+                width={24}
+                height={24}
                 className="mr-2"
               />
               {transaction.amount.toFixed(2)} {transaction.token}
             </div>
-            
+
             <div className="flex items-center">
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                transaction.status === 'COMPLETED' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' :
-                transaction.status === 'PENDING' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200' :
-                'bg-gray-100 dark:bg-gray-800/50 text-gray-800 dark:text-gray-200'
-              }`}>
+              <span
+                className={`text-xs px-2 py-1 rounded-full ${
+                  transaction.status === 'COMPLETED'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
+                    : transaction.status === 'PENDING'
+                      ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200'
+                      : 'bg-gray-100 dark:bg-gray-800/50 text-gray-800 dark:text-gray-200'
+                }`}
+              >
                 {transaction.status}
               </span>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">ID</p>
               <div className="flex items-center mt-1">
                 <p className="font-mono text-card-foreground">{transaction.id.substring(0, 16)}...</p>
-                <button 
+                <button
                   onClick={() => copyToClipboard(transaction.id, 'Transaction ID copied')}
                   className="ml-2 text-muted-foreground hover:text-card-foreground"
                 >
@@ -267,7 +286,7 @@ export default function TransactionDetails({
                 </button>
               </div>
             </div>
-            
+
             <div>
               <p className="text-muted-foreground">Date</p>
               <div className="flex items-center mt-1">
@@ -275,7 +294,7 @@ export default function TransactionDetails({
                 <p className="text-card-foreground">{format(transaction.createdAt, 'MMM d, yyyy h:mm a')}</p>
               </div>
             </div>
-            
+
             <div>
               <p className="text-muted-foreground">From</p>
               <div className="flex items-center mt-1">
@@ -285,7 +304,7 @@ export default function TransactionDetails({
                 </p>
               </div>
             </div>
-            
+
             <div>
               <p className="text-muted-foreground">To</p>
               <div className="flex items-center mt-1">
@@ -295,71 +314,47 @@ export default function TransactionDetails({
                 </p>
               </div>
             </div>
-            
+
             <div>
               <p className="text-muted-foreground">Authorization</p>
               <p className="mt-1 text-card-foreground">{getAuthorizationText(transaction.authorization)}</p>
             </div>
-            
+
             <div>
               <p className="text-muted-foreground">Deposit Index</p>
               <p className="mt-1 text-card-foreground">#{transaction.depositIndex || 0}</p>
             </div>
           </div>
-          
-          {transaction.transactionSignature && (
-            <div className="mt-4 pt-4 border-t border-border">
-              <p className="text-muted-foreground text-sm">Transaction Signature</p>
-              <div className="flex items-center mt-1">
-                <p className="text-xs font-mono truncate text-card-foreground">{transaction.transactionSignature}</p>
-                <div className="flex ml-2">
-                  <button 
-                    onClick={() => copyToClipboard(
-                      transaction.transactionSignature!, 
-                      'Transaction signature copied'
-                    )}
-                    className="text-muted-foreground hover:text-card-foreground mr-1"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                  <a 
-                    href={`https://explorer.solana.com/tx/${transaction.transactionSignature}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-card-foreground"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
+          <Separator className="my-4" />
+          <SignatureBadges
+            policy={transaction.authorization}
+            signatures={signatures}
+            isSender={transaction.isDepositor}
+            isReceiver={!transaction.isDepositor}
+          />
         </Card>
-        
+
         <div className="my-4">
           <h3 className="text-sm font-medium mb-3 text-card-foreground">Transaction Timeline</h3>
-          <StatusTimeline 
-            statusHistory={transaction.statusHistory}
-            signatures={transaction.signatures}
-          />
+          <StatusTimeline statusHistory={transaction.statusHistory} signatures={transaction.signatures} />
         </div>
-        
+
         <DialogFooter>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={onClose}
             disabled={isProcessing}
             className="border-border text-card-foreground hover:bg-muted"
           >
             Cancel
           </Button>
-          
-          <Button 
-            variant={getActionButtonVariant()} 
+
+          <Button
+            variant={getActionButtonVariant()}
             onClick={handleActionClick}
             disabled={isProcessing || !canPerformAction()}
             className={`min-w-[120px] ${
-              getActionButtonVariant() === 'default' 
+              getActionButtonVariant() === 'default'
                 ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:hover:bg-secondary/80'
                 : 'border-border text-card-foreground hover:bg-muted'
             }`}
@@ -376,5 +371,5 @@ export default function TransactionDetails({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
