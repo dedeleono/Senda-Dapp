@@ -65,7 +65,7 @@ export default function DepositNotificationEmail({
             <Section className="text-center mb-6">
               <Button
                 className="bg-[#034180] text-white px-6 py-3 rounded-md font-medium hover:bg-[#023366]"
-                href={'https://senda-dapp.vercel.app/home'}
+                href={'http://localhost:3000/home'}
               >
                 {'Withdraw Funds'}
               </Button>

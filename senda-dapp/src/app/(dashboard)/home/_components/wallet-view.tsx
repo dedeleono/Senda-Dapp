@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowUp, PlusIcon, ArrowDown, ClockIcon, ShieldCheckIcon, UsersIcon, UserIcon } from 'lucide-react'
+import { ArrowUp, PlusIcon, Wallet, ArrowDown, ClockIcon, ShieldCheckIcon, UsersIcon, UserIcon, ClipboardIcon, ExternalLinkIcon } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { trpc } from '@/app/_trpc/client'
 import path from '@/public/2.svg'
@@ -14,6 +14,7 @@ import WalletQRDialog, { WalletQRDialogRef } from './wallet-qr-dialog'
 import { useWalletBalances } from '@/hooks/use-wallet-balances'
 import { TransactionStatus, TransactionType, SignatureType } from '@prisma/client'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 
 import usdcIcon from '@/public/usdc.svg'
 import usdtIcon from '@/public/usdt-round.svg'
@@ -75,6 +76,8 @@ interface Transaction {
     escrowId: string
     signatures?: string[]
     state: string
+    senderApproved?: boolean
+    receiverApproved?: boolean
   }
   destinationUserId?: string
   destinationUser?: {
@@ -115,6 +118,145 @@ interface PathsResponse {
   paths: Path[]
 }
 
+interface TransactionSuccessModalProps {
+  isOpen: boolean
+  onClose: () => void
+  status: 'COMPLETED' | 'PENDING' | 'WAITING'
+  transactionSignature?: string
+  message?: string
+  amount?: number
+  token?: 'USDC' | 'USDT'
+  recipient?: string
+  depositId?: string
+}
+
+const TransactionSuccessModal = ({
+  isOpen,
+  onClose,
+  status,
+  transactionSignature,
+  message,
+  amount,
+  token,
+  recipient,
+  depositId
+}: TransactionSuccessModalProps) => {
+  
+  const handleCopySignature = () => {
+    if (transactionSignature) {
+      navigator.clipboard.writeText(transactionSignature)
+      toast.success('Transaction signature copied to clipboard')
+    }
+  }
+  
+  const handleOpenExplorer = () => {
+    if (transactionSignature) {
+      // Open Solana Explorer in a new tab - using devnet for development
+      const explorerUrl = `https://explorer.solana.com/tx/${transactionSignature}?cluster=devnet`
+      window.open(explorerUrl, '_blank')
+    }
+  }
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-center">
+            {status === 'COMPLETED' ? 'Transaction Complete' : status === 'PENDING' ? 'Transaction Pending' : 'Waiting for Signatures'}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="py-6">
+          <div className="flex flex-col items-center justify-center gap-4">
+            {status === 'COMPLETED' ? (
+              <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <ShieldCheckIcon className="w-8 h-8 text-green-600 dark:text-green-400" />
+              </div>
+            ) : status === 'PENDING' ? (
+              <div className="w-16 h-16 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                <ClockIcon className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <UsersIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              </div>
+            )}
+            
+            {amount && token && (
+              <div className="flex items-center gap-2 mt-2">
+                <Image 
+                  src={token === 'USDC' ? usdcIcon : usdtIcon} 
+                  alt={token} 
+                  width={20} 
+                  height={20} 
+                />
+                <span className="text-xl font-semibold">{amount} {token}</span>
+              </div>
+            )}
+            
+            {recipient && (
+              <div className="text-muted-foreground text-sm">
+                To: {recipient}
+              </div>
+            )}
+            
+            <div className="mt-2 text-center">
+              {message ? (
+                <p className="text-muted-foreground">{message}</p>
+              ) : status === 'COMPLETED' ? (
+                <p className="text-muted-foreground">Your transaction has been successfully processed and recorded on the blockchain.</p>
+              ) : status === 'PENDING' ? (
+                <p className="text-muted-foreground">Your transaction is being processed. It may take a few moments to complete.</p>
+              ) : (
+                <p className="text-muted-foreground">Waiting for all required signatures to complete this transaction.</p>
+              )}
+            </div>
+            
+            {transactionSignature && (
+              <div className="mt-4 w-full">
+                <p className="text-sm text-muted-foreground mb-2">Transaction Signature:</p>
+                <div className="border border-border rounded-md p-3 bg-muted/30 relative">
+                  <code className="text-xs break-all font-mono">{transactionSignature}</code>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="absolute right-2 top-2"
+                    onClick={handleCopySignature}
+                  >
+                    <ClipboardIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-2 w-full"
+                  onClick={handleOpenExplorer}
+                >
+                  <ExternalLinkIcon className="h-4 w-4 mr-2" />
+                  View on Solana Explorer
+                </Button>
+              </div>
+            )}
+            
+            {depositId && (
+              <div className="mt-2 w-full">
+                <p className="text-sm text-muted-foreground mb-2">Deposit ID:</p>
+                <div className="border border-border rounded-md p-3 bg-muted/30">
+                  <code className="text-xs break-all font-mono">{depositId}</code>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <DialogFooter>
+          <Button onClick={onClose} className="w-full">Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export default function SendaWallet() {
   const { isAuthenticated, session } = useAuth()
   const walletQRDialogRef = useRef<WalletQRDialogRef>(null)
@@ -131,6 +273,22 @@ export default function SendaWallet() {
   
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionDetailsData | null>(null)
   const [isTransactionDetailsOpen, setIsTransactionDetailsOpen] = useState(false)
+  const [signingTransactionId, setSigningTransactionId] = useState<string | null>(null)
+  
+  // New state for success modal
+  const [successModalState, setSuccessModalState] = useState<{
+    isOpen: boolean;
+    status: 'COMPLETED' | 'PENDING' | 'WAITING';
+    signature?: string;
+    message?: string;
+    amount?: number;
+    token?: 'USDC' | 'USDT';
+    recipient?: string;
+    depositId?: string;
+  }>({
+    isOpen: false,
+    status: 'COMPLETED'
+  });
 
   const { data: transactions, isLoading: isLoadingTransactions } = trpc.transactionRouter.getUserTransactions.useQuery(
     { limit: 10 },
@@ -268,12 +426,92 @@ export default function SendaWallet() {
   const { mutate: updateSignature } = trpc.sendaRouter.updateDepositSignature.useMutation({
     onSuccess: (data) => {
       console.log('Signature update mutation succeeded:', data)
-      toast.success('Transaction signed successfully')
+      
+      // Find the active transaction
+      const activeTransactionId = signingTransactionId;
+      if (activeTransactionId) {
+        // Dismiss the loading toast
+        toast.dismiss(`signing-${activeTransactionId}`);
+      }
+      
+      if (data.success) {
+        if ('data' in data && data.data && typeof data.data === 'object') {
+          // Check if data has 'state' property (for completed transactions)
+          if ('state' in data.data && data.data.state === 'COMPLETED') {
+            // Find the transaction details
+            const transactionDetails = allTransactions.find(tx => 
+              tx.depositRecord?.id === (data.data as any).id
+            );
+            
+            // Show success modal instead of toast
+            setSuccessModalState({
+              isOpen: true,
+              status: 'COMPLETED',
+              signature: 'signature' in data.data ? data.data.signature as string : undefined,
+              message: 'Transaction completed successfully!',
+              amount: transactionDetails?.amount,
+              token: transactionDetails?.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
+              recipient: transactionDetails?.destinationUser?.email || undefined,
+              depositId: 'id' in data.data ? (data.data as any).id : undefined
+            });
+            
+            toast.success('Transaction completed successfully!', {
+              duration: 3000
+            });
+            
+          } else {
+            // Transaction is awaiting another signature
+            toast.success('Transaction signed successfully', {
+              duration: 3000
+            });
+            
+            // Check if we need to wait for another signature
+            if ('message' in data.data && data.data.message && data.data.message.includes('Waiting for')) {
+              // Find the transaction details
+              const depositId = 'id' in data.data ? (data.data as any).id : undefined;
+              const transactionDetails = allTransactions.find(tx => 
+                tx.depositRecord?.id === depositId
+              );
+              
+              // Show waiting modal
+              setSuccessModalState({
+                isOpen: true,
+                status: 'WAITING',
+                message: data.data.message as string,
+                amount: transactionDetails?.amount,
+                token: transactionDetails?.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
+                recipient: transactionDetails?.destinationUser?.email || undefined,
+                depositId
+              });
+            }
+          }
+        } else {
+          toast.success('Transaction signed successfully', {
+            duration: 3000
+          });
+        }
+      } else if ('data' in data && data.data && 'message' in data.data) {
+        toast.info(data.data.message as string, {
+          duration: 3000
+        });
+      }
+      
+      setSigningTransactionId(null)
       utils.transactionRouter.getUserTransactions.invalidate()
+      utils.transactionRouter.getReceivedTransactions.invalidate()
     },
     onError: (error) => {
       console.error('Signature update mutation failed:', error)
-      toast.error(error.message || 'Failed to sign transaction')
+      
+      // Dismiss the loading toast if there's an active transaction
+      if (signingTransactionId) {
+        toast.dismiss(`signing-${signingTransactionId}`);
+      }
+      
+      toast.error(error.message || 'Failed to sign transaction', {
+        duration: 3000
+      })
+      setSigningTransactionId(null)
     }
   })
 
@@ -574,21 +812,20 @@ export default function SendaWallet() {
                       {allTransactions
                         .filter((tx) => {
                           const depositState = tx.depositRecord?.state;
-                          const depositPolicy = tx.depositRecord?.policy;
                           const isReceiver = tx.destinationAddress === publicKey?.toString();
                           const isSender = tx.userId === session?.user.id;
 
-                          // Show pending deposits that need the current user's signature
-                          return depositState === 'PENDING' && (
-                            // Show if sender needs to sign
-                            (isSender && (depositPolicy === 'SENDER' || depositPolicy === 'DUAL')) ||
-                            // Show if receiver needs to sign
-                            (isReceiver && (depositPolicy === 'RECEIVER' || depositPolicy === 'DUAL'))
-                          );
+                          // Show all pending deposits that involve the current user
+                          return depositState === 'PENDING' && (isSender || isReceiver);
                         })
                         .map((tx, idx) => {
                           const isSender = tx.userId === session?.user.id
+                          const isReceiver = tx.destinationAddress === publicKey?.toString()
                           const ageHours = Math.floor((Date.now() - new Date(tx.createdAt).getTime()) / 3600000)
+                          
+                          // Check if sender and receiver have signed
+                          const senderHasSigned = hasRoleSigned(tx, 'sender')
+                          const receiverHasSigned = hasRoleSigned(tx, 'receiver')
 
                           return (
                             <motion.div
@@ -648,16 +885,53 @@ export default function SendaWallet() {
                                       )
                                     })()}
                                 </div>
+                                
+                                {/* Approval status indicators */}
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  {tx.depositRecord?.policy === 'SENDER' || tx.depositRecord?.policy === 'DUAL' ? (
+                                    <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                      senderHasSigned 
+                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                                        : 'bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400'
+                                    }`}>
+                                      <ShieldCheckIcon className="w-3 h-3 mr-1" />
+                                      Sender: {senderHasSigned ? 'Approved' : 'Pending'}
+                                    </div>
+                                  ) : null}
+                                  
+                                  {tx.depositRecord?.policy === 'RECEIVER' || tx.depositRecord?.policy === 'DUAL' ? (
+                                    <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                      receiverHasSigned 
+                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                                        : 'bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400'
+                                    }`}>
+                                      <ShieldCheckIcon className="w-3 h-3 mr-1" />
+                                      Receiver: {receiverHasSigned ? 'Approved' : 'Pending'}
+                                    </div>
+                                  ) : null}
+                                  
+                                  {/* Show a special message when all required signatures are collected but transaction is still pending */}
+                                  {tx.depositRecord?.state === 'PENDING' && 
+                                   ((tx.depositRecord?.policy === 'SENDER' && senderHasSigned) ||
+                                    (tx.depositRecord?.policy === 'RECEIVER' && receiverHasSigned) ||
+                                    (tx.depositRecord?.policy === 'DUAL' && senderHasSigned && receiverHasSigned)) && (
+                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                      <ClockIcon className="w-3 h-3 mr-1" />
+                                      Processing transaction...
+                                    </div>
+                                  )}
+                                </div>
 
                                 <div className="mt-4 flex justify-between items-center">
                                   <span className="font-semibold text-gray-800">
                                     {tx.amount} {tx.depositRecord?.stable?.toUpperCase()}
                                   </span>
-                                  {isSender && tx.depositRecord?.policy !== 'RECEIVER' && (
+                                  {isSender && tx.depositRecord?.policy !== 'RECEIVER' && !senderHasSigned && (
                                     <Button
                                       size="sm"
                                       variant="default"
                                       className="hover:scale-105 transition-transform"
+                                      disabled={signingTransactionId === tx.id}
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         console.log('Sign as Sender clicked with:', {
@@ -710,6 +984,10 @@ export default function SendaWallet() {
                                           receiverPublicKey: tx.destinationAddress || '',
                                         }
                                         setSelectedTransaction(transactionDetails)
+                                        setSigningTransactionId(tx.id)
+                                        toast.loading('Signing transaction as sender...', {
+                                          id: `signing-${tx.id}`
+                                        })
                                         updateSignature({
                                           depositId: tx.depositRecord?.id || '',
                                           role: 'sender',
@@ -717,14 +995,22 @@ export default function SendaWallet() {
                                         })
                                       }}
                                     >
-                                      Sign as Sender
+                                      {signingTransactionId === tx.id ? (
+                                        <>
+                                          <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                                          Signing...
+                                        </>
+                                      ) : (
+                                        'Sign as Sender'
+                                      )}
                                     </Button>
                                   )}
-                                  {!isSender && tx.destinationAddress === publicKey?.toString() && (tx.depositRecord?.policy === 'RECEIVER' || tx.depositRecord?.policy === 'DUAL') && (
+                                  {!isSender && tx.destinationAddress === publicKey?.toString() && (tx.depositRecord?.policy === 'RECEIVER' || tx.depositRecord?.policy === 'DUAL') && !receiverHasSigned && (
                                     <Button
                                       size="sm"
                                       variant="default"
                                       className="hover:scale-105 transition-transform"
+                                      disabled={signingTransactionId === tx.id}
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         console.log('Sign as Receiver clicked with:', {
@@ -777,6 +1063,10 @@ export default function SendaWallet() {
                                           receiverPublicKey: tx.destinationAddress || '',
                                         }
                                         setSelectedTransaction(transactionDetails)
+                                        setSigningTransactionId(tx.id)
+                                        toast.loading('Signing transaction as receiver...', {
+                                          id: `signing-${tx.id}`
+                                        })
                                         updateSignature({
                                           depositId: tx.depositRecord?.id || '',
                                           role: 'receiver',
@@ -784,7 +1074,14 @@ export default function SendaWallet() {
                                         })
                                       }}
                                     >
-                                      Sign as Receiver
+                                      {signingTransactionId === tx.id ? (
+                                        <>
+                                          <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                                          Signing...
+                                        </>
+                                      ) : (
+                                        'Sign as Receiver'
+                                      )}
                                     </Button>
                                   )}
                                 </div>
@@ -955,6 +1252,19 @@ export default function SendaWallet() {
           transaction={selectedTransaction}
         />
       )}
+      
+      {/* Transaction Success Modal */}
+      <TransactionSuccessModal
+        isOpen={successModalState.isOpen}
+        onClose={() => setSuccessModalState(prev => ({ ...prev, isOpen: false }))}
+        status={successModalState.status}
+        transactionSignature={successModalState.signature}
+        message={successModalState.message}
+        amount={successModalState.amount}
+        token={successModalState.token}
+        recipient={successModalState.recipient}
+        depositId={successModalState.depositId}
+      />
     </div>
   )
 }

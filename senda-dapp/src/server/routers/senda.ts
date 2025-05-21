@@ -151,6 +151,7 @@ export const sendaRouter = router({
 
             const {connection} = getProvider()
             const blockhashArray = await getRecentBlockhashArray(connection)
+            
 
             const usdcMint = new PublicKey(USDC_MINT);
             const usdtMint = new PublicKey(USDT_MINT);
@@ -545,13 +546,6 @@ export const sendaRouter = router({
                     userWalletPublicKey: deposit.user?.sendaWalletPublicKey
                 });
 
-                if (deposit.policy === "SENDER" && input.role === "sender" && !isOriginalSender) {
-                    throw new TRPCError({
-                        code: 'UNAUTHORIZED',
-                        message: 'Only the original sender can sign this deposit'
-                    });
-                }
-
                 let isExecutable = false;
 
                 if (deposit.policy === "RECEIVER" && input.role === "receiver") {
@@ -611,13 +605,16 @@ export const sendaRouter = router({
                 // Determine who is the authorized signer based on the deposit record
 
                 const signers: Keypair[] = [];
+                signers.push(feePayer);
+
                 if (deposit.policy === "SENDER" || deposit.policy === "DUAL") {
                     console.log("Loading depositor keypair");
                     const { keypair: depositor } = await loadUserSignerKeypair(
                         deposit.user.id
                     );                    
-                    signers.push(depositor);
-                } if (deposit.policy === "RECEIVER" || deposit.policy === "DUAL") {
+                    // signers.push(depositor);
+                } 
+                if (deposit.policy === "RECEIVER" || deposit.policy === "DUAL") {
                     if (!deposit.transaction?.destinationUserId) {
                         throw new TRPCError({
                             code: 'NOT_FOUND',
@@ -627,6 +624,7 @@ export const sendaRouter = router({
                     const { keypair: receiver } = await loadUserSignerKeypair(
                         deposit.transaction.destinationUserId
                     );
+                    
                     signers.push(receiver);
                 }
 
