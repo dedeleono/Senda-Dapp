@@ -52,8 +52,6 @@ export function SignatureBadges({
         }
     }
   }
-
-  const policyDetails = getPolicyDetails(policy)
   
 
   const renderSignatureBadge = (role: SignatureType, isCurrentUser: boolean) => {
