@@ -25,6 +25,7 @@ const settings = {
         slidesToScroll: 1,
         infinite: true,
         dots: false,
+        arrows: false,
       },
     },
   ],
@@ -47,14 +48,14 @@ const postData: { heading: string; imgSrc: string }[] = [
 
 const ComingSoon = () => {
   return (
-    <section className="relative bg-deepSlate dark:bg-darkmode ">
-      <div className="container mx-auto lg:max-w-(--breakpoint-xl) md:max-w-(--breakpoint-md) relative">
-        <div className="text-center mt-24">
-          <h3 className="text-4xl sm:text-6xl font-bold text-black  my-2">Coming soon.</h3>
-          <h3 className="text-4xl sm:text-6xl font-bold text-black/50 lg:mr-48 my-2">
+    <section className="relative bg-deepSlate dark:bg-darkmode">
+      <div className="container mx-auto lg:max-w-(--breakpoint-xl) md:max-w-(--breakpoint-md) relative px-4 sm:px-6">
+        <div className="text-center mt-12 sm:mt-24">
+          <h3 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-black my-2">Coming soon.</h3>
+          <h3 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-black/50 lg:mr-48 my-2">
             Coming soon.
           </h3>
-          <h3 className="text-4xl sm:text-6xl font-bold text-black/25 lg:-mr-32 my-2">
+          <h3 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-black/25 lg:-mr-32 my-2">
             Coming soon.
           </h3>
         </div>
@@ -62,8 +63,8 @@ const ComingSoon = () => {
         <Slider {...settings}>
           {postData.map((items, i) => (
             <div key={i}>
-              <div className="bg-transparent m-3 rounded-3xl h-[800px] flex flex-col">
-                <div className="relative w-full h-[620px]">
+              <div className="bg-transparent m-3 rounded-3xl h-[600px] sm:h-[800px] flex flex-col">
+                <div className="relative w-full h-[420px] sm:h-[620px]">
                   <Image 
                     src={items.imgSrc} 
                     alt={items.heading} 
@@ -71,8 +72,8 @@ const ComingSoon = () => {
                     className="rounded-2xl object-cover"
                   />
                 </div>
-                <div className="w-full mt-8">
-                  <h4 className="text-3xl font-bold text-center sm:text-start text-black ">{items.heading}</h4>
+                <div className="w-full mt-4 sm:mt-8">
+                  <h4 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center sm:text-start text-black px-2">{items.heading}</h4>
                 </div>
               </div>
             </div>
