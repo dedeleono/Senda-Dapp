@@ -43,6 +43,7 @@ import { TransactionDetailsData } from '@/types/transaction'
 import { parseTransactionSignatures, getTransactionAge } from '@/utils/transaction'
 import { getStatusBadgeStyles } from '@/types/transaction'
 import { cn } from '@/lib/utils'
+import { WalletOnboardingTour } from './wallet-onboarding'
 
 interface Transaction {
   id: string
@@ -257,7 +258,6 @@ export default function SendaWallet() {
   const [isTransactionDetailsOpen, setIsTransactionDetailsOpen] = useState(false)
   const [signingTransactionId, setSigningTransactionId] = useState<string | null>(null)
 
-  // New state for success modal
   const [successModalState, setSuccessModalState] = useState<{
     isOpen: boolean
     status: 'COMPLETED' | 'PENDING' | 'WAITING'
@@ -411,9 +411,7 @@ export default function SendaWallet() {
 
       if (data.success) {
         if ('data' in data && data.data && typeof data.data === 'object') {
-          // Check if data has 'state' property (for completed transactions)
           if ('state' in data.data && data.data.state === 'COMPLETED') {
-            // Find the transaction details
             const transactionDetails = allTransactions.find((tx) => tx.depositRecord?.id === (data.data as any).id)
 
             // Show success modal instead of toast
@@ -535,17 +533,18 @@ export default function SendaWallet() {
 
   return (
     <div className="flex flex-col h-full min-h-full mx-auto md:flex-row md:max-w-4xl">
+      <WalletOnboardingTour />
       <main className="flex-1 p-6 space-y-6 md:min-w-4xl">
         <Card className="bg-card p-8 rounded-2xl shadow-md">
           <div className="flex items-center justify-between">
             <div className="flex flex-col space-y-3">
               {/* Total Balance */}
-              <h2 className="md:text-4xl text-3xl font-bold text-card-foreground text-nowrap">
+              <h2 data-tour="total-balance" className="md:text-4xl text-3xl font-bold text-card-foreground text-nowrap">
                 ${totalBalance.toFixed(0)}
                 <small className="text-muted-foreground text-xs ml-1">USD</small>
               </h2>
 
-              <div className="flex gap-1 md:gap-2 items-center -ml-2 md:-ml-3">
+              <div data-tour="token-balances" className="flex gap-1 md:gap-2 items-center -ml-2 md:-ml-3">
                 {balances.map((token) => (
                   <div key={token.mint} className="items-center flex">
                     <div className="w-auto rounded-full mr-0.5 md:mr-1 flex items-center justify-center">
@@ -572,13 +571,14 @@ export default function SendaWallet() {
               </div>
             </div>
 
-            <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 relative">
+            <div data-tour="wallet-address" className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 relative">
               <Image src={IceDoodle.src} alt="You've got this!" fill className="object-contain" />
             </div>
           </div>
 
           <div className="md:mt-3 mt-7 grid md:grid-cols-4 grid-cols-1 md:gap-2 gap-3 md:w-5/6">
             <Button
+              data-tour="send-button"
               onClick={handleOpenDepositModal}
               variant="default"
               className="bg-secondary text-secondary-foreground font-semibold md:h-auto h-12 hover:!scale-103 hover:!bg-secondary/90 dark:hover:!bg-secondary/80 hover:!font-bold transition-all duration-300 cursor-pointer"
@@ -587,6 +587,7 @@ export default function SendaWallet() {
             </Button>
 
             <Button
+              data-tour="add-funds"
               onClick={handleOpenAddFundsModal}
               variant="default"
               className="bg-accent text-accent-foreground hover:!bg-accent/90 dark:hover:!bg-accent/80 hover:!font-bold hover:!scale-103 font-semibold w-full transition-all duration-300 cursor-pointer md:h-auto h-12"
@@ -595,6 +596,7 @@ export default function SendaWallet() {
             </Button>
 
             <Button
+              data-tour="withdraw"
               variant="ghost"
               className="border border-secondary text-card-foreground font-semibold hover:!bg-secondary/10 hover:!scale-103 hover:!text-card-foreground hover:!border-secondary transition-all duration-300 cursor-pointer md:h-auto h-12"
               onClick={handleOpenWithdrawModal}
@@ -622,6 +624,7 @@ export default function SendaWallet() {
             <div className="overflow-x-auto">
               <TabsList className="w-full grid grid-cols-3 bg-transparent border-b border-border p-0 rounded-none h-auto">
                 <TabsTrigger
+                  data-tour="paths-tab"
                   value="paths"
                   className="py-4 px-6 data-[state=active]:border-b-3 data-[state=active]:border-secondary data-[state=active]:shadow-none rounded-none rounded-tl-lg data-[state=active]:text-card-foreground data-[state=active]:font-bold"
                 >
@@ -629,12 +632,14 @@ export default function SendaWallet() {
                 </TabsTrigger>
 
                 <TabsTrigger
+                  data-tour="deposits-tab"
                   value="deposits"
                   className="py-4 px-6 data-[state=active]:border-b-3 data-[state=active]:border-secondary data-[state=active]:shadow-none rounded-none data-[state=active]:text-card-foreground data-[state=active]:font-bold"
                 >
                   Active deposits
                 </TabsTrigger>
                 <TabsTrigger
+                  data-tour="history-tab"
                   value="history"
                   className="py-4 px-6 data-[state=active]:border-b-3 data-[state=active]:border-secondary data-[state=active]:shadow-none rounded-none rounded-tr-lg data-[state=active]:text-card-foreground data-[state=active]:font-bold"
                 >
