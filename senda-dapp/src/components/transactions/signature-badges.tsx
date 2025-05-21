@@ -54,7 +54,7 @@ export function SignatureBadges({
   }
 
   const policyDetails = getPolicyDetails(policy)
-  const PolicyIcon = policyDetails.icon
+  
 
   const renderSignatureBadge = (role: SignatureType, isCurrentUser: boolean) => {
     const isSigned = hasRoleSigned(signatures, role)

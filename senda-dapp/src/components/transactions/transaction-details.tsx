@@ -11,10 +11,9 @@ import usdcIcon from '@/public/usdc.svg';
 import usdtIcon from '@/public/usdt-round.svg';
 import StatusTimeline from './status-timeline';
 import { 
-  Copy, Loader2, ExternalLink, Calendar, Mail 
+  Copy, Loader2, Calendar, Mail 
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { TransactionStatus, SignatureType } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
 import { useSendaProgram } from '@/stores/use-senda-program';
 import { SignatureBadges } from './signature-badges'

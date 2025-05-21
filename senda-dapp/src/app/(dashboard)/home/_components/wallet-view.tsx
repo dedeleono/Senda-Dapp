@@ -239,20 +239,6 @@ const TransactionSuccessModal = ({
   )
 }
 
-const hasRoleSigned = (transaction: Transaction, role: 'sender' | 'receiver'): boolean => {
-  if (!transaction.depositRecord?.signatures) return false
-
-  return transaction.depositRecord.signatures.some((sig: any) => {
-    try {
-      const parsedSig = typeof sig === 'string' ? JSON.parse(sig) : sig
-      return parsedSig.role.toUpperCase() === role.toUpperCase()
-    } catch (e) {
-      console.error('Error parsing signature:', e)
-      return false
-    }
-  })
-}
-
 export default function SendaWallet() {
   const { isAuthenticated, session } = useAuth()
   const walletQRDialogRef = useRef<WalletQRDialogRef>(null)
