@@ -53,7 +53,6 @@ interface OnboardingTourProps {
 }
 
 export const OnboardingTour = ({ children, run }: OnboardingTourProps) => {
-  const [stepIndex, setStepIndex] = useState(0)
 
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status } = data
