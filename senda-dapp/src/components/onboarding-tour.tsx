@@ -1,7 +1,7 @@
 'use client'
 
 import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride'
-import { ReactNode, useState } from 'react'
+import { ReactNode } from 'react'
 
 const tourSteps: Step[] = [
   {
