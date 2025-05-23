@@ -132,7 +132,7 @@ export default function DashboardView() {
   // Calculate stats
   const totalTransactions = allTransactions.length
   const activePaths = paths?.paths?.length || 0
-  const totalEarned = allTransactions
+  const totalVolume = allTransactions
     .filter(tx => tx.destinationAddress === publicKey?.toString() && tx.depositRecord?.state === 'COMPLETED')
     .reduce((sum, tx) => sum + tx.amount, 0)
 
@@ -257,8 +257,8 @@ export default function DashboardView() {
         />
         <StatCard value={activePaths} label="Active Paths" className="hover:shadow-lg transition-shadow rounded-xl" />
         <StatCard
-          value={`$${totalEarned.toFixed(0)}`}
-          label="Total Earned"
+          value={`$${totalVolume.toFixed(0)}`}
+          label="Total Volume"
           className="hover:shadow-lg transition-shadow rounded-xl"
         />
       </motion.div>
