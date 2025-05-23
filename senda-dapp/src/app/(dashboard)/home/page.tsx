@@ -1,5 +1,5 @@
-import SendaWallet from './_components/wallet-view'
+import DashboardView from './_components/dashboard-view'
 
 export default function Home() {
-  return <SendaWallet />
+  return <DashboardView />
 }

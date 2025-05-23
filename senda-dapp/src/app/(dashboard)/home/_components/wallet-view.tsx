@@ -505,28 +505,28 @@ export default function SendaWallet() {
           icon: UserIcon,
           label: 'Single Signature',
           description: !history ? 'Requires sender signature' : 'Signed by sender',
-          className: 'text-[#596f62] dark:text-[#d7dfbe] bg-[#596f62]/20 dark:bg-[#1c3144]/20',
+          className: 'text-info dark:text-secondary bg-info/20 dark:bg-background/20',
         }
       case 'RECEIVER':
         return {
           icon: UserIcon,
           label: 'Single Signature',
           description: !history ? 'Requires receiver signature' : 'Signed by receiver',
-          className: 'text-[#596f62] dark:text-[#d7dfbe] bg-[#596f62]/20 dark:bg-[#1c3144]/20',
+          className: 'text-info dark:text-secondary bg-info/20 dark:bg-background/20',
         }
       case 'DUAL':
         return {
           icon: UsersIcon,
           label: 'Multi-Signature',
           description: !history ? 'Requires multiple signatures' : 'Signed by both',
-          className: 'text-[#7ea16b] dark:text-[#7ea16b] bg-[#7ea16b]/20 dark:bg-[#7ea16b]/10',
+          className: 'text-success bg-success/20 dark:bg-success/10',
         }
       default:
         return {
           icon: ShieldCheckIcon,
           label: policy,
           description: 'Custom policy',
-          className: 'text-[#1c3144] dark:text-[#f6ead7] bg-[#f6ead7]/30 dark:bg-[#f6ead7]/10',
+          className: 'text-foreground dark:text-accent bg-accent/30 dark:bg-accent/10',
         }
     }
   }
@@ -792,7 +792,7 @@ export default function SendaWallet() {
                 >
                   {isLoadingTransactions || isLoadingReceivedTransactions ? (
                     <div className="py-8 flex justify-center h-full">
-                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d7dfbe] border-t-transparent" />
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-secondary border-t-transparent" />
                     </div>
                   ) : allTransactions?.length ? (
                     <div className="space-y-4 p-1">
@@ -821,7 +821,7 @@ export default function SendaWallet() {
                                 stiffness: 100,
                                 damping: 15,
                               }}
-                              className="relative flex items-start gap-4 p-4 bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer focus-within:ring-2 ring-offset-2 ring-[#d7dfbe]"
+                              className="relative flex items-start gap-4 p-4 bg-background dark:bg-background/20 dark:border dark:border-background/20 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer focus-within:ring-2 ring-offset-2 ring-secondary"
                               onClick={() => handleOpenTransactionDetails(tx)}
                             >
                               <div className="absolute left-6 top-0 bottom-0 w-px " />
@@ -832,20 +832,22 @@ export default function SendaWallet() {
 
                               <div className="flex-1">
                                 <div className="flex justify-between items-center">
-                                  <h4 className="font-semibold text-gray-900">
+                                  <h4 className="font-semibold text-card-foreground">
                                     {isSender
                                       ? `To: ${tx.destinationUser?.email || '—'}`
                                       : `From: ${tx.user?.email || '—'}`}
                                   </h4>
-                                  <span className={cn(
-                                    "inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full",
-                                    getStatusBadgeStyles(tx.depositRecord?.state as TransactionStatus)
-                                  )}>
+                                  <span
+                                    className={cn(
+                                      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                                      getStatusBadgeStyles(tx.depositRecord?.state as TransactionStatus),
+                                    )}
+                                  >
                                     <ClockIcon className="h-4 w-4 mr-1" />
                                     {tx.depositRecord?.state.toUpperCase()}
                                   </span>
                                 </div>
-                                <p className="text-gray-500 text-xs mt-1">{ageHours}h ago</p>
+                                <p className="text-muted-foreground text-xs mt-1">{ageHours}h ago</p>
                                 <div className="flex items-center gap-2 mt-2">
                                   {tx.depositRecord?.policy && (
                                     <SignatureBadges
@@ -858,144 +860,152 @@ export default function SendaWallet() {
                                 </div>
 
                                 <div className="mt-4 flex justify-between items-center">
-                                  <span className="font-semibold text-gray-800">
+                                  <span className="font-semibold text-card-foreground">
                                     {tx.amount} {tx.depositRecord?.stable?.toUpperCase()}
                                   </span>
-                                  {isSender && tx.depositRecord?.policy !== 'RECEIVER' && !signatures.some(sig => sig.role === 'SENDER') && (
-                                    <Button
-                                      size="sm"
-                                      variant="default"
-                                      className="hover:scale-105 transition-transform"
-                                      disabled={signingTransactionId === tx.id}
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        console.log('Sign as Sender clicked with:', {
-                                          transaction: tx,
-                                          sessionUser: session?.user,
-                                          fullSession: session,
-                                        })
-                                        const transactionDetails: TransactionDetailsData = {
-                                          id: tx.depositRecord?.id || '',
-                                          amount: tx.amount,
-                                          token: tx.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
-                                          recipientEmail: tx.destinationUserId
-                                            ? (tx.destinationUser?.email as string)
-                                            : '',
-                                          senderEmail: tx.user?.email || '',
-                                          createdAt: new Date(tx.createdAt),
-                                          status:
-                                            tx.depositRecord?.state === 'COMPLETED'
-                                              ? ('COMPLETED' as TransactionStatus)
-                                              : tx.depositRecord?.state === 'CANCELLED'
-                                                ? ('CANCELLED' as TransactionStatus)
-                                                : tx.status,
-                                          authorization: tx.depositRecord?.policy as SignatureType,
-                                          isDepositor: tx.userId === session?.user.id,
-                                          signatures,
-                                          statusHistory: [
-                                            {
-                                              status: tx.depositRecord?.state as string,
-                                              timestamp: new Date(tx.createdAt),
-                                              actor: tx.userId,
-                                            },
-                                          ],
-                                          depositIndex: tx.depositRecord?.depositIndex || 0,
-                                          transactionSignature: tx.signature,
-                                          senderPublicKey: tx.walletPublicKey,
-                                          receiverPublicKey: tx.destinationAddress || '',
-                                          depositRecord: tx.depositRecord,
-                                        }
-                                        setSelectedTransaction(transactionDetails)
-                                        setSigningTransactionId(tx.id)
-                                        toast.loading('Signing transaction as sender...', {
-                                          id: `signing-${tx.id}`,
-                                        })
-                                        updateSignature({
-                                          depositId: tx.depositRecord?.id || '',
-                                          role: 'sender',
-                                          signerId: tx.userId,
-                                        })
-                                      }}
-                                    >
-                                      {signingTransactionId === tx.id ? (
-                                        <>
-                                          <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                                          Signing...
-                                        </>
-                                      ) : (
-                                        'Sign as Sender'
-                                      )}
-                                    </Button>
-                                  )}
-                                  {isReceiver && tx.depositRecord?.policy !== 'SENDER' && !signatures.some(sig => sig.role === 'RECEIVER') && (
-                                    <Button
-                                      size="sm"
-                                      variant="default"
-                                      className="hover:scale-105 transition-transform"
-                                      disabled={signingTransactionId === tx.id}
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        console.log('Sign as Receiver clicked with:', {
-                                          transaction: tx,
-                                          sessionUser: session?.user,
-                                          fullSession: session,
-                                        })
-                                        const transactionDetails: TransactionDetailsData = {
-                                          id: tx.depositRecord?.id || '',
-                                          amount: tx.amount,
-                                          token: tx.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
-                                          recipientEmail: tx.destinationUserId
-                                            ? (tx.destinationUser?.email as string)
-                                            : '',
-                                          senderEmail: tx.user?.email || '',
-                                          createdAt: new Date(tx.createdAt),
-                                          status:
-                                            tx.depositRecord?.state === 'COMPLETED'
-                                              ? ('COMPLETED' as TransactionStatus)
-                                              : tx.depositRecord?.state === 'CANCELLED'
-                                                ? ('CANCELLED' as TransactionStatus)
-                                                : tx.status,
-                                          authorization: tx.depositRecord?.policy as SignatureType,
-                                          isDepositor: tx.userId === session?.user.id,
-                                          signatures,
-                                          statusHistory: [
-                                            {
-                                              status: tx.depositRecord?.state as string,
-                                              timestamp: new Date(tx.createdAt),
-                                              actor: tx.userId,
-                                            },
-                                          ],
-                                          depositIndex: tx.depositRecord?.depositIndex || 0,
-                                          transactionSignature: tx.signature,
-                                          senderPublicKey: tx.walletPublicKey,
-                                          receiverPublicKey: tx.destinationAddress || '',
-                                          depositRecord: tx.depositRecord,
-                                        }
-                                        setSelectedTransaction(transactionDetails)
-                                        setSigningTransactionId(tx.id)
-                                        toast.loading('Signing transaction as receiver...', {
-                                          id: `signing-${tx.id}`,
-                                        })
-                                        updateSignature({
-                                          depositId: tx.depositRecord?.id || '',
-                                          role: 'receiver',
-                                          signerId: tx.destinationUserId || '',
-                                        })
-                                      }}
-                                    >
-                                      {signingTransactionId === tx.id ? (
-                                        <>
-                                          <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                                          Signing...
-                                        </>
-                                      ) : (
-                                        'Sign as Receiver'
-                                      )}
-                                    </Button>
-                                  )}
-                                  {((isSender && signatures.some(sig => sig.role === 'SENDER')) || (isReceiver && signatures.some(sig => sig.role === 'RECEIVER'))) && tx.depositRecord?.state === 'PENDING' && (
-                                    <span className="text-muted-foreground text-xs ml-2">Waiting for counterparty...</span>
-                                  )}
+                                  {isSender &&
+                                    tx.depositRecord?.policy !== 'RECEIVER' &&
+                                    !signatures.some((sig) => sig.role === 'SENDER') && (
+                                      <Button
+                                        size="sm"
+                                        variant="default"
+                                        className="hover:scale-105 transition-transform"
+                                        disabled={signingTransactionId === tx.id}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          console.log('Sign as Sender clicked with:', {
+                                            transaction: tx,
+                                            sessionUser: session?.user,
+                                            fullSession: session,
+                                          })
+                                          const transactionDetails: TransactionDetailsData = {
+                                            id: tx.depositRecord?.id || '',
+                                            amount: tx.amount,
+                                            token: tx.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
+                                            recipientEmail: tx.destinationUserId
+                                              ? (tx.destinationUser?.email as string)
+                                              : '',
+                                            senderEmail: tx.user?.email || '',
+                                            createdAt: new Date(tx.createdAt),
+                                            status:
+                                              tx.depositRecord?.state === 'COMPLETED'
+                                                ? ('COMPLETED' as TransactionStatus)
+                                                : tx.depositRecord?.state === 'CANCELLED'
+                                                  ? ('CANCELLED' as TransactionStatus)
+                                                  : tx.status,
+                                            authorization: tx.depositRecord?.policy as SignatureType,
+                                            isDepositor: tx.userId === session?.user.id,
+                                            signatures,
+                                            statusHistory: [
+                                              {
+                                                status: tx.depositRecord?.state as string,
+                                                timestamp: new Date(tx.createdAt),
+                                                actor: tx.userId,
+                                              },
+                                            ],
+                                            depositIndex: tx.depositRecord?.depositIndex || 0,
+                                            transactionSignature: tx.signature,
+                                            senderPublicKey: tx.walletPublicKey,
+                                            receiverPublicKey: tx.destinationAddress || '',
+                                            depositRecord: tx.depositRecord,
+                                          }
+                                          setSelectedTransaction(transactionDetails)
+                                          setSigningTransactionId(tx.id)
+                                          toast.loading('Signing transaction as sender...', {
+                                            id: `signing-${tx.id}`,
+                                          })
+                                          updateSignature({
+                                            depositId: tx.depositRecord?.id || '',
+                                            role: 'sender',
+                                            signerId: tx.userId,
+                                          })
+                                        }}
+                                      >
+                                        {signingTransactionId === tx.id ? (
+                                          <>
+                                            <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                                            Signing...
+                                          </>
+                                        ) : (
+                                          'Sign as Sender'
+                                        )}
+                                      </Button>
+                                    )}
+                                  {isReceiver &&
+                                    tx.depositRecord?.policy !== 'SENDER' &&
+                                    !signatures.some((sig) => sig.role === 'RECEIVER') && (
+                                      <Button
+                                        size="sm"
+                                        variant="default"
+                                        className="hover:scale-105 transition-transform"
+                                        disabled={signingTransactionId === tx.id}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          console.log('Sign as Receiver clicked with:', {
+                                            transaction: tx,
+                                            sessionUser: session?.user,
+                                            fullSession: session,
+                                          })
+                                          const transactionDetails: TransactionDetailsData = {
+                                            id: tx.depositRecord?.id || '',
+                                            amount: tx.amount,
+                                            token: tx.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
+                                            recipientEmail: tx.destinationUserId
+                                              ? (tx.destinationUser?.email as string)
+                                              : '',
+                                            senderEmail: tx.user?.email || '',
+                                            createdAt: new Date(tx.createdAt),
+                                            status:
+                                              tx.depositRecord?.state === 'COMPLETED'
+                                                ? ('COMPLETED' as TransactionStatus)
+                                                : tx.depositRecord?.state === 'CANCELLED'
+                                                  ? ('CANCELLED' as TransactionStatus)
+                                                  : tx.status,
+                                            authorization: tx.depositRecord?.policy as SignatureType,
+                                            isDepositor: tx.userId === session?.user.id,
+                                            signatures,
+                                            statusHistory: [
+                                              {
+                                                status: tx.depositRecord?.state as string,
+                                                timestamp: new Date(tx.createdAt),
+                                                actor: tx.userId,
+                                              },
+                                            ],
+                                            depositIndex: tx.depositRecord?.depositIndex || 0,
+                                            transactionSignature: tx.signature,
+                                            senderPublicKey: tx.walletPublicKey,
+                                            receiverPublicKey: tx.destinationAddress || '',
+                                            depositRecord: tx.depositRecord,
+                                          }
+                                          setSelectedTransaction(transactionDetails)
+                                          setSigningTransactionId(tx.id)
+                                          toast.loading('Signing transaction as receiver...', {
+                                            id: `signing-${tx.id}`,
+                                          })
+                                          updateSignature({
+                                            depositId: tx.depositRecord?.id || '',
+                                            role: 'receiver',
+                                            signerId: tx.destinationUserId || '',
+                                          })
+                                        }}
+                                      >
+                                        {signingTransactionId === tx.id ? (
+                                          <>
+                                            <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                                            Signing...
+                                          </>
+                                        ) : (
+                                          'Sign as Receiver'
+                                        )}
+                                      </Button>
+                                    )}
+                                  {((isSender && signatures.some((sig) => sig.role === 'SENDER')) ||
+                                    (isReceiver && signatures.some((sig) => sig.role === 'RECEIVER'))) &&
+                                    tx.depositRecord?.state === 'PENDING' && (
+                                      <span className="text-muted-foreground text-xs ml-2">
+                                        Waiting for counterparty...
+                                      </span>
+                                    )}
                                 </div>
                               </div>
                             </motion.div>
@@ -1009,7 +1019,7 @@ export default function SendaWallet() {
                       </h3>
                       <p className="text-slate-500 mb-6">Start by buying or depositing funds:</p>
                       <Button
-                        className="bg-[#f6ead7] text-black font-semibold hover:font-bold hover:bg-[#f6ead7] cursor-pointer"
+                        className="bg-accent text-accent-foreground font-semibold hover:font-bold hover:bg-accent/90 cursor-pointer"
                         onClick={handleOpenDepositModal}
                       >
                         <PlusIcon className="h-4 w-4 mr-2" />
@@ -1099,16 +1109,10 @@ export default function SendaWallet() {
                                           </span>
                                         </span>
                                         <span
-                                          className={`
-                                            inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                            ${
-                                              tx.depositRecord?.state === TransactionStatus.COMPLETED
-                                                ? 'text-green-800 dark:text-green-200 bg-green-100 dark:bg-green-900/30'
-                                                : tx.depositRecord?.state === TransactionStatus.CANCELLED
-                                                  ? 'text-red-800 dark:text-red-200 bg-red-100 dark:bg-red-900/30'
-                                                  : 'text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800/50'
-                                            }
-                                          `}
+                                          className={cn(
+                                            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                                            getStatusBadgeStyles(tx.depositRecord?.state as TransactionStatus),
+                                          )}
                                         >
                                           {tx.depositRecord?.state.toUpperCase()}
                                         </span>
@@ -1147,7 +1151,7 @@ export default function SendaWallet() {
                       <h3 className="text-card-foreground text-lg font-medium">No transaction history yet!</h3>
                       <p className="text-muted-foreground">Start your first transaction to see it here.</p>
                       <Button
-                        className="bg-accent text-accent-foreground font-semibold hover:font-bold hover:bg-accent/90 dark:hover:bg-accent/80 hover:scale-105 transition-all duration-200 cursor-pointer mt-6"
+                        className="bg-accent text-accent-foreground font-semibold hover:font-bold hover:bg-accent/90 cursor-pointer"
                         onClick={handleOpenDepositModal}
                       >
                         <PlusIcon className="h-4 w-4 mr-2" />

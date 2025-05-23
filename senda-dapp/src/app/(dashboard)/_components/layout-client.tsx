@@ -23,7 +23,7 @@ export default function DashboardLayout() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <Avatar className="h-9 w-9 cursor-pointer">
+        <Avatar className="h-10 w-10 cursor-pointer">
           <AvatarImage src={session?.user?.image as string} alt="User Avatar" />
           <AvatarFallback>{session?.user.email?.slice(0, 1).toUpperCase()}</AvatarFallback>
         </Avatar>

@@ -66,6 +66,14 @@ html {
   --border: #e2e8f0;
   --input: #e2e8f0;
   --ring: #7ea16b;
+  /* Additional semantic colors using your palette */
+  --success: #7ea16b;
+  --success-foreground: #ffffff;
+  --warning: #f59e0b;
+  --warning-foreground: #1c3144;
+  --info: #596f62;
+  --info-foreground: #ffffff;
+  /* Chart colors using your palette */
   --chart-1: #7ea16b;
   --chart-2: #d7dfbe;
   --chart-3: #f6ead7;
@@ -101,6 +109,14 @@ html {
   --border: #454545;
   --input: #454545;
   --ring: #7ea16b;
+  /* Additional semantic colors for dark mode */
+  --success: #7ea16b;
+  --success-foreground: #ffffff;
+  --warning: #fbbf24;
+  --warning-foreground: #1c3144;
+  --info: #596f62;
+  --info-foreground: #ffffff;
+  /* Chart colors for dark mode */
   --chart-1: #7ea16b;
   --chart-2: #d7dfbe;
   --chart-3: #f6ead7;

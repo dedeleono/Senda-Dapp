@@ -10,11 +10,20 @@ export function useAuth() {
   const [isInitializingWallet, setIsInitializingWallet] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Memoize session user data to prevent unnecessary re-renders
+  const stableUserId = session?.user?.id || null;
+  const stableWalletKey = session?.user?.sendaWalletPublicKey || null;
+
   // Initialize when user logs in
   useEffect(() => {
     const initializeWallet = async () => {
-      if (!session?.user?.id || !session?.user?.sendaWalletPublicKey) {
+      if (!stableUserId || !stableWalletKey) {
         console.error('Missing user ID or Senda wallet public key');
+        return;
+      }
+
+      // Skip if wallet is already initialized for this user
+      if (publicKey?.toString() === stableWalletKey) {
         return;
       }
 
@@ -22,9 +31,9 @@ export function useAuth() {
         setIsInitializingWallet(true);
         setError(null);
         
-        console.log('Initializing Senda wallet for authenticated user:', session.user.sendaWalletPublicKey);
+        console.log('Initializing Senda wallet for authenticated user:', stableWalletKey);
         
-        await initWallet(session.user.id, session.user.sendaWalletPublicKey)
+        await initWallet(stableUserId, stableWalletKey)
         
         console.log('Wallet initialized successfully');
       } catch (error) {
@@ -35,17 +44,17 @@ export function useAuth() {
       }
     };
 
-    if (session?.user?.id && session?.user?.sendaWalletPublicKey) {
+    if (status === 'authenticated' && stableUserId && stableWalletKey && !publicKey) {
       initializeWallet();
     }
-  }, [session]);
+  }, [status, stableUserId, stableWalletKey, publicKey, initWallet]);
 
   return {
     isInitializingWallet,
     error: error || walletError,
     isAuthenticated: status === 'authenticated',
     session,
-    userId: session?.user?.id,
+    userId: stableUserId,
     walletError,
     hasWallet: !!publicKey,
   } as const;

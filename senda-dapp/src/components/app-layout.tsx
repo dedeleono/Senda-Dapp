@@ -15,7 +15,7 @@ export function AppLayout({
   
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-      <main className="bg-[#d7dfbe] dark:bg-[#596f62] overflow-hidden">{children}</main>
+      <main className="bg-secondary/30 dark:bg-primary/20 overflow-hidden">{children}</main>
       <Toaster />
     </ThemeProvider>
   )

@@ -74,22 +74,22 @@ export const OnboardingTour = ({ children, run }: OnboardingTourProps) => {
         callback={handleJoyrideCallback}
         styles={{
           options: {
-            arrowColor: '#fff',
-            backgroundColor: '#fff',
-            overlayColor: 'rgba(30, 41, 59, 0.6)',
+            arrowColor: '#ffffff',
+            backgroundColor: '#ffffff',
+            overlayColor: 'rgba(28, 49, 68, 0.6)',
             primaryColor: '#7ea16b',
-            textColor: '#22223b',
+            textColor: '#1c3144',
             width: 420,
             zIndex: 10000,
           },
           buttonNext: {
             backgroundColor: '#7ea16b',
-            color: '#fff',
+            color: '#ffffff',
             borderRadius: 8,
             fontWeight: 600,
             fontSize: 16,
             padding: '10px 24px',
-            boxShadow: '0 2px 8px rgba(30,41,59,0.08)',
+            boxShadow: '0 2px 8px rgba(28, 49, 68, 0.08)',
           },
           buttonBack: {
             color: '#7ea16b',
@@ -100,7 +100,7 @@ export const OnboardingTour = ({ children, run }: OnboardingTourProps) => {
             border: 'none',
           },
           buttonSkip: {
-            color: '#b0b0b0',
+            color: '#64748b',
             fontWeight: 500,
             fontSize: 15,
             background: 'none',
@@ -109,7 +109,7 @@ export const OnboardingTour = ({ children, run }: OnboardingTourProps) => {
           tooltip: {
             borderRadius: 16,
             padding: '32px 28px 24px 28px',
-            boxShadow: '0 8px 32px rgba(30,41,59,0.12), 0 1.5px 4px rgba(30,41,59,0.08)',
+            boxShadow: '0 8px 32px rgba(28, 49, 68, 0.12), 0 1.5px 4px rgba(28, 49, 68, 0.08)',
             fontSize: 18,
             lineHeight: 1.6,
           },
@@ -117,11 +117,11 @@ export const OnboardingTour = ({ children, run }: OnboardingTourProps) => {
             fontWeight: 700,
             fontSize: 22,
             marginBottom: 8,
-            color: '#22223b',
+            color: '#1c3144',
           },
           tooltipContent: {
             fontSize: 17,
-            color: '#4a4e69',
+            color: '#64748b',
             marginBottom: 12,
           },
         }}

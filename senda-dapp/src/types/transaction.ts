@@ -226,12 +226,12 @@ export const hasRoleSigned = (signatures: Signature[], role: SignatureType): boo
 export const getStatusBadgeStyles = (status: TransactionStatus): string => {
   switch (status) {
     case 'COMPLETED':
-      return 'text-green-800 dark:text-green-200 bg-green-100 dark:bg-green-900/30'
+      return 'text-success-foreground bg-success/10 border border-success/20'
     case 'CANCELLED':
-      return 'text-red-800 dark:text-red-200 bg-red-100 dark:bg-red-900/30'
+      return 'text-destructive-foreground bg-destructive/10 border border-destructive/20'
     case 'PENDING':
-      return 'text-yellow-800 dark:text-yellow-200 bg-yellow-100 dark:bg-yellow-900/30'
+      return 'text-warning-foreground bg-warning/10 border border-warning/20'
     default:
-      return 'text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800/50'
+      return 'text-muted-foreground bg-muted/20 border border-muted/30'
   }
 } 
