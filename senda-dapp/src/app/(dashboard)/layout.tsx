@@ -1,11 +1,11 @@
 import React from 'react'
 import { auth } from '@/lib/auth/auth'
 import { redirect } from 'next/navigation'
-import ThemeToggle from '@/components/theme-toggle'
+// import ThemeToggle from '@/components/theme-toggle'
 import { Sidebar } from './_components/sidebar'
-import { Bell } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import DashboardLayoutClient from './_components/layout-client'
+// import { Bell } from 'lucide-react'
+// import { Button } from '@/components/ui/button'
+// import DashboardLayoutClient from './_components/layout-client'
 
 export default async function DashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth()
