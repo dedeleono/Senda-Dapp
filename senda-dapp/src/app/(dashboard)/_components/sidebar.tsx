@@ -224,7 +224,7 @@ export function Sidebar({ className }: SidebarProps) {
             })}
           </nav>
         </div>
-        
+
         <div className="px-3 py-2 mt-6">
           <AnimatePresence mode="wait">
             {!isCollapsed && (
@@ -292,88 +292,7 @@ export function Sidebar({ className }: SidebarProps) {
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* User Section - Bottom */}
-        <div className="px-3 py-4 border-t border-border/50">
-          <div className={cn(
-            "flex items-center transition-all duration-200",
-            isCollapsed ? "justify-center" : "gap-3"
-          )}>
-            {/* Avatar with Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "p-0 h-auto hover:bg-transparent",
-                    isCollapsed ? "w-10 h-10" : "w-auto h-auto"
-                  )}
-                >
-                  <Avatar className="h-10 w-10 cursor-pointer">
-                    <AvatarImage src={session?.user?.image as string} alt="User Avatar" />
-                    <AvatarFallback>{session?.user.email?.slice(0, 1).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
 
-              <DropdownMenuContent className="w-56" side={isCollapsed ? "right" : "top"} align="start">
-                <DropdownMenuLabel className="text-center">
-                  <div className="text-sm font-bold">{session?.user.name || session?.user?.email?.split('@')[0]}</div>
-                  <div className="text-xs text-muted-foreground">{session?.user.email}</div>
-                </DropdownMenuLabel>
-
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer group p-0">
-                  <div className="group-hover:bg-red-100 dark:group-hover:bg-red-900/20 rounded-sm flex items-center gap-2 w-full p-3">
-                    <LogOut className="h-4 w-4 group-hover:text-red-600" />
-                    <span className="group-hover:text-red-600">Log Out</span>
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* User Info (only when not collapsed) */}
-            <AnimatePresence mode="wait">
-              {!isCollapsed && (
-                <motion.div
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.2, ease: 'easeInOut' }}
-                  className="flex-1 min-w-0"
-                >
-                  <div className="text-sm font-medium truncate">
-                    {session?.user.name || session?.user?.email?.split('@')[0]}
-                  </div>
-                  <div className="text-xs text-muted-foreground truncate">
-                    {session?.user.email}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Theme Toggle */}
-            <div className={cn(
-              "flex-shrink-0",
-              isCollapsed && "hidden"
-            )}>
-              <ThemeToggle />
-            </div>
-
-            {/* Theme Toggle for Collapsed State */}
-            {isCollapsed && (
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <div className="mt-2">
-                    <ThemeToggle />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="font-medium">
-                  Toggle Theme
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-        </div>
       </div>
     </TooltipProvider>
   )
