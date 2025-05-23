@@ -3,8 +3,7 @@ import { auth } from '@/lib/auth/auth'
 import { redirect } from 'next/navigation'
 import ThemeToggle from '@/components/theme-toggle'
 import { Sidebar } from './_components/sidebar'
-
-import DashboardLayoutClient from './_components/layout-client'
+import UserMenu from './_components/layout-client'
 
 export default async function DashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth()
@@ -21,7 +20,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
           <div className="lg:hidden" />
 
           <div className="flex items-center gap-3 ml-auto">
-            <DashboardLayoutClient />
+            <UserMenu />
             <ThemeToggle />
           </div>
         </header>

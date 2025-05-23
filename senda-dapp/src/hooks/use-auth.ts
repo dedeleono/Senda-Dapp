@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useWalletStore } from '@/stores/use-wallet-store';
 
 export function useAuth() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const { initWallet, publicKey, error: walletError } = useWalletStore();
   const [isInitializingWallet, setIsInitializingWallet] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -50,10 +50,13 @@ export function useAuth() {
   }, [status, stableUserId, stableWalletKey, publicKey, initWallet]);
 
   return {
+    session,
+    status,
+    update,
+    isAuthenticated: status === 'authenticated',
+    isLoading: status === 'loading',
     isInitializingWallet,
     error: error || walletError,
-    isAuthenticated: status === 'authenticated',
-    session,
     userId: stableUserId,
     walletError,
     hasWallet: !!publicKey,

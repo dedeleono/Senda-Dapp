@@ -2,9 +2,10 @@
 
 import { signOut } from 'next-auth/react';
 import { deleteCookie, setCookie } from 'cookies-next';
+import { useCallback } from 'react';
 
 export function useSignOut() {
-    const handleSignOut = async () => {
+    return useCallback(async () => {
         try {
             sessionStorage.setItem('in-logout-flow', 'true');
 
@@ -66,7 +67,5 @@ export function useSignOut() {
             window.location.href = '/login';
             return Promise.reject(error);
         }
-    };
-
-    return handleSignOut;
+    }, []);
 }

@@ -16,7 +16,7 @@ import { AvatarImage } from '@radix-ui/react-avatar'
 import { LogOut } from 'lucide-react'
 import { useSignOut } from '@/hooks/use-sign-out'
 
-export default function DashboardLayout() {
+export default function UserMenu() {
   const { session } = useAuth()
   const handleSignOut = useSignOut()
 
@@ -39,7 +39,8 @@ export default function DashboardLayout() {
         <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer group p-0">
           <div className='group-hover:bg-red-100 rounded-sm flex items-center gap-2 w-full p-3'>
             <LogOut className="group-hover:text-red-600" />
-          <span className='group-hover:text-red-600'>Log Out</span></div>
+            <span className='group-hover:text-red-600'>Log Out</span>
+          </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
