@@ -24,6 +24,9 @@ const nextConfig: NextConfig = {
     // Enable app router instrumentation
     clientInstrumentationHook: true,
   },
+  appDir: true,
+  output: 'standalone',
+
   // Ensure auth middleware is loaded correctly
   // This is critical for protecting routes
   logging: {
