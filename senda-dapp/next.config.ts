@@ -1,6 +1,10 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
+  reactStrictMode: true,
+  swcMinify: true,
+  
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
@@ -24,22 +28,114 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
   experimental: {
     // Enable app router instrumentation
     clientInstrumentationHook: true,
+    // Optimize package imports
+    optimizePackageImports: [
+      'framer-motion',
+      'lucide-react',
+      '@radix-ui/react-accordion',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-slot'
+    ],
+    // Enable modern build optimizations
+    serverComponentsExternalPackages: [],
   },
+
+  // Webpack configuration for bundle optimization
+  webpack: (config, { dev, isServer }) => {
+    // Production optimizations
+    if (!dev && !isServer) {
+      // Enable aggressive code splitting
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          minSize: 20000,
+          maxSize: 90000,
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Bundle core packages together
+            framework: {
+              chunks: 'all',
+              name: 'framework',
+              test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|@radix-ui|framer-motion)[\\/]/,
+              priority: 40,
+              enforce: true,
+            },
+            // Group common utilities
+            commons: {
+              name: 'commons',
+              chunks: 'all',
+              minChunks: 2,
+              priority: 20,
+            },
+            // Separate large libraries
+            lib: {
+              test: /[\\/]node_modules[\\/]/,
+              chunks: 'all',
+              name(module: any) {
+                const packageName = module.context.match(
+                  /[\\/]node_modules[\\/](.*?)([\\/]|$)/
+                )[1]
+                return `lib.${packageName.replace('@', '')}`
+              },
+              priority: 30,
+              minChunks: 1,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+        runtimeChunk: { name: 'runtime' },
+      }
+
+      // Minimize JavaScript
+      config.optimization.minimize = true
+    }
+
+    return config
+  },
+
   // Ensure auth middleware is loaded correctly
-  // This is critical for protecting routes
   logging: {
     fetches: {
       fullUrl: true,
     },
   },
+
   middleware: {
     // Force middleware to run on all requests
-    // This is important for auth checks
     onError: 'continue',
-  }
+  },
+
+  // Performance headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ]
+  },
+
+  // Disable powered by header
+  poweredByHeader: false,
+
+  // Enable compression
+  compress: true,
+
+  // Increase build memory limit
+  env: {
+    NODE_OPTIONS: '--max-old-space-size=4096'
+  },
 }
 
 export default nextConfig
