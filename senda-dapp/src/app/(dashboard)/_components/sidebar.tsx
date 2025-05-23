@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { useAuth } from '@/hooks/use-auth'
-import { useSignOut } from '@/hooks/use-sign-out'
 
 interface SidebarProps {
   className?: string
@@ -65,7 +63,6 @@ export function Sidebar({ className }: SidebarProps) {
       cancelAnimationFrame(updateTimeoutRef.current)
     }
 
-    // Use requestAnimationFrame to batch DOM updates
     updateTimeoutRef.current = requestAnimationFrame(() => {
       try {
         if (typeof window !== 'undefined') {
@@ -86,7 +83,6 @@ export function Sidebar({ className }: SidebarProps) {
     })
   }, [collapsed])
 
-  // Debounced resize handler
   const handleResize = useCallback(() => {
     if (resizeTimeoutRef.current !== null) {
       clearTimeout(resizeTimeoutRef.current)
@@ -94,11 +90,11 @@ export function Sidebar({ className }: SidebarProps) {
     
     resizeTimeoutRef.current = window.setTimeout(() => {
       updateSidebarWidth()
-    }, 150) // 150ms debounce
+    }, 150) 
   }, [updateSidebarWidth])
 
   useEffect(() => {
-    // Initial update
+
     updateSidebarWidth()
 
     if (typeof window !== 'undefined') {
@@ -121,7 +117,7 @@ export function Sidebar({ className }: SidebarProps) {
   const SidebarContent = ({ isCollapsed = false }: { isCollapsed?: boolean }) => (
     <TooltipProvider>
       <div className="flex flex-col h-full">
-        {/* Logo */}
+        
         <div className="px-6 py-6 flex items-center justify-between">
           <AnimatePresence mode="wait">
             {!isCollapsed && (
@@ -148,7 +144,7 @@ export function Sidebar({ className }: SidebarProps) {
           </Button>
         </div>
 
-        {/* Main Section */}
+        
         <div className="px-3 py-2">
           <AnimatePresence mode="wait">
             {!isCollapsed && (
@@ -276,8 +272,6 @@ export function Sidebar({ className }: SidebarProps) {
             })}
           </nav>
         </div>
-
-        {/* Spacer */}
         <div className="flex-1" />
 
 
