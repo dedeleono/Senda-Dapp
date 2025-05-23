@@ -11,7 +11,8 @@
     "lint": "next lint",
     "start": "next start",
     "init:factory": "SOLANA_URL=https://api.devnet.solana.com ts-node -P tsconfig.node.json src/scripts/init-factory.ts",
-    "fetch-deposit": "ts-node src/scripts/fetch-deposit.ts"
+    "fetch-deposit": "ts-node src/scripts/fetch-deposit.ts",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf .next"
   },
   "dependencies": {
     "@auth/core": "0.39.1",
