@@ -413,10 +413,10 @@ export default function LandingPageContent() {
               <span className="text-[#596f62] font-semibold text-sm uppercase tracking-wider">Help & Support</span>
               <h2 className="mt-3 text-6xl font-black tracking-tight text-primary">Frecuently Asked Questions</h2>
               <p className="mt-4 text-lg leading-relaxed text-gray-600">
-                We're here to help you with any questions you may have.
+                We&apos;re here to help you with any questions you may have.
               </p>
               <div className="mt-8 p-6 bg-[#f6ead7] rounded-2xl">
-                <p className="text-sm text-black">Couldn't find what you were looking for?</p>
+                <p className="text-sm text-black">Couldn&apos;t find what you were looking for?</p>
                 <Link
                   href="/contact"
                   className="mt-2 inline-flex items-center text-black font-semibold hover:text-emerald-700 transition-colors"
@@ -474,7 +474,7 @@ export default function LandingPageContent() {
                   <AccordionContent className="px-6 py-4 border-t border-gray-200">
                     <p className="text-gray-700">
                       Absolutely. All transactions are encrypted and verified by multiple nodes on the blockchain;
-                      we've also gone through rigorous testing and audits to keep your funds safe.
+                      we&apos;ve also gone through rigorous testing and audits to keep your funds safe.
                     </p>
                   </AccordionContent>
                 </AccordionItem>

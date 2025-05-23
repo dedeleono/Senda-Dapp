@@ -44,8 +44,6 @@ const investmentNavItems: SidebarNavItem[] = [
 ]
 
 export function Sidebar({ className }: SidebarProps) {
-  const { session } = useAuth()
-  const handleSignOut = useSignOut()
 
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
