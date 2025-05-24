@@ -61,7 +61,7 @@ export default function GoogleSignInButton() {
         <Icons.google className="h-5 w-5" />
       )}
       <span className="ml-2">
-        {isLoading ? 'Signing in...' : 'Continue with Google'}
+        {isLoading ? 'Signing in...' : 'Google'}
       </span>
     </Button>
   );
