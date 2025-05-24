@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { useWithdrawForm } from '@/stores/use-withdraw-form';
 import Image from 'next/image';
-import usdcIcon from '@/public/usdc.svg';
-import usdtIcon from '@/public/usdt-round.svg';
 
 type SuccessViewProps = {
   onClose: () => void;
@@ -44,7 +42,7 @@ const SuccessView = ({ onClose, transactionId }: SuccessViewProps) => {
       <div className="bg-gray-50 rounded-lg px-8 py-4 w-full">
         <div className="flex items-center justify-center mb-2">
           <Image 
-            src={formData.token === 'USDC' ? usdcIcon : usdtIcon} 
+            src={formData.token === 'USDC' ? "usdc.svg" : "usdt-round.svg"} 
             alt={formData.token} 
             width={32} 
             height={32} 

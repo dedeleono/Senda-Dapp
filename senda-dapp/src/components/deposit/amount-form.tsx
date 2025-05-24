@@ -121,7 +121,7 @@ const AmountForm = () => {
           <div className={`flex-1 border rounded-md p-3 cursor-pointer ${token === 'USDC' ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
             <RadioGroupItem value="USDC" id="usdc" className="sr-only" />
             <Label htmlFor="usdc" className="flex items-center justify-center cursor-pointer">
-              <Image src={usdcIcon} alt="USDC" width={24} height={24} className="mr-2" />
+              <Image src={"usdc.svg"} alt="USDC" width={24} height={24} className="mr-2" />
               <span>USDC</span>
             </Label>
           </div>
@@ -129,7 +129,7 @@ const AmountForm = () => {
           <div className={`flex-1 border rounded-md p-3 cursor-pointer ${token === 'USDT' ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
             <RadioGroupItem value="USDT" id="usdt" className="sr-only" />
             <Label htmlFor="usdt" className="flex items-center justify-center cursor-pointer">
-              <Image src={usdtIcon} alt="USDT" width={24} height={24} className="mr-2" />
+              <Image src={"usdt-round.svg"} alt="USDT" width={24} height={24} className="mr-2" />
               <span>USDT</span>
             </Label>
           </div>

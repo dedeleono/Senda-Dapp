@@ -4,8 +4,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useWithdrawForm } from '@/stores/use-withdraw-form';
 import Image from 'next/image';
-import usdcIcon from '@/public/usdc.svg';
-import usdtIcon from '@/public/usdt-round.svg';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useSendaProgram } from '@/stores/use-senda-program';
@@ -95,7 +93,7 @@ const ConfirmationView = ({ onComplete }: ConfirmationViewProps) => {
           <div className="flex items-center">
             <div className="mr-2">
               <Image 
-                src={formData.token === 'USDC' ? usdcIcon : usdtIcon} 
+                src={formData.token === 'USDC' ? "usdc.svg" : "usdt-round.svg"} 
                 alt={formData.token} 
                 width={32} 
                 height={32} 

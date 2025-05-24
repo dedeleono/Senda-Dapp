@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useState } from 'react';
 import Image from 'next/image';
-import usdcIcon from '@/public/usdc.svg';
-import usdtIcon from '@/public/usdt-round.svg';
 import StatusTimeline from './status-timeline';
 import { 
   Copy, Loader2, Calendar, Mail 
@@ -104,7 +102,7 @@ export default function TransactionDetails({
   };
 
   const getTokenIcon = (token: 'USDC' | 'USDT') => {
-    return token === 'USDC' ? usdcIcon : usdtIcon;
+    return token === 'USDC' ? "usdc.svg" : "usdt-round.svg";
   };
 
   return (

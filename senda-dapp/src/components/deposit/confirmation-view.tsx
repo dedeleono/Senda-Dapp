@@ -3,8 +3,6 @@
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import usdcIcon from '@/public/usdc.svg';
-import usdtIcon from '@/public/usdt-round.svg';
 import { useDepositForm } from '@/stores/use-deposit-form';
 import { useWalletStore } from '@/stores/use-wallet-store';
 import { useSendaProgram } from '@/stores/use-senda-program';
@@ -127,7 +125,7 @@ const ConfirmationView = ({ onComplete }: ConfirmationViewProps) => {
           <div className="flex items-center">
             <div className="mr-2">
               <Image 
-                src={amount.token === 'USDC' ? usdcIcon : usdtIcon} 
+                src={amount.token === 'USDC' ? "usdc.svg" : "usdt-round.svg"} 
                 alt={amount.token} 
                 width={32} 
                 height={32} 

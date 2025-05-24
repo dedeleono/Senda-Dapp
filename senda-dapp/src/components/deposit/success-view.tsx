@@ -3,8 +3,6 @@
 import { CheckCircle, Copy, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import usdcIcon from '@/public/usdc.svg';
-import usdtIcon from '@/public/usdt-round.svg';
 import { useState } from 'react';
 import { useDepositForm } from '@/stores/use-deposit-form';
 
@@ -69,7 +67,7 @@ const SuccessView = ({ onClose, transactionData }: SuccessViewProps) => {
           <span className="text-sm text-gray-500">Amount</span>
           <div className="flex items-center">
             <Image 
-              src={amount.token === 'USDC' ? usdcIcon : usdtIcon} 
+              src={amount.token === 'USDC' ? "usdc.svg" : "usdt-round.svg"} 
               alt={amount.token} 
               width={20} 
               height={20} 

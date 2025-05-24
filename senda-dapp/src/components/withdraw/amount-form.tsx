@@ -11,8 +11,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Image from 'next/image';
-import usdcIcon from '@/public/usdc.svg';
-import usdtIcon from '@/public/usdt-round.svg';
 import { useWithdrawForm } from '@/stores/use-withdraw-form';
 import { useWalletBalances } from '@/hooks/use-wallet-balances';
 import { motion } from 'framer-motion';
@@ -89,13 +87,13 @@ const AmountForm = () => {
             <SelectContent>
               <SelectItem value="USDC" className="flex items-center">
                 <div className="flex items-center">
-                  <Image src={usdcIcon} alt="USDC" width={24} height={24} className="mr-2" />
+                  <Image src={"usdc.svg"} alt="USDC" width={24} height={24} className="mr-2" />
                   <span>USDC</span>
                 </div>
               </SelectItem>
               <SelectItem value="USDT">
                 <div className="flex items-center">
-                  <Image src={usdtIcon} alt="USDT" width={24} height={24} className="mr-2" />
+                  <Image src={'usdt-round.svg'} alt="USDT" width={24} height={24} className="mr-2" />
                   <span>USDT</span>
                 </div>
               </SelectItem>

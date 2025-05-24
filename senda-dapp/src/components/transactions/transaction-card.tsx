@@ -6,8 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, CheckCircle, XCircle, AlertTriangle, ChevronRight, DollarSign, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Image from 'next/image';
-import usdcIcon from '@/public/usdc.svg';
-import usdtIcon from '@/public/usdt-round.svg';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { trpc } from '@/app/_trpc/client';
@@ -150,7 +148,7 @@ export default function TransactionCard({
   };
 
   const getTokenIcon = (tokenSymbol: 'USDC' | 'USDT') => {
-    return tokenSymbol === 'USDC' ? usdcIcon : usdtIcon;
+    return tokenSymbol === 'USDC' ? "usdc.svg" : "usdt-round.svg";
   };
 
   const shouldShowActionButton = () => {
