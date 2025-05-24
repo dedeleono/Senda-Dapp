@@ -365,7 +365,7 @@ export default function TransactionsView() {
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <Image 
-                                    src={transaction.depositRecord?.stable === 'usdc' ? usdcIcon : usdtIcon} 
+                                    src={transaction.depositRecord?.stable === 'usdc' ? "usdc.svg" : "usdt-round.svg"} 
                                     alt={transaction.depositRecord?.stable || 'Token'} 
                                     width={16} 
                                     height={16} 

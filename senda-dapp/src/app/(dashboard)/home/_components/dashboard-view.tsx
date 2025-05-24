@@ -11,8 +11,6 @@ import { trpc } from '@/app/_trpc/client'
 import { useWalletStore } from '@/stores/use-wallet-store'
 import { TransactionStatus, TransactionType, SignatureType } from '@prisma/client'
 import Image from 'next/image'
-import usdcIcon from '@/public/usdc.svg'
-import usdtIcon from '@/public/usdt-round.svg'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { getTransactionAge } from '@/utils/transaction'
@@ -206,13 +204,13 @@ export default function DashboardView() {
                 <div className="flex flex-wrap items-center gap-4 sm:gap-6">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-white/20 p-0.5">
-                      <Image src={usdcIcon} alt="USDC" width={16} height={16} className="w-full h-full p-0" />
+                      <Image src={"usdc.svg"} alt="USDC" width={16} height={16} className="w-full h-full p-0" />
                     </div>
                     <span className="text-sm font-medium">{usdcBalance.toFixed(0)} USDC</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-white/20 p-0.5">
-                      <Image src={usdtIcon} alt="USDT" width={16} height={16} className="w-full h-full" />
+                      <Image src={"usdt-round.svg"} alt="USDT" width={16} height={16} className="w-full h-full" />
                     </div>
                     <span className="text-sm font-medium">{usdtBalance.toFixed(0)} USDT</span>
                   </div>
@@ -293,7 +291,7 @@ export default function DashboardView() {
                       className="relative flex items-start gap-4 p-4 bg-muted/50 rounded-lg border transition-colors hover:bg-muted/70"
                     >
                       <Avatar className="flex-shrink-0">
-                        <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? usdcIcon.src : usdtIcon.src} />
+                        <AvatarImage src={tx.depositRecord?.stable === 'usdc' ? "usdc.svg" : "usdt-round.svg"} />
                       </Avatar>
 
                       <div className="flex-1 min-w-0">

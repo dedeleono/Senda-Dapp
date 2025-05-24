@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    loader: 'custom',
+    loaderFile: './src/lib/image-loader.ts',
     remotePatterns: [
       {
         protocol: "https",
@@ -17,6 +19,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "cdn.prod.website-files.com",
+      },
+      {
+        protocol: "https",
+        hostname: "d7f32j3r8phi2.cloudfront.net",
       },
     ],
   },

@@ -4,9 +4,6 @@ import Slider from 'react-slick'
 import 'slick-carousel/slick/slick.css'
 import 'slick-carousel/slick/slick-theme.css'
 import Image from 'next/image'
-import Android from '@/public/iOS-A.png'
-import Box from '@/public/box.jpg'
-import Phone from '@/public/phone.jpg'
 
 const settings = {
   dots: false,
@@ -34,15 +31,15 @@ const settings = {
 const postData: { heading: string; imgSrc: string }[] = [
   {
     heading: 'Off-ramp using pre-paid debit cards',
-    imgSrc: Phone.src,
+    imgSrc: 'phone.jpg',
   },
   {
     heading: 'Android and iOS App',
-    imgSrc: Android.src,
+    imgSrc: 'iOS-A.png',
   },
   {
     heading: 'ACH off-ramp to your bank account',
-    imgSrc: Box.src,
+    imgSrc: 'box.jpg',
   },
 ]
 

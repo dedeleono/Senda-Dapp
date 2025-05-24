@@ -10,15 +10,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 
-import loot_boxes from '@/public/loot_boxes.jpg'
-import Maverick from '@/public/Maverick-Black.png'
-import Solami from '@/public/solana-logo.svg'
-import SolamiWord from '@/public/solana-word.svg'
-import Helix from '@/public/helix-black.png'
-import Trust from '@/public/trust.png'
-import Escrow from '@/public/escrow.png'
-import MoneyTransfer from '@/public/money-transfer.png'
-
 // Lazy load heavy components
 const WhyChooseUs = lazy(() => import('@/components/home/why-choose-us').then(module => ({ default: module.WhyChooseUs })))
 const ComingSoon = lazy(() => import('@/components/home/coming-soon'))
@@ -43,7 +34,7 @@ const fadeInOptimized = {
 
 // Memoized components for better performance
 const LogoSection = () => {
-  const logos = useMemo(() => [Maverick.src, Helix.src], [])
+  const logos = useMemo(() => ['Maverick-Black.png', 'helix-black.png'], [])
 
   return (
     <section className="border-t border-b py-10">
@@ -61,18 +52,16 @@ const LogoSection = () => {
               <Image
                 width={25}
                 height={25}
-                src={Solami.src}
+                src={"solana-logo.svg"}
                 alt="Solana Logo"
                 className="object-contain w-auto h-auto max-w-[25px] max-h-[25px] opacity-80"
-                loading="lazy"
               />
               <Image
                 width={100}
                 height={100}
-                src={SolamiWord.src}
+                src={"solana-word.svg"}
                 alt="Solana Word Logo"
                 className="object-contain invert w-auto h-auto max-w-[100px] max-h-[100px] opacity-80"
-                loading="lazy"
               />
             </div>
             {logos.map((logo, index) => (
@@ -83,7 +72,6 @@ const LogoSection = () => {
                   width={100}
                   height={100}
                   className="object-contain w-auto h-auto max-w-[150px] max-h-[150px]"
-                  loading="lazy"
                 />
               </div>
             ))}
@@ -119,7 +107,7 @@ const FeatureCard = ({
     <h2 className={`text-lg font-normal ${textColor === 'text-black' ? 'text-primary' : 'text-white'} tracking-widest mb-5 text-center sm:text-start uppercase`}>
       {title}
     </h2>
-    <h3 className={`text-4xl sm:text-5xl md:text-6xl font-bold ${textColor} mb-5 text-start leading-tight`}>
+    <h3 className={`text-4xl md:text-6xl tracking-tight leading-tight font-black ${textColor} mb-3 text-start`}>
       {subtitle}
     </h3>
     <h5 className={`${textColor === 'text-black' ? 'text-black/75' : 'text-white/75'} pt-3 mb-16 text-end sm:text-start font-semibold`}>
@@ -201,6 +189,8 @@ export default function LandingPageContent() {
     },
   ], [])
 
+  
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation - Optimized */}
@@ -256,14 +246,12 @@ export default function LandingPageContent() {
             className="relative"
           >
             <Image
-              src={loot_boxes.src}
+              src="loot_boxes.jpg"
               alt="Hero Image"
               width={500}
               height={500}
               priority={true}
               className="object-cover"
-              placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
             />
           </motion.div>
         </div>
@@ -286,7 +274,7 @@ export default function LandingPageContent() {
               title="beliefs"
               subtitle="Honesty and hard work are our beliefs"
               description="Our secure dual-signature escrow paths, ensures funds are only released when you approve."
-              imageSrc={Escrow.src}
+              imageSrc={"escrow.png"}
               imageAlt="Escrow"
               bgColor="bg-[#1c3144]"
               textColor="text-white"
@@ -296,7 +284,7 @@ export default function LandingPageContent() {
               title="Access"
               subtitle="Access your funds with ease"
               description="Send and receive money anywhere in the world without traditional banking restrictions or delays."
-              imageSrc={MoneyTransfer.src}
+              imageSrc={"money-transfer.png"}
               imageAlt="Money Transfer"
               bgColor="bg-[#d7dfbe]/50"
               textColor="text-black"
@@ -310,7 +298,7 @@ export default function LandingPageContent() {
               title="Trust"
               subtitle="Never worry about getting your trust broken again"
               description=""
-              imageSrc={Trust.src}
+              imageSrc={"trust.png"}
               imageAlt="Trust"
               bgColor="bg-[#d7dfbe]/50"
               textColor="text-black"
@@ -320,7 +308,7 @@ export default function LandingPageContent() {
               title="Accessibility"
               subtitle="We know that sending money is the easy part"
               description="That's why we're partnering with the best in the industry to help you on and off-ramp your funds with ease"
-              imageSrc={Escrow.src}
+              imageSrc={"escrow.png"}
               imageAlt="Escrow"
               bgColor="bg-[#1c3144]"
               textColor="text-white"

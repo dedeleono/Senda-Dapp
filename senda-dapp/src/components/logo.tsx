@@ -21,5 +21,5 @@ export default function ThemeAwareLogo({ width = 100, height = 100, className }:
     return null;
   }
 
-  return <Image src={logo} alt="logo" width={width} height={height} className={`${className} `} />
+  return <Image src={"2.svg"} alt="logo" width={width} height={height} className={`${className} `} />
 }

@@ -16,8 +16,6 @@ import { useAuth } from '@/hooks/use-auth'
 import { trpc } from '@/app/_trpc/client'
 import { useWalletStore } from '@/stores/use-wallet-store'
 import Image from 'next/image'
-import usdcIcon from '@/public/usdc.svg'
-import usdtIcon from '@/public/usdt-round.svg'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
 import DepositModal, { DepositModalRef } from '@/components/deposit/deposit-modal'
@@ -240,7 +238,7 @@ export default function MyPathsView() {
                                 <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
                                   <div className="flex items-center gap-2">
                                     <Image 
-                                      src={usdcIcon} 
+                                      src={"usdc.svg"} 
                                       alt="USDC" 
                                       width={16} 
                                       height={16} 
@@ -256,7 +254,7 @@ export default function MyPathsView() {
                                 <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
                                   <div className="flex items-center gap-2">
                                     <Image 
-                                      src={usdtIcon} 
+                                      src={"usdt-round.svg"} 
                                       alt="USDT" 
                                       width={16} 
                                       height={16} 
