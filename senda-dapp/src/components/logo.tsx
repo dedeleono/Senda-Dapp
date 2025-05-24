@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import logo from '@/public/1.svg';
 
 interface LogoProps {
   width?: number;

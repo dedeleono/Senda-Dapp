@@ -7,8 +7,6 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowRight, ArrowLeft, DollarSign, Info } from 'lucide-react';
 import Image from 'next/image';
-import usdcIcon from '@/public/usdc.svg';
-import usdtIcon from '@/public/usdt-round.svg';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useDepositForm } from '@/stores/use-deposit-form';
 import type { TokenType, AuthorizationType } from '@/types/transaction';
