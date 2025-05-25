@@ -479,8 +479,8 @@ export const sendaRouter = router({
 
                 const escrowPk = new PublicKey(deposit.escrow?.id as string);
                 console.log("Escrow", escrowPk);
-                const receivingPartyPk = new PublicKey(deposit.escrow?.receiverPublicKey as string);
-                console.log("Receiving party", receivingPartyPk);
+                const receivingPartyPkEscrow = new PublicKey(deposit.escrow?.receiverPublicKey as string);
+                console.log("Receiving party", receivingPartyPkEscrow);
                 // Fetch the escrow account to get sender and receiver info
                 const escrowAccount = await program.account.escrow.fetch(escrowPk);
                 console.log("Escrow account", escrowAccount);
@@ -534,18 +534,6 @@ export const sendaRouter = router({
                     console.error("Error fetching deposit record:", error);
                 }
 
-                const isOriginalSender = deposit.user?.sendaWalletPublicKey === input.signerId;
-                console.log("Authorization Check (Detailed):", {
-                    depositUserId: deposit.userId,
-                    inputSignerId: input.signerId,
-                    isOriginalSender,
-                    policy: deposit.policy,
-                    role: input.role,
-                    transactionUserId: deposit.transaction?.userId,
-                    sessionUserId: ctx.session?.user?.id,
-                    userWalletPublicKey: deposit.user?.sendaWalletPublicKey
-                });
-
                 let isExecutable = false;
 
                 if (deposit.policy === "RECEIVER" && input.role === "receiver") {
@@ -557,6 +545,7 @@ export const sendaRouter = router({
                     });
                     isExecutable = true;
                 } else if (deposit.policy === "SENDER" && input.role === "sender") {
+                    
                     await prisma.depositRecord.update({
                         where: { id: input.depositId },
                         data: {
@@ -604,14 +593,13 @@ export const sendaRouter = router({
 
                 // Determine who is the authorized signer based on the deposit record
                 const signers: Keypair[] = [];
-                signers.push(feePayer);
 
                 if (deposit.policy === "SENDER") {
                     // Only sender signs
                     const { keypair: depositor } = await loadUserSignerKeypair(deposit.user.id);
                     signers.push(depositor);
                 }
-                if (deposit.policy === "RECEIVER") {
+                else if (deposit.policy === "RECEIVER") {
                     // Only receiver signs
                     if (!deposit.transaction?.destinationUserId) {
                         throw new TRPCError({
@@ -622,7 +610,7 @@ export const sendaRouter = router({
                     const { keypair: receiver } = await loadUserSignerKeypair(deposit.transaction.destinationUserId);
                     signers.push(receiver);
                 }
-                if (deposit.policy === "DUAL") {
+                else if (deposit.policy === "DUAL") {
                     // Both sign
                     const { keypair: depositor } = await loadUserSignerKeypair(deposit.user.id);
                     signers.push(depositor);
@@ -636,13 +624,18 @@ export const sendaRouter = router({
                     signers.push(receiver);
                 }
 
-                console.log("Signers", signers.forEach(signer =>
-                    console.log("Signer:", signer.publicKey.toBase58())
-                ));
+                console.log("Signers:", signers.map(signer => signer.publicKey.toBase58()));
 
                 // Create and send the release transaction
                 const usdcMint = new PublicKey(USDC_MINT);
                 const usdtMint = new PublicKey(USDT_MINT);
+
+                // Get the receiving party's public key
+                const receivingPartyPk = input.role === 'receiver' ? receiverPk : senderPk;
+
+                // Ensure receiving party's ATAs exist
+                await createAta(usdcMint, receivingPartyPk);
+                await createAta(usdtMint, receivingPartyPk);
 
                 const releaseIx = await program.methods
                     .release(deposit.blockhash)
@@ -650,7 +643,7 @@ export const sendaRouter = router({
                         escrow: escrowPk,
                         sender: senderPk,
                         receiver: receiverPk,
-                        receivingParty: input.role === 'receiver' ? receiverPk : senderPk,
+                        receivingParty: receivingPartyPk,
                         authority: feePayer.publicKey,
                         usdcMint,
                         usdtMint,
@@ -661,11 +654,11 @@ export const sendaRouter = router({
 
                 const releaseTx = new Transaction().add(releaseIx);
 
-                // Signature(s)
+                // Signature(s) - feePayer first, then other required signers
                 const releaseSig = await web3.sendAndConfirmTransaction(
                     connection,
                     releaseTx,
-                    [...signers, feePayer]
+                    [feePayer, ...signers]
                 );
 
                 console.log("Signature", releaseSig);

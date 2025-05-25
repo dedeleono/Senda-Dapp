@@ -47,6 +47,7 @@ import { toast } from 'sonner'
 import TransactionDetails from '@/components/transactions/transaction-details'
 import { TransactionDetailsData } from '@/types/transaction'
 import { parseTransactionSignatures } from '@/utils/transaction'
+import { cn } from '@/lib/utils'
 
 interface Transaction {
   id: string
@@ -209,7 +210,7 @@ export default function TransactionsView() {
   }
 
   const truncateSignature = (signature: string) => {
-    return `${signature.slice(0, 8)}...${signature.slice(-8)}`
+    return `${signature.slice(0, 20)}...${signature.slice(-20)}`
   }
 
   const handleOpenTransactionDetails = (transaction: Transaction) => {
@@ -270,16 +271,12 @@ export default function TransactionsView() {
 
   return (
     <div className="py-4 sm:py-3 lg:py-5 md:px-1 px-6 max-w-[1400px] mx-auto ">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <Card className="border-0 shadow-md rounded-xl">
           <CardHeader className="pb-6">
             <CardTitle className="text-2xl font-bold">Transactions</CardTitle>
             <p className="text-muted-foreground">View and manage your transaction history</p>
-            
+
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4 mt-4">
               <div className="relative flex-1">
@@ -291,7 +288,7 @@ export default function TransactionsView() {
                   className="pl-10"
                 />
               </div>
-              
+
               <Select value={statusFilter} onValueChange={(value: TransactionStatusFilter) => setStatusFilter(value)}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filter by status" />
@@ -304,7 +301,7 @@ export default function TransactionsView() {
                   <SelectItem value="failed">Failed</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Select value={typeFilter} onValueChange={(value: TransactionTypeFilter) => setTypeFilter(value)}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filter by type" />
@@ -317,7 +314,7 @@ export default function TransactionsView() {
               </Select>
             </div>
           </CardHeader>
-          
+
           <CardContent>
             {isLoadingTransactions || isLoadingReceivedTransactions ? (
               <div className="flex justify-center py-12">
@@ -332,168 +329,221 @@ export default function TransactionsView() {
                 <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
               </div>
             ) : (
-              <div className="overflow-hidden rounded-lg border">
+              <div className="overflow-x-auto rounded-lg border">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]"></TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Recipient/Sender</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
+                    <TableRow className="bg-muted/30 border-b-2 hover:bg-muted/30">
+                      <TableHead className="w-[80px] text-center font-semibold">Type</TableHead>
+                      <TableHead className="min-w-[140px] font-semibold">Amount</TableHead>
+                      <TableHead className="min-w-[220px] font-semibold">Recipient/Sender</TableHead>
+                      <TableHead className="min-w-[130px] font-semibold">Status</TableHead>
+                      <TableHead className="min-w-[180px] font-semibold">Date</TableHead>
+                      <TableHead className="w-[50px] text-center"></TableHead>
                     </TableRow>
                   </TableHeader>
+
                   <TableBody>
-                    {filteredTransactions.map((transaction) => (
-                      <React.Fragment key={transaction.id}>
-                        <Collapsible 
-                          open={expandedRows.has(transaction.id)}
-                          onOpenChange={() => toggleRowExpansion(transaction.id)}
+                    {filteredTransactions.map((tx, idx) => (
+                      <React.Fragment key={tx.id}>
+                        {/* Summary row */}
+                        <TableRow
+                          onClick={() => toggleRowExpansion(tx.id)}
+                          className={cn(
+                            'cursor-pointer hover:bg-muted/50 transition-all duration-200 border-b',
+                            idx % 2 === 0 ? 'bg-background' : 'bg-muted/10',
+                          )}
                         >
-                          <CollapsibleTrigger asChild>
-                            <TableRow className="cursor-pointer hover:bg-muted/50 transition-colors">
-                              <TableCell>
-                                {getTypeIcon(transaction)}
-                              </TableCell>
-                              <TableCell className="font-medium capitalize">
-                                {transaction.isSent ? 'Sent' : 'Received'}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <Image 
-                                    src={transaction.depositRecord?.stable === 'usdc' ? "usdc.svg" : "usdt-round.svg"} 
-                                    alt={transaction.depositRecord?.stable || 'Token'} 
-                                    width={16} 
-                                    height={16} 
-                                  />
-                                  <span className="font-medium">
-                                    {transaction.amount.toFixed(2)} {transaction.depositRecord?.stable?.toUpperCase()}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell className="max-w-[200px] truncate">
-                                {transaction.isSent 
-                                  ? transaction.destinationUser?.email || '—'
-                                  : transaction.user?.email || '—'
-                                }
-                              </TableCell>
-                              <TableCell>
-                                {getStatusBadge(transaction)}
-                              </TableCell>
-                              <TableCell className="text-muted-foreground">
-                                {formatDate(transaction.createdAt)}
-                              </TableCell>
-                              <TableCell>
-                                {expandedRows.has(transaction.id) ? (
-                                  <ChevronDown className="w-4 h-4" />
-                                ) : (
-                                  <ChevronRight className="w-4 h-4" />
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          </CollapsibleTrigger>
-                          
-                          <CollapsibleContent asChild>
-                            <TableRow>
-                              <TableCell colSpan={7} className="p-0">
-                                <motion.div
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: 'auto' }}
-                                  exit={{ opacity: 0, height: 0 }}
-                                  transition={{ duration: 0.2 }}
-                                  className="bg-muted/20 p-6 border-t"
-                                >
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-4">
-                                      <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
-                                        Transaction Details
-                                      </h4>
-                                      <div className="space-y-3">
-                                        <div>
-                                          <p className="text-sm text-muted-foreground">Policy</p>
-                                          <p className="font-medium">{transaction.depositRecord?.policy || '—'}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-sm text-muted-foreground">Deposit ID</p>
-                                          <div className="flex items-center gap-2">
-                                            <code className="text-xs bg-muted px-2 py-1 rounded">
-                                              {transaction.depositRecord?.id ? truncateSignature(transaction.depositRecord.id) : '—'}
-                                            </code>
-                                            {transaction.depositRecord?.id && (
-                                              <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => copyToClipboard(transaction.depositRecord?.id || '')}
-                                              >
-                                                <Copy className="w-3 h-3" />
-                                              </Button>
-                                            )}
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center">{getTypeIcon(tx)}</div>
+                          </TableCell>
+
+                          <TableCell className="min-w-[140px]">
+                            <div className="flex items-center gap-3">
+                              <Image
+                                src={tx.depositRecord?.stable === 'usdc' ? 'usdc.svg' : 'usdt-round.svg'}
+                                alt={tx.depositRecord?.stable || 'Token'}
+                                width={24}
+                                height={24}
+                                className="flex-shrink-0"
+                              />
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-base">{tx.amount.toFixed(2)}</span>
+                                <span className="text-xs text-muted-foreground font-medium">
+                                  {tx.depositRecord?.stable?.toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="min-w-[220px]">
+                            <div className="flex flex-col gap-1">
+                              <span
+                                className="font-medium text-sm truncate max-w-[200px]"
+                                title={tx.isSent ? tx.destinationUser?.email || '—' : tx.user?.email || '—'}
+                              >
+                                {tx.isSent ? tx.destinationUser?.email || '—' : tx.user?.email || '—'}
+                              </span>
+                              <span className="text-xs text-muted-foreground font-medium">
+                                {tx.isSent ? 'To' : 'From'}
+                              </span>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="min-w-[130px]">{getStatusBadge(tx)}</TableCell>
+
+                          <TableCell className="min-w-[180px] text-muted-foreground">
+                            <div className="flex flex-col gap-1">
+                              <span className="text-sm font-medium">{formatDate(tx.createdAt)}</span>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="text-center">
+                            {expandedRows.has(tx.id) ? (
+                              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                            )}
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Detail row */}
+                        {expandedRows.has(tx.id) && (
+                          <TableRow>
+                            <TableCell colSpan={6} className="p-0">
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                className="bg-[#1c3144]/7 border-t border-border/50"
+                              >
+                                <div className="p-8">
+                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    {/* Left column */}
+                                    <div className="space-y-6">
+                                      <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-2 h-8 bg-gradient-to-b from-primary to-primary/60 rounded-full"></div>
+                                        <h4 className="text-lg font-bold text-foreground tracking-tight">
+                                          Transaction Details
+                                        </h4>
+                                      </div>
+
+                                      <div className="space-y-5">
+                                        <div className="group">
+                                          <p className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
+                                            Policy
+                                          </p>
+                                          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-4 group-hover:border-border transition-colors">
+                                            <p className="font-semibold text-foreground">
+                                              {tx.depositRecord?.policy || '—'}
+                                            </p>
                                           </div>
                                         </div>
-                                        {transaction.signature && (
-                                          <div>
-                                            <p className="text-sm text-muted-foreground">Transaction Signature</p>
-                                            <div className="flex items-center gap-2">
-                                              <code className="text-xs bg-muted px-2 py-1 rounded">
-                                                {truncateSignature(transaction.signature)}
+
+                                        <div className="group">
+                                          <p className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
+                                            Deposit ID
+                                          </p>
+                                          <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-4 group-hover:border-border transition-colors">
+                                            <div className="flex items-center justify-between">
+                                              <code className="text-sm font-mono bg-muted/50 px-3 py-2 rounded-md border w-full">
+                                                {tx.depositRecord?.id ? truncateSignature(tx.depositRecord.id) : '—'}
                                               </code>
-                                              <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => copyToClipboard(transaction.signature || '')}
-                                              >
-                                                <Copy className="w-3 h-3" />
-                                              </Button>
+                                              {tx.depositRecord?.id && (
+                                                <button
+                                                  className="p-2 hover:bg-muted/50 rounded-md transition-colors group/btn"
+                                                  onClick={() => copyToClipboard(tx.depositRecord!.id)}
+                                                >
+                                                  <Copy className="w-4 h-4 text-muted-foreground group-hover/btn:text-foreground transition-colors" />
+                                                </button>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {tx.signature && (
+                                          <div className="group">
+                                            <p className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
+                                              Transaction Signature
+                                            </p>
+                                            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-4 group-hover:border-border transition-colors">
+                                              <div className="flex items-center justify-between">
+                                                <code className="text-sm font-mono bg-muted/50 px-3 py-2 rounded-md border">
+                                                  {truncateSignature(tx.signature)}
+                                                </code>
+                                                <button
+                                                  className="p-2 hover:bg-muted/50 rounded-md transition-colors group/btn"
+                                                  onClick={() => copyToClipboard(tx.signature!)}
+                                                >
+                                                  <Copy className="w-4 h-4 text-muted-foreground group-hover/btn:text-foreground transition-colors" />
+                                                </button>
+                                              </div>
                                             </div>
                                           </div>
                                         )}
                                       </div>
                                     </div>
-                                    
-                                    <div className="space-y-4">
-                                      <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
-                                        Actions
-                                      </h4>
-                                      <div className="flex flex-col gap-3">
-                                        <Button 
-                                          variant="outline" 
-                                          size="sm" 
-                                          className="justify-start"
-                                          onClick={() => handleOpenTransactionDetails(transaction)}
+
+                                    {/* Right column */}
+                                    <div className="space-y-6">
+                                      <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-2 h-8 bg-gradient-to-b from-primary to-primary/60 rounded-full"></div>
+                                        <h4 className="text-lg font-bold text-foreground tracking-tight">Actions</h4>
+                                      </div>
+
+                                      <div className="space-y-4">
+                                        <button
+                                          className="w-full flex items-center gap-4 p-4 bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg hover:border-border hover:bg-card/70 transition-all duration-200 group"
+                                          onClick={() => {
+                                            
+                                          }}
                                         >
-                                          <ExternalLink className="w-4 h-4 mr-2" />
-                                          View Details
-                                        </Button>
-                                        {transaction.signature && (
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="justify-start"
-                                            onClick={() => openExplorer(transaction.signature || '')}
+                                          <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                                            <ExternalLink className="w-5 h-5 text-primary" />
+                                          </div>
+                                          <div className="text-left">
+                                            <p className="font-semibold text-foreground">View Details</p>
+                                            <p className="text-sm text-muted-foreground">
+                                              Open detailed transaction view
+                                            </p>
+                                          </div>
+                                        </button>
+
+                                        {tx.signature && (
+                                          <button
+                                            className="w-full flex items-center gap-4 p-4 bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg hover:border-border hover:bg-card/70 transition-all duration-200 group"
+                                            onClick={() => openExplorer(tx.signature!)}
                                           >
-                                            <ExternalLink className="w-4 h-4 mr-2" />
-                                            View on Explorer
-                                          </Button>
+                                            <div className="p-2 bg-blue-500/10 rounded-lg group-hover:bg-blue-500/20 transition-colors">
+                                              <ExternalLink className="w-5 h-5 text-blue-500" />
+                                            </div>
+                                            <div className="text-left">
+                                              <p className="font-semibold text-foreground">View on Explorer</p>
+                                              <p className="text-sm text-muted-foreground">Open in Solana Explorer</p>
+                                            </div>
+                                          </button>
                                         )}
-                                        <Button 
-                                          variant="outline" 
-                                          size="sm" 
-                                          className="justify-start"
-                                          onClick={() => copyToClipboard(transaction.depositRecord?.id || transaction.id)}
+
+                                        <button
+                                          className="w-full flex items-center gap-4 p-4 bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg hover:border-border hover:bg-card/70 transition-all duration-200 group"
+                                          onClick={() => copyToClipboard(tx.depositRecord?.id ?? tx.id)}
                                         >
-                                          <Copy className="w-4 h-4 mr-2" />
-                                          Copy Transaction ID
-                                        </Button>
+                                          <div className="p-2 bg-green-500/10 rounded-lg group-hover:bg-green-500/20 transition-colors">
+                                            <Copy className="w-5 h-5 text-green-500" />
+                                          </div>
+                                          <div className="text-left">
+                                            <p className="font-semibold text-foreground">Copy Transaction ID</p>
+                                            <p className="text-sm text-muted-foreground">Copy ID to clipboard</p>
+                                          </div>
+                                        </button>
                                       </div>
                                     </div>
                                   </div>
-                                </motion.div>
-                              </TableCell>
-                            </TableRow>
-                          </CollapsibleContent>
-                        </Collapsible>
+                                </div>
+                              </motion.div>
+                            </TableCell>
+                          </TableRow>
+                        )}
                       </React.Fragment>
                     ))}
                   </TableBody>

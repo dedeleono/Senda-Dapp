@@ -50,16 +50,26 @@ const userRouter = router({
                 depositCount: true,
                 state: true,
                 createdAt: true,
+                updatedAt: true,
                 sender: {
                     select: {
                         email: true,
                         name: true,
+                        image: true,
                     }
                 },
                 receiver: {
                     select: {
                         email: true,
                         name: true,
+                        image: true,
+                    }
+                },
+                deposits: {
+                    select: {
+                        amount: true,
+                        stable: true,
+                        state: true,
                     }
                 }
             },
@@ -71,16 +81,30 @@ const userRouter = router({
         const groupedPaths = paths.reduce((acc, escrow) => {
             const key = [escrow.senderPublicKey, escrow.receiverPublicKey].sort().join('-');
             
+            // Calculate deposit amounts by token type
+            const depositedUsdc = escrow.deposits
+                .filter(d => d.stable === 'usdc' && d.state !== 'CANCELLED')
+                .reduce((sum, d) => sum + d.amount, 0);
+            
+            const depositedUsdt = escrow.deposits
+                .filter(d => d.stable === 'usdt' && d.state !== 'CANCELLED')
+                .reduce((sum, d) => sum + d.amount, 0);
+            
             if (!acc[key]) {
                 acc[key] = {
                     ...escrow,
                     depositCount: Number(escrow.depositCount),
+                    depositedUsdc,
+                    depositedUsdt,
                 };
             } else {
                 acc[key].depositCount += Number(escrow.depositCount);
+                acc[key].depositedUsdc += depositedUsdc;
+                acc[key].depositedUsdt += depositedUsdt;
                 if (escrow.createdAt > acc[key].createdAt) {
                     acc[key].id = escrow.id;
                     acc[key].createdAt = escrow.createdAt;
+                    acc[key].updatedAt = escrow.updatedAt;
                 }
             }
             return acc;

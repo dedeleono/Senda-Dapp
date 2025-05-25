@@ -10,13 +10,13 @@ import SuccessView from './success-view';
 import { useDepositForm } from '@/stores/use-deposit-form';
 
 export type DepositModalRef = {
-  open: () => void;
+  open: (prefilledEmail?: string) => void;
   close: () => void;
 };
 
 type DepositModalProps = {
   onClose?: () => void;
-  onComplete?: (transactionId: string, depositId: string) => void;
+  onComplete?: (transactionId: string, depositId: string, recipientRole?: string) => void;
 };
 
 const DepositModal = forwardRef<DepositModalRef, DepositModalProps>(
@@ -29,7 +29,8 @@ const DepositModal = forwardRef<DepositModalRef, DepositModalProps>(
     
     const { 
       step,
-      resetForm
+      resetForm,
+      updateFormData
     } = useDepositForm();
 
     const stepTitles = [
@@ -39,9 +40,20 @@ const DepositModal = forwardRef<DepositModalRef, DepositModalProps>(
       'Complete'
     ];
 
-    const handleOpen = () => {
+    const handleOpen = (prefilledEmail?: string) => {
       resetForm();
       setTransactionData(undefined);
+      
+      // If we have a prefilled email, update the form data
+      if (prefilledEmail) {
+        updateFormData({
+          recipient: {
+            email: prefilledEmail,
+            exists: false, // Will be validated by the recipient form
+          },
+        });
+      }
+      
       setIsOpen(true);
     };
     
