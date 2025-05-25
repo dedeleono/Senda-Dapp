@@ -11,7 +11,6 @@ import {
   Calendar,
   DollarSign,
   Mail,
-  ArrowRight,
   Shield,
   Clock,
   Send,
@@ -208,7 +207,7 @@ export default function MyPathsView() {
               Invite Friends to your Journey
             </CardTitle>
             <p className="text-muted-foreground">
-              Send money to a friend and invite them to join Senda - they'll get an email to claim the funds
+              Send money to a friend and invite them to join Senda - they&apos;ll get an email to claim the funds
             </p>
           </CardHeader>
           <CardContent>
@@ -244,7 +243,7 @@ export default function MyPathsView() {
                     <br />
                     3. They join Senda and can immediately claim the money you sent
                     <br />
-                    4. Once they're on Senda, you both can use this secure path for future transactions
+                    4. Once they&apos;re on Senda, you both can use this secure path for future transactions
                   </p>
                 </div>
               </div>

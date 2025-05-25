@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -20,11 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
 import { 
   Search, 
   ChevronDown, 
@@ -213,56 +207,7 @@ export default function TransactionsView() {
     return `${signature.slice(0, 20)}...${signature.slice(-20)}`
   }
 
-  const handleOpenTransactionDetails = (transaction: Transaction) => {
-    const depositIndex = transaction.depositRecord?.depositIndex
-    if (typeof depositIndex !== 'number') {
-      console.error('Invalid deposit index:', depositIndex)
-      return
-    }
-
-    const senderPublicKey = transaction.walletPublicKey
-    const receiverPublicKey = transaction.destinationAddress
-
-    if (!senderPublicKey || !receiverPublicKey) {
-      console.error('Missing required public keys:', { senderPublicKey, receiverPublicKey })
-      return
-    }
-
-    const signatures = parseTransactionSignatures(transaction.depositRecord?.signatures || [])
-
-    const transactionDetails: TransactionDetailsData = {
-      id: transaction.depositRecord?.id || '',
-      amount: transaction.amount,
-      token: transaction.depositRecord?.stable === 'usdc' ? 'USDC' : 'USDT',
-      recipientEmail: transaction.destinationUserId ? (transaction.destinationUser?.email as string) : '',
-      senderEmail: transaction.user?.email || '',
-      createdAt: new Date(transaction.createdAt),
-      status:
-        transaction.depositRecord?.state === 'COMPLETED'
-          ? ('COMPLETED' as TransactionStatus)
-          : transaction.depositRecord?.state === 'CANCELLED'
-            ? ('CANCELLED' as TransactionStatus)
-            : transaction.status,
-      authorization: transaction.depositRecord?.policy as SignatureType,
-      isDepositor: transaction.userId === session?.user.id,
-      signatures,
-      statusHistory: [
-        {
-          status: transaction.depositRecord?.state as string,
-          timestamp: new Date(transaction.createdAt),
-          actor: transaction.userId,
-        },
-      ],
-      depositIndex,
-      transactionSignature: transaction.signature,
-      senderPublicKey,
-      receiverPublicKey,
-      depositRecord: transaction.depositRecord,
-    }
-
-    setSelectedTransaction(transactionDetails)
-    setIsTransactionDetailsOpen(true)
-  }
+  
 
   const openExplorer = (signature: string) => {
     const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`

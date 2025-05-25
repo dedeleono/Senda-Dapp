@@ -14,7 +14,6 @@ import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { getTransactionAge } from '@/utils/transaction'
-import { parseTransactionSignatures } from '@/utils/transaction'
 import { toast } from 'sonner'
 import DepositModal, { DepositModalRef } from '@/components/deposit/deposit-modal'
 import AddFundsModal, { AddFundsModalRef } from '@/components/deposit/add-funds-modal'
@@ -236,7 +235,7 @@ export default function DashboardView() {
 
   const handleOpenTransactionDetails = (tx: Transaction) => {
     const isSender = tx.userId === session?.user.id
-    const isReceiver = tx.destinationAddress === publicKey?.toString()
+    
     const signatures = getSignaturesFromDepositRecord(tx.depositRecord)
 
     const transformedTransaction: TransactionDetailsData = {
