@@ -163,9 +163,9 @@ export default function DashboardView() {
   // Calculate stats
   const totalTransactions = allTransactions.length
   const activePaths = paths?.paths?.length || 0
-  const totalVolume = allTransactions
-    .filter(tx => tx.destinationAddress === publicKey?.toString() && tx.depositRecord?.state === 'COMPLETED')
-    .reduce((sum, tx) => sum + tx.amount, 0)
+  // const totalVolume = allTransactions
+  //   .filter(tx => tx.destinationAddress === publicKey?.toString() && tx.depositRecord?.state === 'COMPLETED')
+  //   .reduce((sum, tx) => sum + tx.amount, 0)
 
   const { mutate: updateSignature } = trpc.sendaRouter.updateDepositSignature.useMutation({
     onSuccess: (data) => {
