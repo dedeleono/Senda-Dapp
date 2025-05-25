@@ -449,7 +449,7 @@ export default function TransactionsView() {
                                               status: tx.status,
                                               authorization: tx.depositRecord?.policy || 'SENDER',
                                               isDepositor: tx.isSent,
-                                              signatures: tx.depositRecord?.signatures?.map((sig, index) => ({
+                                              signatures: tx.depositRecord?.signatures?.map((sig) => ({
                                                 signer: sig,
                                                 role: tx.depositRecord?.policy || 'SENDER',
                                                 status: 'signed' as const
