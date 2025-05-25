@@ -40,7 +40,6 @@ import Image from 'next/image'
 import { toast } from 'sonner'
 import TransactionDetails from '@/components/transactions/transaction-details'
 import { TransactionDetailsData } from '@/types/transaction'
-import { parseTransactionSignatures } from '@/utils/transaction'
 import { cn } from '@/lib/utils'
 
 interface Transaction {
@@ -440,7 +439,36 @@ export default function TransactionsView() {
                                         <button
                                           className="w-full flex items-center gap-4 p-4 bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg hover:border-border hover:bg-card/70 transition-all duration-200 group"
                                           onClick={() => {
-                                            
+                                            const transactionDetailsData: TransactionDetailsData = {
+                                              id: tx.id,
+                                              amount: tx.amount,
+                                              token: (tx.depositRecord?.stable?.toUpperCase() as 'USDC' | 'USDT') || 'USDC',
+                                              recipientEmail: tx.isSent ? (tx.destinationUser?.email || '') : (tx.user?.email || ''),
+                                              senderEmail: tx.isSent ? (tx.user?.email || '') : (tx.destinationUser?.email || ''),
+                                              createdAt: new Date(tx.createdAt),
+                                              status: tx.status,
+                                              authorization: tx.depositRecord?.policy || 'SENDER',
+                                              isDepositor: tx.isSent,
+                                              signatures: tx.depositRecord?.signatures?.map((sig, index) => ({
+                                                signer: sig,
+                                                role: tx.depositRecord?.policy || 'SENDER',
+                                                status: 'signed' as const
+                                              })) || [],
+                                              statusHistory: [{
+                                                status: tx.depositRecord?.state || tx.status,
+                                                timestamp: new Date(tx.createdAt),
+                                                actor: tx.user?.email
+                                              }],
+                                              depositIndex: tx.depositRecord?.depositIndex || 0,
+                                              transactionSignature: tx.signature,
+                                              senderPublicKey: tx.walletPublicKey,
+                                              receiverPublicKey: tx.destinationAddress || '',
+                                              depositRecord: tx.depositRecord ? {
+                                                state: tx.depositRecord.state
+                                              } : undefined
+                                            }
+                                            setSelectedTransaction(transactionDetailsData)
+                                            setIsTransactionDetailsOpen(true)
                                           }}
                                         >
                                           <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
