@@ -343,11 +343,11 @@ export default function DashboardView() {
           className="hover:shadow-lg transition-shadow rounded-xl"
         />
         <StatCard value={activePaths} label="Active Paths" className="hover:shadow-lg transition-shadow rounded-xl" />
-        <StatCard
+        {/* <StatCard
           value={`$${totalVolume.toFixed(0)}`}
           label="Total Volume"
           className="hover:shadow-lg transition-shadow rounded-xl"
-        />
+        /> */}
       </motion.div>
 
       {/* Active Deposits Section */}
