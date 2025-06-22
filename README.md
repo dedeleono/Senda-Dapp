@@ -104,7 +104,3 @@ Contributing
 2. Commit with clear messages
 3. Open a PR against `main`
 4. Address review feedback
-
-License
--------
-Distributed under the MIT License.
