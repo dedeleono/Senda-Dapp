@@ -20,7 +20,7 @@ Tech Stack
 - DB: Prisma + PostgreSQL
 - Blockchain: Solana Web3.js, Anchor (Rust)
 - State: Zustand
-- Hosting: Vercel (frontend), Heroku (backend)
+- Hosting: Vercel
 
 Repository Layout
 ----------------
