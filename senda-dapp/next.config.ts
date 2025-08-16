@@ -28,7 +28,6 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     // Enable app router instrumentation
-    clientInstrumentationHook: true,
   },
   appDir: true,
   output: 'standalone',
