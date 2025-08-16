@@ -64,17 +64,17 @@ const LogoSection = () => {
                 className="object-contain invert w-auto h-auto max-w-[100px] max-h-[100px] opacity-80"
               />
             </div>
-            {logos.map((logo, index) => (
-              <div key={index} className="text-xl font-semibold text-muted-foreground/60">
+            
+              <div key={"logo"} className="text-xl font-semibold text-muted-foreground/60">
                 <Image
-                  src={logo}
+                  src={'/helix-black.png'}
                   alt="Partner Logo"
                   width={100}
                   height={100}
                   className="object-contain w-auto h-auto max-w-[150px] max-h-[150px]"
                 />
               </div>
-            ))}
+            
           </div>
         </motion.div>
       </div>
