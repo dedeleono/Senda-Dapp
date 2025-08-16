@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, type Variants } from 'framer-motion'
 import { useState, useEffect, Suspense, lazy, useMemo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -23,12 +23,12 @@ const LoadingSpinner = () => (
 )
 
 // Optimized animation variants
-const fadeInOptimized = {
+const fadeInOptimized: Variants = {
   hidden: { opacity: 0, y: 10 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.3, ease: 'easeOut' },
+    transition: { duration: 0.3, ease: "easeOut" },
   },
 }
 
