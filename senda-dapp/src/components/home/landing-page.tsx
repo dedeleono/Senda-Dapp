@@ -34,7 +34,7 @@ const fadeInOptimized = {
 
 // Memoized components for better performance
 const LogoSection = () => {
-  const logos = useMemo(() => ['Maverick-Black.png', 'helix-black.png'], [])
+  const logos = useMemo(() => ['helix-black.png'], [])
 
   return (
     <section className="border-t border-b py-10">
