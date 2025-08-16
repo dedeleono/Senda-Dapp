@@ -11,9 +11,13 @@ import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 
 // Lazy load heavy components
-const WhyChooseUs = lazy(() => import('@/components/home/why-choose-us').then(module => ({ default: module.WhyChooseUs })))
+const WhyChooseUs = lazy(() =>
+  import('@/components/home/why-choose-us').then((module) => ({ default: module.WhyChooseUs })),
+)
 const ComingSoon = lazy(() => import('@/components/home/coming-soon'))
-const WorldMap = lazy(() => import('@/components/ui/acernity/world-map').then(module => ({ default: module.WorldMap })))
+const WorldMap = lazy(() =>
+  import('@/components/ui/acernity/world-map').then((module) => ({ default: module.WorldMap })),
+)
 const SignupForm = lazy(() => import('./sign-up-form'))
 
 const LoadingSpinner = () => (
@@ -28,13 +32,13 @@ const fadeInOptimized: Variants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.3, ease: "easeOut" },
+    transition: { duration: 0.3, ease: 'easeOut' },
   },
 }
 
 // Memoized components for better performance
 const LogoSection = () => {
-  // const logos = useMemo(() => ['helix-black.png'], [])
+  const logos = useMemo(() => ['helix-black.png'], [])
 
   return (
     <section className="border-t border-b py-10">
@@ -52,29 +56,32 @@ const LogoSection = () => {
               <Image
                 width={25}
                 height={25}
-                src={"solana-logo.svg"}
+                src={'solana-logo.svg'}
                 alt="Solana Logo"
                 className="object-contain w-auto h-auto max-w-[25px] max-h-[25px] opacity-80"
               />
               <Image
                 width={100}
                 height={100}
-                src={"solana-word.svg"}
+                src={'solana-word.svg'}
                 alt="Solana Word Logo"
                 className="object-contain invert w-auto h-auto max-w-[100px] max-h-[100px] opacity-80"
               />
             </div>
-            
-              <div key={"logo"} className="text-xl font-semibold text-muted-foreground/60">
-                <Image
-                  src={'/helix-black.png'}
-                  alt="Partner Logo"
-                  width={100}
-                  height={100}
-                  className="object-contain w-auto h-auto max-w-[150px] max-h-[150px]"
-                />
-              </div>
-            
+
+            {logos.map((logo, i) => {
+              return (
+                <div key={i} className="text-xl font-semibold text-muted-foreground/60">
+                  <Image
+                    src={logo}
+                    alt="Partner Logo"
+                    width={100}
+                    height={100}
+                    className="object-contain w-auto h-auto max-w-[150px] max-h-[150px]"
+                  />
+                </div>
+              )
+            })}
           </div>
         </motion.div>
       </div>
@@ -82,16 +89,16 @@ const LogoSection = () => {
   )
 }
 
-const FeatureCard = ({ 
-  title, 
-  subtitle, 
-  description, 
-  imageSrc, 
-  imageAlt, 
-  bgColor, 
+const FeatureCard = ({
+  title,
+  subtitle,
+  description,
+  imageSrc,
+  imageAlt,
+  bgColor,
   textColor = 'text-black',
   linkTo,
-  linkText
+  linkText,
 }: {
   title: string
   subtitle: string
@@ -103,14 +110,20 @@ const FeatureCard = ({
   linkTo?: string
   linkText?: string
 }) => (
-  <div className={`${bgColor} relative pt-8 sm:pt-12 px-6 sm:px-10 md:px-24 pb-40 sm:pb-52 md:pb-70 rounded-3xl md:h-[700px]`}>
-    <h2 className={`text-lg font-normal ${textColor === 'text-black' ? 'text-primary' : 'text-white'} tracking-widest mb-5 text-center sm:text-start uppercase`}>
+  <div
+    className={`${bgColor} relative pt-8 sm:pt-12 px-6 sm:px-10 md:px-24 pb-40 sm:pb-52 md:pb-70 rounded-3xl md:h-[700px]`}
+  >
+    <h2
+      className={`text-lg font-normal ${textColor === 'text-black' ? 'text-primary' : 'text-white'} tracking-widest mb-5 text-center sm:text-start uppercase`}
+    >
       {title}
     </h2>
     <h3 className={`text-4xl md:text-6xl tracking-tight leading-tight font-black ${textColor} mb-3 text-start`}>
       {subtitle}
     </h3>
-    <h5 className={`${textColor === 'text-black' ? 'text-black/75' : 'text-white/75'} pt-3 mb-16 text-end sm:text-start font-semibold`}>
+    <h5
+      className={`${textColor === 'text-black' ? 'text-black/75' : 'text-white/75'} pt-3 mb-16 text-end sm:text-start font-semibold`}
+    >
       {description}
     </h5>
     {linkTo && linkText && (
@@ -162,34 +175,35 @@ export default function LandingPageContent() {
   }, [handleHashChange])
 
   // Memoized world map dots data
-  const worldMapDots = useMemo(() => [
-    {
-      start: { lat: 64.2008, lng: -149.4937 }, // Alaska (Fairbanks)
-      end: { lat: 34.0522, lng: -118.2437 }, // Los Angeles
-    },
-    {
-      start: { lat: 64.2008, lng: -149.4937 }, // Alaska (Fairbanks)
-      end: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
-    },
-    {
-      start: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
-      end: { lat: 38.7223, lng: -9.1393 }, // Lisbon
-    },
-    {
-      start: { lat: 51.5074, lng: -0.1278 }, // London
-      end: { lat: 28.6139, lng: 77.209 }, // New Delhi
-    },
-    {
-      start: { lat: 28.6139, lng: 77.209 }, // New Delhi
-      end: { lat: 43.1332, lng: 131.9113 }, // Vladivostok
-    },
-    {
-      start: { lat: 28.6139, lng: 77.209 }, // New Delhi
-      end: { lat: -1.2921, lng: 36.8219 }, // Nairobi
-    },
-  ], [])
-
-  
+  const worldMapDots = useMemo(
+    () => [
+      {
+        start: { lat: 64.2008, lng: -149.4937 }, // Alaska (Fairbanks)
+        end: { lat: 34.0522, lng: -118.2437 }, // Los Angeles
+      },
+      {
+        start: { lat: 64.2008, lng: -149.4937 }, // Alaska (Fairbanks)
+        end: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
+      },
+      {
+        start: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
+        end: { lat: 38.7223, lng: -9.1393 }, // Lisbon
+      },
+      {
+        start: { lat: 51.5074, lng: -0.1278 }, // London
+        end: { lat: 28.6139, lng: 77.209 }, // New Delhi
+      },
+      {
+        start: { lat: 28.6139, lng: 77.209 }, // New Delhi
+        end: { lat: 43.1332, lng: 131.9113 }, // Vladivostok
+      },
+      {
+        start: { lat: 28.6139, lng: 77.209 }, // New Delhi
+        end: { lat: -1.2921, lng: 36.8219 }, // Nairobi
+      },
+    ],
+    [],
+  )
 
   return (
     <div className="min-h-screen bg-white">
@@ -199,12 +213,15 @@ export default function LandingPageContent() {
         <nav className="hidden md:flex items-center space-x-6">
           <Link
             href="#why-choose-us"
-            className={cn('text-sm transition-colors', activeTab === 'why-choose-us' ? 'font-medium' : 'text-muted-foreground')}
+            className={cn(
+              'text-sm transition-colors',
+              activeTab === 'why-choose-us' ? 'font-medium' : 'text-muted-foreground',
+            )}
           >
             Why Choose Us
           </Link>
-          <Link 
-            href="#faqs" 
+          <Link
+            href="#faqs"
             className={cn('text-sm transition-colors', activeTab === 'faqs' ? 'font-medium' : 'text-muted-foreground')}
           >
             FAQs
@@ -218,12 +235,7 @@ export default function LandingPageContent() {
       {/* Hero Section - Optimized */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <motion.div 
-            initial="hidden" 
-            animate="visible" 
-            variants={fadeInOptimized} 
-            className="space-y-6"
-          >
+          <motion.div initial="hidden" animate="visible" variants={fadeInOptimized} className="space-y-6">
             <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">
               <span className="text-muted-foreground">Join the movement</span>
             </div>
@@ -267,24 +279,24 @@ export default function LandingPageContent() {
           <h3 className="text-4xl sm:text-6xl font-bold text-black/50 lg:mr-48 my-2">Why choose us?</h3>
           <h3 className="text-4xl sm:text-6xl font-bold text-black/25 lg:-mr-32 my-2">Why choose us?</h3>
         </div>
-        
+
         <div className="container mx-auto lg:max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <FeatureCard
               title="beliefs"
               subtitle="Honesty and hard work are our beliefs"
               description="Our secure dual-signature escrow paths, ensures funds are only released when you approve."
-              imageSrc={"escrow.png"}
+              imageSrc={'escrow.png'}
               imageAlt="Escrow"
               bgColor="bg-[#1c3144]"
               textColor="text-white"
             />
-            
+
             <FeatureCard
               title="Access"
               subtitle="Access your funds with ease"
               description="Send and receive money anywhere in the world without traditional banking restrictions or delays."
-              imageSrc={"money-transfer.png"}
+              imageSrc={'money-transfer.png'}
               imageAlt="Money Transfer"
               bgColor="bg-[#d7dfbe]/50"
               textColor="text-black"
@@ -298,7 +310,7 @@ export default function LandingPageContent() {
               title="Trust"
               subtitle="Never worry about getting your trust broken again"
               description=""
-              imageSrc={"trust.png"}
+              imageSrc={'trust.png'}
               imageAlt="Trust"
               bgColor="bg-[#d7dfbe]/50"
               textColor="text-black"
@@ -308,7 +320,7 @@ export default function LandingPageContent() {
               title="Accessibility"
               subtitle="We know that sending money is the easy part"
               description="That's why we're partnering with the best in the industry to help you on and off-ramp your funds with ease"
-              imageSrc={"escrow.png"}
+              imageSrc={'escrow.png'}
               imageAlt="Escrow"
               bgColor="bg-[#1c3144]"
               textColor="text-white"
@@ -340,7 +352,10 @@ export default function LandingPageContent() {
       </section>
 
       {/* CTA Section - Optimized */}
-      <section id="cta" className="w-full bg-gradient-to-br from-[#f6ead7]/50 via-[#f6ead7]/30 to-white/60 py-20 px-4 relative overflow-hidden">
+      <section
+        id="cta"
+        className="w-full bg-gradient-to-br from-[#f6ead7]/50 via-[#f6ead7]/30 to-white/60 py-20 px-4 relative overflow-hidden"
+      >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#1c3144]/5 rounded-full blur-3xl" />
           <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-[#1c3144]/5 rounded-full blur-3xl" />
