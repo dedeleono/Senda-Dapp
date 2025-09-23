@@ -2,6 +2,8 @@
 
 A frictionless, off-chain gateway to programmable money on Solana—combining prepaid cards, smart wallets and seamless remittances for underbanked users.
 
+PROGRAMID: B3DT8RTGLr4k34jidDKKDYaLZcsveSmMVD7CWfvq8bgn
+
 Features
 --------
 - Custom Authentication: NextAuth.js–powered, extensible login flows
