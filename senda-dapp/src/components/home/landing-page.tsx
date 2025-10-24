@@ -14,7 +14,7 @@ import { Loader2 } from 'lucide-react'
 const WhyChooseUs = lazy(() =>
   import('@/components/home/why-choose-us').then((module) => ({ default: module.WhyChooseUs })),
 )
-const ComingSoon = lazy(() => import('@/components/home/coming-soon'))
+// const ComingSoon = lazy(() => import('@/components/home/coming-soon'))
 const WorldMap = lazy(() =>
   import('@/components/ui/acernity/world-map').then((module) => ({ default: module.WorldMap })),
 )
