@@ -38,7 +38,7 @@ const fadeInOptimized: Variants = {
 
 // Memoized components for better performance
 const LogoSection = () => {
-  const logos = useMemo(() => [ 'helix-black.png'], [])
+  const logos = useMemo(() => [ '/maverick.png', '/solanaLogoMark.svg'], [])
 
   return (
     <section className="border-t border-b py-10">
@@ -52,22 +52,7 @@ const LogoSection = () => {
         >
           <p className="text-center text-sm text-muted-foreground">WE WORK ONLY WITH THE BEST AROUND THE GLOBE</p>
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-            <div className="flex items-center justify-center gap-2">
-              <Image
-                width={25}
-                height={25}
-                src={'solana-logo.svg'}
-                alt="Solana Logo"
-                className="object-contain w-auto h-auto max-w-[25px] max-h-[25px] opacity-80"
-              />
-              <Image
-                width={100}
-                height={100}
-                src={'solana-word.svg'}
-                alt="Solana Word Logo"
-                className="object-contain invert w-auto h-auto max-w-[100px] max-h-[100px] opacity-80"
-              />
-            </div>
+            
 
             {logos.map((logo, i) => {
               return (
@@ -258,7 +243,7 @@ export default function LandingPageContent() {
             className="relative"
           >
             <Image
-              src="loot_boxes.jpg"
+              src="hand.png"
               alt="Hero Image"
               width={500}
               height={500}
@@ -296,7 +281,7 @@ export default function LandingPageContent() {
               title="Access"
               subtitle="Access your funds with ease"
               description="Send and receive money anywhere in the world without traditional banking restrictions or delays."
-              imageSrc={'money-transfer.png'}
+              imageSrc={'grip.png'}
               imageAlt="Money Transfer"
               bgColor="bg-[#d7dfbe]/50"
               textColor="text-black"
@@ -404,9 +389,9 @@ export default function LandingPageContent() {
         <WhyChooseUs />
       </Suspense>
 
-      <Suspense fallback={<LoadingSpinner />}>
+      {/* <Suspense fallback={<LoadingSpinner />}>
         <ComingSoon />
-      </Suspense>
+      </Suspense> */}
 
       {/* FAQ Section - Optimized */}
       <section id="faqs" className="py-24 bg-gradient-to-b from-slate-50/50 via-emerald-50/30 to-white">

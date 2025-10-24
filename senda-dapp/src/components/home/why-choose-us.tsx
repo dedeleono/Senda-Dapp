@@ -156,7 +156,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isActive, stepNumber, onClick
               )}
 
               {/* Images */}
-              <motion.div
+              {/* <motion.div
                 className="grid grid-cols-2 md:grid-cols-4 gap-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -176,7 +176,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isActive, stepNumber, onClick
                     />
                   </div>
                 ))}
-              </motion.div>
+              </motion.div> */}
             </div>
           </motion.div>
         )}
